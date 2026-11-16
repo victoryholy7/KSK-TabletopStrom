@@ -84,7 +84,7 @@ td,th{padding:8px;border-bottom:2px solid #ddd;text-align:left}
 .tag{border:none;border-radius:999px;padding:8px 14px;font-family:inherit;font-weight:600;font-size:17px;background:#ffe08a;cursor:pointer}
 textarea{width:100%;height:90px;font-family:inherit;font-size:17px;border-radius:10px;padding:8px;border:2px solid #aaa}
 .intro li{font-size:24px;margin:6px 0 6px 22px}
-/* แผนผัง */
+/* แผนผังดิจิทัล */
 #mapO .modal{max-width:96vw;width:auto;padding:14px;display:flex;gap:14px;align-items:flex-start}
 #mapBox{position:relative;height:84vh;aspect-ratio:848/1024;touch-action:none;background:#2c4a92;border-radius:12px;display:grid;place-items:center;color:#fff;text-align:center;font-size:18px}
 #mapBox img{position:absolute;inset:0;height:100%;width:100%;border-radius:12px;display:block;pointer-events:none}
@@ -160,7 +160,7 @@ textarea{width:100%;height:90px;font-family:inherit;font-size:17px;border-radius
   <button class="go" onclick="toggleTimer()">▶/⏸ จับเวลา (Space)</button>
   <button class="big" onclick="next()">🚨 การ์ดวิกฤตถัดไป (N)</button>
   <button onclick="wildCard()">🎲 Wild Card (W)</button>
-  <button onclick="openMap()">🗺️ แผนผัง (G)</button>
+  <button onclick="openMap()">🗺️ แผนผัง รพ. (G)</button>
   <button onclick="thunder()">⛈️ ฟ้าร้อง (T)</button>
   <button onclick="toggleDark()">💡 ไฟดับ/ไฟติด (B)</button>
   <button onclick="toggleMute()" id="mute">🔊 เสียง (M)</button>
@@ -184,15 +184,14 @@ textarea{width:100%;height:90px;font-family:inherit;font-size:17px;border-radius
 </div>
 
 <script>
-/* ============ ตั้งค่า (แก้เฉพาะส่วนนี้) ============ */
+/* ============ ตั้งค่าระบบดิจิทัล (แผนผังฝังในตัวทันที) ============ */
 const CFG={
-  API:'',                 // วาง URL เว็บแอปของ Apps Script (ลงท้าย /exec) ถ้าเว้นว่าง = ทำงานออฟไลน์
-  KEY:'ksk2025',          // ต้องตรงกับ SECRET ใน Code.gs
-  MAP:'ksk-map.jpg'       // ไฟล์ภาพแผนผังในโฟลเดอร์เดียวกัน (หรือใส่ data:image/jpeg;base64,...)
+  API:'',                 // วาง URL เว็บแอปของ Apps Script ถ้าต้องการเก็บลง Google Sheets
+  KEY:'ksk2025',          
+  MAP:'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAJoAlgBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=' // ฝังภาพแผนผัง รพ. ไว้ในระบบดิจิทัลเรียบร้อย
 };
-const AV={anchor:'',villain:''};   // ลิงก์รูปตัวละคร (ถ้าเว้นว่างใช้อีโมจิ)
+const AV={anchor:'',villain:''};   
 const SESSION=new URLSearchParams(location.search).get('s')||('KSK-'+new Date().toISOString().slice(0,10));
-/* ================================================= */
 
 const TEAMS=[
  {n:'ทีมบัญชาการ',sub:'Command | ผู้การเมฆ',e:'🧑‍✈️',c:'#ffd23f'},
@@ -206,21 +205,21 @@ const AMB_MAX=2, ROUND_SEC=300;
 const ROUNDS=[
 {t:'พายุเข้า',icon:'🌪️',power:1,rain:1,
  head:'ลมกระโชกแรง ต้นไม้ล้มทับสายไฟหลัก ไฟดับทั้ง รพ. และหลังคาตึกผู้ป่วยในรั่ว!',
- tasks:['ทุกทีมประเมินสถานการณ์ภายใน 1 นาที','เลือกลงการ์ดทรัพยากรแก้ไฟดับ/หลังคารั่ว','ทีมแพทย์: ขยับหมากย้ายผู้ป่วยในไปโซนปลอดภัย','ทีมบัญชาการ: ประกาศเปิด EOC ตามแผน'],
+ tasks:['ทุกทีมประเมินสถานการณ์ภายใน 1 นาที','คลิกใช้การ์ดทรัพยากรดิจิทัลด้านล่างเพื่อแก้ไฟดับ/หลังคารั่ว','ทีมแพทย์: เปิดปุ่ม "แผนผัง รพ." ลากหมากย้ายผู้ป่วยในไปโซนปลอดภัย','ทีมบัญชาการ: ประกาศเปิด EOC ตามแผน'],
  hint:'คาดหวัง: เปิด EOC, ระบุจุดจ่ายไฟสำรองให้จุดสำคัญก่อน, ย้ายผู้ป่วยที่ใช้อุปกรณ์ไฟฟ้า, กันพื้นที่รั่ว/ป้องกันไฟรั่ว',
  villain:'ฮึ่ม... ไฟดับแล้วสินะ? นี่แค่เริ่มต้นเท่านั้น!',
  say:'ข่าวด่วน พายุเข้าพื้นที่จันทบุรี ไฟฟ้าดับ โรงพยาบาลเขาสุกิม เข้าสู่ภาวะฉุกเฉิน',
  news:['ด่วน! พายุเข้าพื้นที่จันทบุรี ไฟฟ้าดับหลายตำบล','ศูนย์บัญชาการ รพ.เขาสุกิม เริ่มเปิดปฏิบัติการ']},
 {t:'ฟ้าผ่า วิกฤตซ้อน',icon:'⚡',power:1,glitch:1,rain:1.2,
  head:'ฟ้าผ่าลงระบบเครือข่าย ระบบ HIS ล่ม และมีผู้บาดเจ็บจากพายุส่งเข้า ER 5 ราย!',
- tasks:['คัดกรองผู้บาดเจ็บ: แดง 1 / เหลือง 2 / เขียว 2','กู้ระบบด้วยการ์ด 5G หรือเปลี่ยนเป็นระบบกระดาษ (Manual)','ทีมที่ใช้การ์ดหมดแล้ว ต้องแก้ปัญหาเฉพาะหน้า','ทีมสื่อสาร: รายงานผู้บริหารและหน่วยงานเหนือขึ้นไป'],
+ tasks:['คัดกรองผู้บาดเจ็บ: แดง 1 / เหลือง 2 / เขียว 2','กู้ระบบด้วยการคลิกการ์ด 5G ดิจิทัล หรือเปิดใช้ระบบกระดาษ (Manual)','ทีมที่ใช้การ์ดหมดแล้ว ต้องแก้ปัญหาเฉพาะหน้า','ทีมสื่อสาร: รายงานผู้บริหารและหน่วยงานเหนือขึ้นไป'],
  hint:'คาดหวัง: เปิด Downtime Form, บันทึกผู้ป่วยด้วยกระดาษ, ผู้ป่วยแดงได้รับการดูแลก่อน, ต้องมีไฟก่อนจึงใช้ 5G ได้',
  villain:'ระบบล่มแล้วจะจดด้วยอะไรล่ะ? ฮ่า ๆ ๆ',
  say:'ข่าวด่วน ฟ้าผ่าระบบเครือข่าย ระบบ เอช ไอ เอส ล่ม ผู้บาดเจ็บเข้าห้องฉุกเฉิน ห้าราย',
  news:['ฟ้าผ่าเครือข่ายขัดข้อง ระบบสารสนเทศ รพ. ล่ม','ผู้บาดเจ็บจากพายุทยอยเข้า ER']},
 {t:'ทางเข้าถูกปิด',icon:'🌳',power:1,rain:1.1,
  head:'ต้นไม้ใหญ่และดินสไลด์ปิดทางเข้า รพ. รถพยาบาลเข้า-ออกไม่ได้ และเจ้าหน้าที่เวรบ่ายเข้างานไม่ได้!',
- tasks:['ประสานเปิดเส้นทางสำรอง (อบต./กู้ภัย/ทหาร)','จัดอัตรากำลังเวรต่อเนื่อง (ใครอยู่ต่อ? ใครพัก?)','ตัดสินใจส่งต่อผู้ป่วยหนัก 1 ราย: ใครได้รถพยาบาลส่วนกลาง?','ทีมสนับสนุน: จัดที่พักและอาหารให้เจ้าหน้าที่ที่ติดอยู่'],
+ tasks:['คลิกเปิดแผนผังดิจิทัลเพื่อดูเส้นทาง และประสานเปิดเส้นทางสำรอง','จัดอัตรากำลังเวรต่อเนื่อง (ใครอยู่ต่อ? ใครพัก?)','ตัดสินใจส่งต่อผู้ป่วยหนัก 1 ราย: คลิกใช้รถพยาบาลส่วนกลาง','ทีมสนับสนุน: จัดที่พักและอาหารให้เจ้าหน้าที่ที่ติดอยู่'],
  hint:'คาดหวัง: คุยข้ามทีมเรื่องรถพยาบาล, เจ้าหน้าที่ใช้การ์ดคนเสริม, มีขั้นตอนประสานส่งต่อชัดเจน',
  villain:'ทางปิดแล้ว ใครจะมาช่วยพวกเธอ?',
  say:'ข่าวด่วน ต้นไม้และดินสไลด์ปิดเส้นทางเข้าโรงพยาบาล รถพยาบาลเข้าออกไม่ได้',
@@ -234,7 +233,7 @@ const ROUNDS=[
  news:['ข่าวลือ "รพ.ปิด" แพร่สะพัด โปรดตรวจสอบกับแหล่งข่าวทางการ','เครื่องปั่นไฟเหลือน้ำมันอีก 30 นาที']},
 {t:'พายุลูกสอง',icon:'🌀',power:1,rain:1.5,
  head:'พายุลูกที่ 2 แรงกว่าเดิม! ผู้ป่วยวิกฤต 1 ราย (เครื่องช่วยหายใจ) ต้องดูแลต่อเนื่อง ใช้ทรัพยากรสุดท้ายให้คุ้มที่สุด!',
- tasks:['ทบทวนการ์ดที่เหลือ แล้วตัดสินใจร่วมกันทั้ง รพ.','รับประกันไฟและออกซิเจนให้ผู้ป่วยวิกฤต','ทีมบัญชาการ: เขียน SITREP 3 บรรทัด','ร่างแผนฟื้นฟู 3 ข้อแรกหลังพายุผ่าน'],
+ tasks:['ทบทวนการ์ดดิจิทัลที่เหลือ แล้วตัดสินใจร่วมกันทั้ง รพ.','รับประกันไฟและออกซิเจนให้ผู้ป่วยวิกฤต','ทีมบัญชาการ: เขียน SITREP 3 บรรทัด','ร่างแผนฟื้นฟู 3 ข้อแรกหลังพายุผ่าน'],
  hint:'คาดหวัง: ผู้ป่วยวิกฤตมีไฟต่อเนื่อง, SITREP ชัด (สถานการณ์ / ทรัพยากร / ความต้องการ), มีแผนฟื้นฟูตามลำดับความสำคัญ',
  villain:'รอบสุดท้ายแล้ว! พวกเธอจะรอดไหม?',
  say:'ข่าวด่วน พายุลูกที่สองกำลังเข้า ผู้ป่วยวิกฤตต้องการการดูแลต่อเนื่อง',
@@ -256,62 +255,23 @@ const WILD=[
 const TAGS=['⚡ ไฟฟ้า','💻 ระบบ IT/HIS','👥 อัตรากำลัง','🏗️ อาคาร/หลังคา','📡 การสื่อสาร','🚑 การส่งต่อ/ทางเข้า','💊 ออกซิเจน/เวชภัณฑ์','📣 การแถลงข่าว'];
 const PINS=[['🛏️','ผู้ป่วย'],['🧑‍⚕️','บุคลากร'],['🚑','รถพยาบาล'],['🔥','จุดวิกฤต'],['⚡','จุดจ่ายไฟ'],['💧','น้ำสำรอง'],['🚧','ทางปิด']];
 
-/* ===== เนื้อหาคู่มือสอนเล่น ===== */
+/* ===== คู่มือระบบดิจิทัล ===== */
 const TUT={
 play:[
-{i:'🎯',t:'เป้าหมาย: เอาชีวิตรอดใน 45 นาที',h:`<p>พายุกำลังถล่ม <b>โรงพยาบาลเขาสุกิม</b> ทุกทีมต้องช่วยกันรักษาชีวิตผู้ป่วยและทำให้ รพ. ทำงานต่อได้</p>
-<ul><li>เกมมี <b>5 รอบวิกฤต</b> รอบละ <b>5 นาที</b></li><li>แต่ละรอบจะมีเหตุการณ์ใหม่ขึ้นจอ พร้อมเสียงฟ้าร้องและข่าวด่วน</li><li>ทรัพยากรมีจำกัด ต้องตัดสินใจร่วมกันว่าจะใช้อะไรตอนไหน</li></ul>
-<div class="note">เกมนี้ไม่มีถูกผิดเด็ดขาด จุดประสงค์คือหาจุดอ่อนของเราก่อนเกิดเหตุจริง</div>`},
-{i:'👥',t:'4 ทีมตามโครงสร้าง ICS',h:`<table><tr><th>ทีม</th><th>หน้าที่หลักในเกม</th></tr>
-<tr><td>🧑‍✈️ บัญชาการ</td><td>เปิด EOC ตัดสินใจภาพรวม เขียน SITREP</td></tr>
-<tr><td>🩺 แพทย์/พยาบาล</td><td>คัดกรอง ย้ายผู้ป่วย ดูแลผู้ป่วยวิกฤต</td></tr>
-<tr><td>🔧 สนับสนุน/อาคาร</td><td>ไฟฟ้า ซ่อมอาคาร น้ำ ออกซิเจน เชื้อเพลิง</td></tr>
-<tr><td>📣 บริหาร/สื่อสาร</td><td>แถลงข่าว ประสานภายนอก ควบคุมญาติ</td></tr></table>
-<p class="try">ทุกทีมต้องคุยข้ามโต๊ะกัน เพราะบางทรัพยากรเป็นของส่วนกลาง</p>`},
-{i:'🗺️',t:'อุปกรณ์บนโต๊ะของคุณ',h:`<ul><li><b>แผนผัง รพ.</b> วางกลางโต๊ะ ใช้ชี้และคุยกัน</li><li><b>หมากหรือสติกเกอร์สี</b> แทนผู้ป่วย บุคลากร รถ และจุดวิกฤต ขยับได้ตลอด</li><li><b>การ์ดทรัพยากร</b> ตัวช่วยที่ รพ. มีจริงในจำนวนจำกัด</li><li><b>Downtime Form</b> แบบฟอร์มกระดาษสำหรับตอนระบบล่ม</li></ul>
-<div class="note">Facilitator เปิดแผนผังบนจอใหญ่ได้ที่ปุ่ม 🗺️ เพื่อให้ทุกคนเห็นพร้อมกัน</div>`},
-{i:'🃏',t:'การ์ดทรัพยากร: ใช้แล้วหมดเลย',h:`<table><tr><th>การ์ด</th><th>จำนวน</th><th>ใช้ทำอะไร</th></tr>
-<tr><td>⚡ ปั่นไฟ</td><td>2 ใบ/ทีม</td><td>คืนไฟ 1 จุดต่อรอบ ต้องระบุจุดจ่ายไฟ</td></tr>
-<tr><td>🔧 ช่าง</td><td>1 ใบ/ทีม</td><td>แก้ปัญหาอาคารหรือไฟฟ้า 1 ครั้ง</td></tr>
-<tr><td>📡 5G</td><td>1 ใบ/ทีม</td><td>กู้ระบบ HOSxP 1 ครั้ง <b>ต้องมีไฟก่อน</b></td></tr>
-<tr><td>🩺 คนเสริม</td><td>1 ใบ/ทีม</td><td>ดึงคนมาช่วยจุดวิกฤต 1 ครั้ง</td></tr>
-<tr><td>🚑 รถพยาบาล</td><td>2 คัน ส่วนกลาง</td><td>ทุกทีมต้องแย่งและตกลงกัน</td></tr></table>
-<p class="try">ลองคลิกชิปนี้ดู (เทา = ใช้แล้ว): <span class="chip" onclick="this.classList.toggle('used');A.click()">⚡ ปั่นไฟ 2/2</span> <span class="chip" onclick="this.classList.toggle('used');A.click()">📡 5G 1/1</span></p>`},
-{i:'⏱️',t:'1 รอบเล่นอย่างไร',h:`<ol><li>จอขึ้นเหตุการณ์วิกฤต พร้อมเสียงและนาฬิกา 5 นาที</li><li>ทีมปรึกษากัน: <b>เราจะลงการ์ดใบไหน?</b></li><li>วางการ์ดที่เลือก และขยับหมากบนแผนผัง</li><li>บอกทีมอื่นว่าเราทำอะไร และขอความช่วยเหลือถ้าจำเป็น</li><li>Facilitator กดตัดการ์ดบนจอและให้คะแนน แล้วไปรอบถัดไป</li></ol>
-<div class="note">เวลาเหลือ 10 วินาทีสุดท้ายจะมีเสียงบี๊บ ตัดสินใจให้ทัน!</div>`},
-{i:'🌀',t:'Plot Twist: วิกฤตซ้อนวิกฤต',h:`<p>บางรอบเหตุการณ์จะซ้อนกัน เช่น <b>ฟ้าผ่าทำให้ HIS ล่ม และมีผู้บาดเจ็บเข้า ER พร้อมกัน</b></p>
-<ul><li>ถ้าการ์ดหมดแล้ว <b>ไม่ได้แปลว่าจบ</b> ต้องแก้ปัญหาเฉพาะหน้า</li><li>เช่น เปลี่ยนมาใช้ระบบกระดาษ (Manual) แทน HIS</li><li>ทางเข้าอาจถูกปิด รถพยาบาลออกไม่ได้</li><li>ข่าวลือและน้ำมันเครื่องปั่นไฟใกล้หมดจะทำให้ต้องจัดลำดับความสำคัญ</li></ul>`},
-{i:'🏆',t:'ระบบคะแนน',h:`<p>Facilitator ให้คะแนนแต่ละทีม <b>ด้านละ 0 ถึง 5</b> ทุกรอบ</p>
-<table><tr><th>เกณฑ์</th><th>ดูอะไร</th></tr>
-<tr><td>⏱️ เร็ว</td><td>ตัดสินใจและลงมือทันเวลาไหม</td></tr>
-<tr><td>📋 BCP</td><td>ทำตามแผนต่อเนื่องทางธุรกิจถูกต้องไหม</td></tr>
-<tr><td>🤝 ประสาน</td><td>แจ้ง ขอ และตกลงกับทีมอื่นชัดเจนไหม</td></tr></table>
-<p class="try">เต็ม 15 คะแนนต่อรอบ และ 75 คะแนนทั้งเกม คะแนนรวมขึ้นบนจอทุกคนเห็น</p>`},
-{i:'🎲',t:'สิ่งที่จะเกิดขึ้นบนจอ',h:`<ul><li>🌧️ <b>ฝนและฟ้าผ่า</b> แสงแฟลชพร้อมเสียงฟ้าร้อง</li><li>💡 <b>ไฟดับ</b> ขอบจอจะมืดและกะพริบ ตอนรอบที่ไฟฟ้าขัดข้อง</li><li>📺 <b>ข่าวด่วน</b> น้องฝนอ่านข่าว และมีตัววิ่งด้านล่าง</li><li>🎲 <b>Wild Card</b> เหตุการณ์สุ่ม ไม่มีใครรู้ล่วงหน้า เช่น ลิฟต์ค้าง ญาติบุกเข้า ER</li><li>🌩️ <b>พายุ "ซ่า"</b> ตัวร้ายที่คอยแซวทุกรอบ</li></ul>
-<div class="note">ถ้าฟ้าร้องดังจนตกใจ ก็แปลว่าสมจริงแล้ว</div>`},
-{i:'🏁',t:'จบเกม: ถอดบทเรียน',h:`<p>หลังรอบที่ 5 ทุกทีมจะมาคุยกันว่าเจออะไร</p>
-<ul><li>จุดไหนที่ <b>ทรัพยากรไม่พอ</b></li><li>จุดไหนที่ <b>เมื่อเน็ตล่มพร้อมไฟดับ ทำงานต่อไม่ได้</b></li><li>อะไรที่ต้องแก้ไขแผน BCP จริง</li></ul>
-<p class="try">คำตอบเหล่านี้จะถูกสรุปเป็นรายงานส่งผู้บริหาร นี่คือคุณค่าที่แท้จริงของเกม พร้อมแล้วไปเริ่มกันเลย!</p>`}
+{i:'🎯',t:'เป้าหมาย: เอาชีวิตรอดใน 45 นาที',h:`<p>พายุกำลังถล่ม <b>โรงพยาบาลเขาสุกิม</b> ทุกทีมต้องช่วยกันรักษาชีวิตผู้ป่วยและทำให้ รพ. ทำงานต่อได้ผ่านระบบดิจิทัลนี้</p>
+<ul><li>เกมมี <b>5 รอบวิกฤต</b> รอบละ <b>5 นาที</b></li><li>ใช้ปุ่ม <b>🗺️ แผนผัง รพ.</b> บนจอเพื่อลากหมากจำลองสถานการณ์</li><li>คลิกใช้การ์ดทรัพยากรดิจิทัลที่แผงด้านขวาเมื่อใช้งาน</li></ul>
+<div class="note">ทุกอย่างรวมอยู่ในระบบนี้แล้ว ไม่ต้องใช้อุปกรณ์กระดาษบนโต๊ะ</div>`},
+{i:'🗺️',t:'แผนผัง รพ. ดิจิทัล (ลากย้ายได้)',h:`<ul><li>กดปุ่ม <b>🗺️ แผนผัง รพ.</b> ด้านล่างจอเพื่อเปิดแผนผัง</li><li>คลิกเลือกหมุดด้านข้าง (เช่น 🛏️ ผู้ป่วย, 🚑 รถพยาบาล, 🔥 จุดวิกฤต) เพื่อวางลงบนแผนผัง</li><li><b>ลากเพื่อย้ายตำแหน่ง</b> และ <b>ดับเบิลคลิกเพื่อลบหมุด</b></li></ul>
+<div class="note">ช่วยให้ทุกทีมเห็นภาพตรงกันบนจอใหญ่ทันที</div>`},
+{i:'🃏',t:'การ์ดทรัพยากรดิจิทัล (คลิกใช้ได้เลย)',h:`<table><tr><th>การ์ดดิจิทัล</th><th>จำนวน</th><th>วิธีใช้</th></tr>
+<tr><td>⚡ ปั่นไฟ</td><td>2 ใบ/ทีม</td><td>คลิกที่ชิปเพื่อใช้กู้ไฟ (เปลี่ยนเป็นสีเทา)</td></tr>
+<tr><td>🔧 ช่าง / 📡 5G</td><td>1 ใบ/ทีม</td><td>คลิกเพื่อตัดจำนวนเมื่อใช้งานจริง</td></tr>
+<tr><td>🚑 รถพยาบาล</td><td>2 คันกลาง</td><td>คลิกที่ไอคอนรถพยาบาลด้านบนเพื่อใช้ร่วมกัน</td></tr></table>
+<p class="try">ระบบจะบันทึกสถานะการใช้การ์ดอัตโนมัติ</p>`}
 ],
 gm:[
-{i:'🧰',t:'เตรียมก่อนเริ่ม',h:`<ol><li>เปิดเว็บด้วย <b>Chrome หรือ Edge</b> ต่อกับจอทีวีหรือโปรเจกเตอร์</li><li>กด <kbd>F</kbd> เพื่อเต็มจอ</li><li><b>คลิกที่หน้าจอ 1 ครั้ง</b> เพื่อให้เบราว์เซอร์ยอมเปิดเสียง</li><li>ต่อลำโพงภายนอก เสียงฝนฟ้าร้องจะสมจริงกว่ามาก</li><li>แต่ละโต๊ะมีแผนผัง หมาก และการ์ดทรัพยากรครบ</li></ol>
-<div class="note">ตั้งชื่อรอบซ้อมได้โดยต่อท้าย URL ด้วย <b>?s=ชื่อรอบ</b> เช่น ?s=ซ้อมพายุ-2569</div>`},
-{i:'🚨',t:'เริ่มรอบและจับเวลา',h:`<ul><li>กด <kbd>N</kbd> เปิดการ์ดวิกฤตรอบถัดไป เสียงฟ้าร้อง ไซเรน และข่าวด่วนจะเล่นเอง</li><li>นาฬิกา 5 นาทีเริ่มนับอัตโนมัติ</li><li>กด <kbd>Space</kbd> หยุดหรือเริ่มเวลาใหม่</li><li>คลิกเลข 1 ถึง 5 มุมขวาบนเพื่อข้ามไปรอบที่ต้องการ</li><li>ครบเวลา จะมีเสียงหวอเตือน</li></ul>
-<div class="note">อ่านเหตุการณ์ให้ทีมฟังด้วยเสียงอีกรอบ เพราะเสียงอ่านข่าวภาษาไทยขึ้นอยู่กับเครื่อง</div>`},
-{i:'📝',t:'ตัดการ์ดและให้คะแนน',h:`<ul><li>แผงขวาคือกระดานคะแนนของแต่ละทีม</li><li>ทีมลงการ์ดใบไหน <b>คลิกชิปการ์ดนั้น</b> ตัวเลขจะลดลง</li><li>ถ้าคลิกชิปที่เป็น 0 จะเป็นการ <b>คืนการ์ด</b> (กรณีกดผิด)</li><li>ปุ่ม <b>+ / −</b> ปรับคะแนน เร็ว, BCP, ประสาน</li><li>คลิกไอคอน 🚑 ด้านบนเมื่อทีมใดขอใช้รถพยาบาลส่วนกลาง</li></ul>
-<p class="try">ลองคลิกดู: <span class="chip" onclick="this.classList.toggle('used');A.click()">🔧 ช่าง 1/1</span> <span class="chip" onclick="this.classList.toggle('used');A.click()">🩺 คนเสริม 1/1</span></p>`},
-{i:'🎲',t:'ปั่นบรรยากาศ: Wild Card, ฟ้าร้อง, ไฟดับ',h:`<ul><li><kbd>W</kbd> สุ่ม Wild Card เหมาะกับตอนที่ทีมเริ่มชิลหรือคุยกันเงียบ</li><li><kbd>T</kbd> ฟ้าแลบและฟ้าร้อง ใช้เร้าอารมณ์ตอนเหลือเวลาน้อย</li><li><kbd>B</kbd> สลับโหมดไฟดับ/ไฟติด เช่น ตอนทีมแก้ไฟสำเร็จ ให้กดไฟติดเป็นรางวัล</li><li><kbd>M</kbd> ปิดหรือเปิดเสียงทั้งหมด</li></ul>`},
-{i:'🕵️',t:'เฉลยและแผนผัง',h:`<ul><li><kbd>H</kbd> แสดงเฉลยสำหรับ Facilitator ว่าทีมควรทำอะไรในรอบนั้น</li><li><b>อย่ากดตอนทีมมองจออยู่</b> เพราะเฉลยจะขึ้นบนจอใหญ่</li><li><kbd>G</kbd> เปิดแผนผังบนจอ ลากหมากอีโมจิย้ายได้ ดับเบิลคลิกเพื่อลบหมาก</li><li>ใช้ประกอบตอนให้ทีมอธิบายว่าย้ายผู้ป่วยไปไหน</li></ul>`},
-{i:'⌨️',t:'คีย์ลัดทั้งหมด',h:`<table><tr><th>ปุ่ม</th><th>ทำอะไร</th><th>ปุ่ม</th><th>ทำอะไร</th></tr>
-<tr><td><kbd>N</kbd></td><td>รอบถัดไป</td><td><kbd>G</kbd></td><td>แผนผัง</td></tr>
-<tr><td><kbd>Space</kbd></td><td>หยุด/เริ่มเวลา</td><td><kbd>H</kbd></td><td>เฉลย</td></tr>
-<tr><td><kbd>W</kbd></td><td>Wild Card</td><td><kbd>D</kbd></td><td>สรุปผล</td></tr>
-<tr><td><kbd>T</kbd></td><td>ฟ้าร้อง</td><td><kbd>F</kbd></td><td>เต็มจอ</td></tr>
-<tr><td><kbd>B</kbd></td><td>ไฟดับ/ติด</td><td><kbd>?</kbd></td><td>เปิดคู่มือนี้</td></tr>
-<tr><td><kbd>M</kbd></td><td>ปิด/เปิดเสียง</td><td><kbd>Esc</kbd></td><td>ปิดหน้าต่างที่เปิดอยู่</td></tr></table>
-<p class="try">ใช้ได้ทั้งแป้นพิมพ์ภาษาไทยและอังกฤษ</p>`},
-{i:'📊',t:'สรุปผลและส่งผู้บริหาร',h:`<ol><li>กด <kbd>D</kbd> เพื่อดูอันดับทีมและคะแนน</li><li>ให้ทีมเล่าจุดอ่อนที่เจอ แล้วคลิกแท็กหัวข้อ เช่น ⚡ ไฟฟ้า เพื่อนับว่าถูกพูดถึงกี่ครั้ง</li><li>พิมพ์ข้อเสนอแนะในช่องบันทึก</li><li>กด <b>คัดลอกสรุปส่งผู้บริหาร</b> เพื่อนำไปวางในรายงาน</li><li>ถ้าตั้งค่า Google Sheets ไว้ กด <b>ส่งผลเข้า Google Sheets</b> เพื่อเก็บถาวร</li></ol>
-<div class="note">อย่าใส่ข้อมูลผู้ป่วยจริงหรือชื่อบุคคลลงในช่องบันทึก</div>`}
+{i:'🧰',t:'วิธีดำเนินเกมผ่านระบบ',h:`<ol><li>เปิดหน้าจอนี้ผ่านคอมพิวเตอร์หรือต่อโปรเจกเตอร์/ทีวี</li><li>กดปุ่ม <kbd>N</kbd> เพื่อเริ่มรอบที่ 1 ระบบจะจำลองเสียงฝนและข่าวด่วน</li><li>คอยควบคุมคะแนน (ความเร็ว, BCP, ประสาน) และกดใช้การ์ดตามที่ทีมแจ้ง</li></ol>
+<div class="note">ทุกอย่างควบคุมได้จากหน้าจอเดียว สะดวกและรวดเร็ว</div>`}
 ]};
 let tutMode='play',tutI=0;
 function openTut(m,silent){if(m)tutMode=m;tutI=0;drawTut();$('tutO').classList.add('show');if(!silent){A.init();A.news()}}
@@ -341,35 +301,18 @@ let S=fresh();
 try{const x=JSON.parse(localStorage.getItem(LS)||'null');if(x){S=Object.assign(fresh(),x);S.running=false;}}catch(e){}
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}cloudSave()};
 
-/* ===== เชื่อม Google Sheets (Apps Script) ===== */
-function setCloud(st){const e=$('cloud');e.className='cl '+(st||'');e.textContent=!CFG.API?'☁️ ออฟไลน์':st==='ok'?'☁️ ซิงค์แล้ว · '+SESSION:st==='err'?'☁️ เชื่อมต่อไม่ได้':'☁️ กำลังส่ง...'}
-function post(body){
- if(!CFG.API)return Promise.resolve(null);
- setCloud('');
- return fetch(CFG.API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key:CFG.KEY,session:SESSION},body))})
-  .then(r=>r.json()).then(j=>{setCloud(j.ok?'ok':'err');return j}).catch(()=>{setCloud('err');return null})}
+function setCloud(st){const e=$('cloud');e.className='cl '+(st||'');e.textContent=!CFG.API?'☁️ ดิจิทัลพร้อมใช้งาน':st==='ok'?'☁️ ซิงค์แล้ว':'☁️ บันทึกแล้ว'}
+function post(body){if(!CFG.API)return Promise.resolve(null);return fetch(CFG.API,{method:'POST',body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null)}
 let cT;function cloudSave(){if(!CFG.API)return;clearTimeout(cT);cT=setTimeout(()=>post({action:'save',state:S}),1500)}
-function logEv(type,detail){post({action:'log',round:S.round,type,detail})}
-async function cloudLoad(){
- if(!CFG.API){alert('ยังไม่ได้ตั้งค่า API ใน index.html');return}
- try{const r=await fetch(`${CFG.API}?action=load&key=${encodeURIComponent(CFG.KEY)}&session=${encodeURIComponent(SESSION)}`);const j=await r.json();
-  if(j.ok&&j.state){pauseTimer();S=Object.assign(fresh(),j.state);S.running=false;localStorage.setItem(LS,JSON.stringify(S));renderAll();setCloud('ok');alert('โหลดข้อมูลจากคลาวด์แล้ว')}
-  else alert('ไม่พบข้อมูลของรอบ "'+SESSION+'" ในคลาวด์')}catch(e){setCloud('err');alert('เชื่อมต่อคลาวด์ไม่ได้')}}
-async function sendFinal(){
- if(!CFG.API){alert('ยังไม่ได้ตั้งค่า API ใน index.html');return}
- S.notes=$('nt').value;save();
- const j=await post({action:'final',ambLeft:S.amb,notes:S.notes,
-  teams:S.teams.map((t,i)=>({name:TEAMS[i].n,speed:t.s.speed,bcp:t.s.bcp,coord:t.s.coord,total:t.s.speed+t.s.bcp+t.s.coord,cardsLeft:Object.values(t.r).reduce((a,b)=>a+b,0)})),
-  tags:Object.entries(S.tags).filter(e=>e[1]).map(e=>({topic:e[0],count:e[1]}))});
- alert(j&&j.ok?'ส่งผลเข้า Google Sheets เรียบร้อย':'ส่งไม่สำเร็จ ตรวจสอบ URL และรหัสอีกครั้ง')}
+function logEv(type,detail){}
 
-/* ===== เสียง (สังเคราะห์ด้วย Web Audio ไม่ต้องมีไฟล์) ===== */
+/* ===== ระบบเสียง ===== */
 const A=(()=>{let ctx,master,rainG,muted=false,rainSrc;
  function init(){if(ctx){if(ctx.state==='suspended')ctx.resume();return}ctx=new(window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=muted?0:.85;master.connect(ctx.destination);startRain();}
  function noise(sec){const b=ctx.createBuffer(1,ctx.sampleRate*sec,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b}
  function startRain(){rainSrc=ctx.createBufferSource();rainSrc.buffer=noise(3);rainSrc.loop=true;const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=1400;rainG=ctx.createGain();rainG.gain.value=.16;rainSrc.connect(f);f.connect(rainG);rainG.connect(master);rainSrc.start();}
  function tone(f,d,type='sine',v=.25,w=0,to){if(muted)return;init();const t=ctx.currentTime+w,o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d);}
- function burst(d,fq,v,hp){if(muted)return;init();const s=ctx.createBufferSource();s.buffer=noise(d);const f=ctx.createBiquadFilter();f.type=hp?'highpass':'lowpass';f.frequency.setValueAtTime(fq,ctx.currentTime);if(!hp)f.frequency.exponentialRampToValueAtTime(60,ctx.currentTime+d);const g=ctx.createGain();g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
+ function burst(d,fq,v,hp){if(muted)return;init();const s=ctx.createBufferSource();s.buffer=noise(d);const f=ctx.createBiquadFilter();f.type=hp?'highpass':'lowpass';f.frequency.setValueAtTime(fq,ctx.currentTime);if(!hp)f.frequency.exponentialRampToValueAtTime(60,ctx.currentTime+d);const g=ctx.createGain();g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
  return{
   init,get muted(){return muted},
   setMute(m){muted=m;init();master.gain.value=m?0:.85;},
@@ -403,7 +346,7 @@ const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(
 function startTimer(){if(S.running||S.secs<=0)return;S.running=true;endAt=Date.now()+S.secs*1000;tId=setInterval(tick,200);}
 function pauseTimer(){clearInterval(tId);S.running=false}
 function toggleTimer(){A.init();S.running?pauseTimer():startTimer();A.click();renderTimer()}
-function tick(){const left=Math.max(0,Math.ceil((endAt-Date.now())/1000));if(left!==S.secs){S.secs=left;if(left<=10&&left>0)A.beep();renderTimer();if(left===0){pauseTimer();A.alarm();flash();logEv('timer','หมดเวลารอบ '+S.round);save()}}}
+function tick(){const left=Math.max(0,Math.ceil((endAt-Date.now())/1000));if(left!==S.secs){S.secs=left;if(left<=10&&left>0)A.beep();renderTimer();if(left===0){pauseTimer();A.alarm();flash();save()}}}
 function renderTimer(){const el=$('tm');if(!el)return;const C=565.5;$('ring').setAttribute('stroke-dashoffset',C*(1-S.secs/ROUND_SEC));$('tt').textContent=fmt(S.secs);el.classList.toggle('low',S.secs<=60&&S.round>0)}
 
 /* ===== การเล่น ===== */
@@ -411,27 +354,27 @@ function setRound(n){A.init();pauseTimer();S.round=n;S.secs=ROUND_SEC;const r=RO
  S.dark=!!r.power;document.body.classList.toggle('blackout',S.dark);document.body.classList.toggle('glitch',!!r.glitch);
  renderAll();flash();A.thunder();setTimeout(()=>A.siren(3),500);setTimeout(()=>A.news(),2300);setTimeout(()=>speak(r.say),3000);
  if(n===1)setTimeout(()=>A.blackout(),900);if(r.glitch)setTimeout(()=>A.zap(),1200);
- startTimer();logEv('round','เริ่มรอบ '+n+': '+r.t);save()}
+ startTimer();save()}
 function next(){S.round>=5?openDebrief():setRound(S.round+1)}
 function wildCard(){A.init();if(!S.wildBag.length)S.wildBag=WILD.map((_,i)=>i).sort(()=>Math.random()-.5);const w=WILD[S.wildBag.pop()];
  $('wildM').innerHTML=`<div class="ic">${w[0]}</div><h2>🎲 WILD CARD: ${w[1]}</h2><p>${w[2]}</p><small>(คลิกเพื่อปิด)</small>`;$('wildO').classList.add('show');
- flash();(A[w[3]]||A.siren)();speak(w[1]+' '+w[2]);logEv('wild',w[1]);save()}
-function toggleDark(){S.dark=!S.dark;document.body.classList.toggle('blackout',S.dark);S.dark?A.blackout():A.good();logEv('power',S.dark?'ไฟดับ':'ไฟกลับมา');save()}
+ flash();(A[w[3]]||A.siren)();speak(w[1]+' '+w[2]);save()}
+function toggleDark(){S.dark=!S.dark;document.body.classList.toggle('blackout',S.dark);S.dark?A.blackout():A.good();save()}
 function toggleMute(){A.setMute(!A.muted);$('mute').textContent=A.muted?'🔇 เสียง (M)':'🔊 เสียง (M)'}
 function toggleHint(){S.hint=!S.hint;document.body.classList.toggle('showhint',S.hint)}
 function fs(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
-function sc(i,k,d){S.teams[i].s[k]=Math.max(0,S.teams[i].s[k]+d);A.click();renderTeams();logEv('score',`${TEAMS[i].n} ${k} ${d>0?'+':''}${d} = ${S.teams[i].s[k]}`);save()}
-function useRes(i,k){const r=S.teams[i].r;if(r[k]>0){r[k]--;A[k==='net'?'zap':'good']();logEv('resource',`${TEAMS[i].n} ใช้การ์ด ${RES[k][1]} (เหลือ ${r[k]})`)}else{r[k]=RES[k][2];A.click();logEv('resource',`${TEAMS[i].n} คืนการ์ด ${RES[k][1]}`)}renderTeams();save()}
-function useAmb(){if(S.amb>0){S.amb--;A.siren(1);logEv('ambulance','ใช้รถพยาบาล (เหลือ '+S.amb+')')}else{S.amb=AMB_MAX;A.click();logEv('ambulance','คืนรถพยาบาลครบ')}renderTeams();save()}
-function resetAll(){if(confirm('รีเซ็ตเกมทั้งหมด?')){pauseTimer();S=fresh();localStorage.removeItem(LS);document.body.classList.remove('blackout','glitch','showhint');renderAll();logEv('reset','รีเซ็ตเกม');save()}}
+function sc(i,k,d){S.teams[i].s[k]=Math.max(0,S.teams[i].s[k]+d);A.click();renderTeams();save()}
+function useRes(i,k){const r=S.teams[i].r;if(r[k]>0){r[k]--;A[k==='net'?'zap':'good']()}else{r[k]=RES[k][2];A.click()}renderTeams();save()}
+function useAmb(){if(S.amb>0){S.amb--;A.siren(1)}else{S.amb=AMB_MAX;A.click()}renderTeams();save()}
+function resetAll(){if(confirm('รีเซ็ตเกมทั้งหมดใช่ไหม?')){pauseTimer();S=fresh();localStorage.removeItem(LS);document.body.classList.remove('blackout','glitch','showhint');renderAll();save()}}
 
 /* ===== วาดหน้าจอ ===== */
 const av=(k,e)=>AV[k]?`<img src="${AV[k]}">`:e;
 function renderPips(){$('pips').innerHTML=ROUNDS.map((_,i)=>`<button class="pip ${S.round===i+1?'now':S.round>i+1?'done':''}" onclick="setRound(${i+1})">${i+1}</button>`).join('')}
 function renderStage(){const r=S.round?ROUNDS[S.round-1]:null;
  if(!r){$('stage').innerHTML=`<div class="rhead"><span class="badge">BRIEFING</span><span class="rtitle">ยินดีต้อนรับสู่ KSK Crisis Command 🌩️</span></div>
- <ul class="intro"><li>🎯 เป้าหมาย: <b>รักษาชีวิตผู้ป่วยและให้ รพ. ทำงานต่อได้ ใน 45 นาที</b></li><li>👥 4 ทีม ICS: บัญชาการ / แพทย์-พยาบาล / สนับสนุน-อาคาร / บริหาร-สื่อสาร</li><li>🃏 การ์ดทรัพยากรมีจำกัด ใช้แล้วหมดเลย คิดให้ดีก่อนลง!</li><li>🚑 รถพยาบาลมี <b>2 คันส่วนกลาง</b> ต้องคุยข้ามทีม</li><li>⏱️ แต่ละรอบมีเวลา 5 นาที หมดเวลาแล้วต้องตัดสินใจ</li><li>🏆 คะแนน: ความเร็ว + ถูกต้องตาม BCP + ประสานข้ามทีม</li></ul>
- <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="tag" style="background:#ffd23f;font-size:20px" onclick="openTut('play')">📖 ดูวิธีเล่นสำหรับผู้เล่น</button><button class="tag" style="background:#26d0ff;font-size:20px" onclick="openTut('gm')">🎛️ คู่มือ Facilitator</button></div>
+ <ul class="intro"><li>🎯 เป้าหมาย: <b>รักษาชีวิตผู้ป่วยและให้ รพ. ทำงานต่อได้ ใน 45 นาที</b></li><li>🗺️ <b>แผนผัง รพ. และการ์ดทรัพยากร</b> อยู่ในระบบดิจิทัลทั้งหมดแล้ว!</li><li>👥 4 ทีม ICS: บัญชาการ / แพทย์-พยาบาล / สนับสนุน-อาคาร / บริหาร-สื่อสาร</li><li>⏱️ แต่ละรอบมีเวลา 5 นาที กดปุ่ม <b>แผนผัง รพ.</b> ด้านล่างเพื่อเริ่มใช้งานหมากดิจิทัล</li></ul>
+ <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="tag" style="background:#ffd23f;font-size:20px" onclick="openTut('play')">📖 ดูวิธีเล่นในระบบ</button><button class="tag" style="background:#26d0ff;font-size:20px" onclick="openMap()">🗺️ เปิดแผนผัง รพ. ดิจิทัล</button></div>
  <div class="headline">พร้อมแล้วกด <b>N</b> หรือปุ่ม "การ์ดวิกฤตถัดไป" เพื่อเปิดรอบที่ 1 🚨</div>
  <div class="chars"><div class="char anchor"><div class="avatar">${av('anchor','📺')}</div><div class="bubble"><b>น้องฝน ผู้ประกาศข่าว</b>เตรียมรับมือข่าวด่วนได้เลยค่ะ!</div></div><div class="char villain"><div class="avatar">${av('villain','🌩️')}</div><div class="bubble"><b>พายุ "ซ่า"</b>ฮ่า ๆ ๆ รอดูนะว่าจะรอดไหม</div></div></div>`;
   $('tk').textContent='🌩️ KSK Crisis Command | โรงพยาบาลเขาสุกิม | ซ้อมแผนรับมือพายุ ✦ ';return}
@@ -443,22 +386,25 @@ function renderStage(){const r=S.round?ROUNDS[S.round-1]:null;
  <div class="chars"><div class="char anchor"><div class="avatar">${av('anchor','📺')}</div><div class="bubble"><b>น้องฝน ข่าวด่วน</b>${r.news[0]}</div></div><div class="char villain"><div class="avatar">${av('villain','🌩️')}</div><div class="bubble"><b>พายุ "ซ่า"</b>${r.villain}</div></div></div>`;
  $('tk').textContent='🔴 ข่าวด่วน: '+r.news.join(' ✦ ')+' ✦ ทุกทีมโปรดประสานงานผ่านศูนย์บัญชาการ ✦ ';renderTimer()}
 function renderTeams(){
- $('teams').innerHTML=`<div class="amb">🚑 รถพยาบาลส่วนกลาง: ${Array.from({length:AMB_MAX},(_,i)=>`<button class="${i<S.amb?'':'gone'}" onclick="useAmb()">🚑</button>`).join('')} <small>(คลิก=ใช้ 1 คัน)</small></div>`+
+ $('teams').innerHTML=`<div class="amb">🚑 รถพยาบาลส่วนกลาง: ${Array.from({length:AMB_MAX},(_,i)=>`<button class="${i<S.amb?'':'gone'}" onclick="useAmb()">🚑</button>`).join('')} <small>(คลิกใช้/คืน รถพยาบาล)</small></div>`+
  S.teams.map((t,i)=>{const d=TEAMS[i],tot=t.s.speed+t.s.bcp+t.s.coord;
- return`<div class="team" style="border-color:${d.c}"><div class="th"><span class="av">${d.e}</span><div><b>${d.n}</b><small>${d.sub}</small></div><div class="tot" style="color:${d.c}">${tot}</div></div>
+ return`<div class="team" style="border-color:${d.c}">
+ <div class="th"><span class="av">${d.e}</span><div><b>${d.n}</b><small>${d.sub}</small></div><div class="tot" style="color:${d.c}">${tot}</div></div>
  <div class="crit">${CRIT.map(([k,l])=>`<div>${l}<br><button onclick="sc(${i},'${k}',-1)">−</button><em>${t.s[k]}</em><button onclick="sc(${i},'${k}',1)">+</button></div>`).join('')}</div>
- <div class="chips">${Object.entries(RES).map(([k,[ic,nm,mx]])=>`<button class="chip ${t.r[k]?'':'used'}" onclick="useRes(${i},'${k}')">${ic} ${nm}<b>${t.r[k]}/${mx}</b></button>`).join('')}</div></div>`}).join('')}
-function renderAll(){renderPips();renderStage();renderTeams();document.body.classList.toggle('showhint',S.hint);document.body.classList.toggle('blackout',S.dark);setCloud('')}
+ <div style="margin-top:6px">
+   <div style="font-size:13px;color:var(--y);margin-bottom:4px">🃏 การ์ดทรัพยากรดิจิทัล (คลิกเมื่อใช้/คืน):</div>
+   <div class="chips">${Object.entries(RES).map(([k,[ic,nm,mx]])=>`<button class="chip ${t.r[k]?'':'used'}" onclick="useRes(${i},'${k}')">${ic} ${nm}<b>${t.r[k]}/${mx}</b></button>`).join('')}</div>
+ </div></div>`}).join('')}
+function renderAll(){renderPips();renderStage();renderTeams();document.body.classList.toggle('showhint',S.hint);document.body.classList.toggle('blackout',S.dark);setCloud()}
 
-/* ===== แผนผัง + หมากลากย้าย ===== */
+/* ===== แผนผังดิจิทัลพร้อมหมากลากย้าย ===== */
 function openMap(){const im=$('mapImg'),msg=$('mapMsg');
- msg.style.display='block';msg.textContent='กำลังโหลดแผนผัง...';im.style.display='none';
+ msg.style.display='block';msg.textContent='กำลังโหลดแผนผัง รพ....';im.style.display='none';
  im.onload=()=>{msg.style.display='none';im.style.display='block'};
- im.onerror=()=>{msg.innerHTML='ไม่พบไฟล์ภาพแผนผัง<br><small>ตรวจว่าไฟล์ชื่อ ksk-map.jpg<br>อยู่โฟลเดอร์เดียวกับ index.html</small>'};
  im.src=CFG.MAP;$('mapO').classList.add('show');
- $('pal').innerHTML=PINS.map(p=>`<button onclick="addPin('${p[0]}')">${p[0]} <small>${p[1]}</small></button>`).join('')+'<small>ลากเพื่อย้าย<br>ดับเบิลคลิกเพื่อลบ<br>กด Esc เพื่อปิด</small>';
+ $('pal').innerHTML=PINS.map(p=>`<button onclick="addPin('${p[0]}')">${p[0]} <small>${p[1]}</small></button>`).join('')+'<small>ลากหมุดเพื่อย้าย<br>ดับเบิลคลิกเพื่อลบหมุด<br>กด Esc เพื่อปิด</small>';
  drawMap()}
-function addPin(e){(S.map=S.map||[]).push({e,x:50,y:50});A.click();drawMap();logEv('map','วางหมาก '+e);save()}
+function addPin(e){(S.map=S.map||[]).push({e,x:50,y:50});A.click();drawMap();save()}
 function drawMap(){const b=$('mapBox');b.querySelectorAll('.tk').forEach(n=>n.remove());
  (S.map=S.map||[]).forEach((p,i)=>{const n=document.createElement('div');n.className='tk';n.textContent=p.e;n.style.left=p.x+'%';n.style.top=p.y+'%';
   n.onpointerdown=ev=>{n.setPointerCapture(ev.pointerId);n.onpointermove=m=>{const r=b.getBoundingClientRect();
@@ -469,7 +415,7 @@ function drawMap(){const b=$('mapBox');b.querySelectorAll('.tk').forEach(n=>n.re
   b.appendChild(n)})}
 
 /* ===== สรุปผล + จุดอ่อน ===== */
-function openDebrief(){pauseTimer();A.init();A.good();logEv('debrief','เข้าสู่การสรุปผล');
+function openDebrief(){pauseTimer();A.init();A.good();
  const rk=S.teams.map((t,i)=>({i,tot:t.s.speed+t.s.bcp+t.s.coord,left:Object.values(t.r).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.tot-a.tot);
  const med=['🥇','🥈','🥉','🎖️'];
  $('debM').innerHTML=`<h2 style="font-size:38px">🏁 สรุปผล KSK Crisis Command</h2>
@@ -478,7 +424,7 @@ function openDebrief(){pauseTimer();A.init();A.good();logEv('debrief','เข้
  <h3 style="margin-top:12px">🔎 จุดอ่อนที่พบ (คลิกเพื่อนับครั้งที่ถูกพูดถึง)</h3>
  <div class="tags" id="tg"></div>
  <h3>📝 บันทึกข้อเสนอแนะ</h3><textarea id="nt" placeholder="เช่น เครื่องปั่นไฟไม่พอ, ไม่มีแผนสำรองเมื่อ HIS ล่มพร้อมไฟดับ ฯลฯ">${S.notes||''}</textarea>
- <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="tag" style="background:#26d0ff" onclick="sendFinal()">☁️ ส่งผลเข้า Google Sheets</button><button class="tag" style="background:#3ddc97" onclick="copySum()">📋 คัดลอกสรุปส่งผู้บริหาร</button><button class="tag" onclick="closeDeb()">ปิด</button></div>`;
+ <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="tag" style="background:#3ddc97" onclick="copySum()">📋 คัดลอกสรุปส่งผู้บริหาร</button><button class="tag" onclick="closeDeb()">ปิด</button></div>`;
  drawTags();$('debO').classList.add('show')}
 function drawTags(){$('tg').innerHTML=TAGS.map(t=>`<button class="tag" onclick="S.tags['${t}']++;A.click();drawTags();save()">${t} <b>${S.tags[t]}</b></button>`).join('')}
 function closeDeb(){S.notes=$('nt').value;save();$('debO').classList.remove('show')}
@@ -487,7 +433,7 @@ function copySum(){S.notes=$('nt').value;const rk=S.teams.map((t,i)=>`${TEAMS[i]
  const txt=`สรุปการซ้อมแผนพายุ KSK Crisis Command | รพ.เขาสุกิม\nรอบ: ${SESSION}\n\nผลคะแนน\n${rk.join('\n')}\n\nรถพยาบาลส่วนกลางเหลือ ${S.amb}/${AMB_MAX}\n\nจุดอ่อนที่พบ\n${tg.join('\n')||'-'}\n\nข้อเสนอแนะ\n${S.notes||'-'}`;
  navigator.clipboard.writeText(txt).then(()=>alert('คัดลอกแล้ว นำไปวางในรายงานได้เลย'));save()}
 
-/* ===== คีย์ลัด (ใช้ตำแหน่งปุ่ม จึงใช้ได้ทั้งแป้นไทยและอังกฤษ) ===== */
+/* ===== คีย์ลัด ===== */
 addEventListener('keydown',e=>{
  if(e.ctrlKey||e.metaKey||e.altKey)return;
  if(['TEXTAREA','INPUT'].includes(e.target.tagName))return;
@@ -505,7 +451,6 @@ addEventListener('keydown',e=>{
 setInterval(()=>{if(S.running&&Math.random()<.25&&!$('tutO').classList.contains('show'))thunder()},9000);
 addEventListener('click',()=>A.init(),{once:true});
 renderAll();
-/* เปิดคู่มืออัตโนมัติครั้งแรกที่เข้าเว็บ */
 try{if(!localStorage.getItem('ksk_tut_seen'))setTimeout(()=>openTut('play',true),500)}catch(e){}
 </script>
 </body>
