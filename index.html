@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KSK Crisis Command</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--y:#ffd23f;--p:#ff4d8d;--c:#26d0ff;--g:#3ddc97;--o:#ff8a3d}
+body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(circle at 20% 0%,#1d3d82,#0b1630 65%);color:#fff;height:100vh;display:grid;grid-template-rows:auto 1fr auto auto;overflow:hidden}
+#rain{position:fixed;inset:0;z-index:0;pointer-events:none}
+#dark{position:fixed;inset:0;background:rgba(0,0,12,.6);z-index:5;pointer-events:none;opacity:0;transition:opacity .8s}
+body.blackout #dark{opacity:1;animation:flick 4s infinite}
+@keyframes flick{0%,100%{opacity:1}46%{opacity:1}48%{opacity:.4}50%{opacity:1}}
+#flash{position:fixed;inset:0;background:#fff;opacity:0;z-index:9;pointer-events:none}
+#flash.go{animation:fl .9s}
+@keyframes fl{0%{opacity:0}8%{opacity:.9}16%{opacity:.1}28%{opacity:.7}100%{opacity:0}}
+body.glitch #stage{animation:gl 2.5s infinite}
+@keyframes gl{0%,92%,100%{transform:none;filter:none}94%{transform:translateX(-6px);filter:hue-rotate(90deg)}96%{transform:translateX(6px);filter:hue-rotate(-90deg)}}
+header,main,.ticker,.controls{position:relative;z-index:2}
+header{display:flex;align-items:center;gap:18px;padding:10px 22px;background:linear-gradient(90deg,#ff4d8d,#ff8a3d,#ffd23f);color:#111;z-index:6}
+header h1{font-weight:800;font-size:30px;letter-spacing:1px}
+header small{display:block;font-weight:600;font-size:15px}
+.cl{margin-left:auto;background:#111;color:#fff;border-radius:999px;padding:4px 14px;font-size:14px;font-weight:600;white-space:nowrap}
+.cl.ok{color:var(--g)}.cl.err{color:var(--p)}
+.pips{display:flex;gap:8px}
+.pip{width:44px;height:44px;border-radius:50%;border:3px solid #111;background:#fff;font-weight:800;font-size:20px;cursor:pointer;font-family:inherit}
+.pip.done{background:#3ddc97}.pip.now{background:#111;color:var(--y);transform:scale(1.15)}
+main{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;padding:14px 22px;min-height:0}
+.panel{background:rgba(20,38,77,.86);border:3px solid #2c4a92;border-radius:22px;padding:18px;overflow:auto}
+#stage{display:flex;flex-direction:column;gap:12px}
+.rhead{display:flex;align-items:center;gap:14px}
+.badge{background:var(--y);color:#111;font-weight:800;padding:4px 18px;border-radius:999px;font-size:22px}
+.rtitle{font-size:40px;font-weight:800}
+.row{display:flex;gap:18px;align-items:center}
+.timer{position:relative;width:210px;height:210px;flex:none}
+.timer svg{transform:rotate(-90deg)}
+.timer .t{position:absolute;inset:0;display:grid;place-items:center;font-size:56px;font-weight:800}
+.timer.low .t{color:var(--p);animation:pulse .6s infinite}
+@keyframes pulse{50%{transform:scale(1.12)}}
+.headline{font-size:34px;font-weight:800;line-height:1.35;color:var(--y);text-shadow:0 0 18px rgba(255,210,63,.35)}
+.chars{display:flex;gap:14px}
+.char{display:flex;gap:10px;align-items:flex-start;flex:1}
+.avatar{font-size:56px;width:84px;height:84px;border-radius:50%;display:grid;place-items:center;flex:none;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.anchor .avatar{background:var(--c)}.villain .avatar{background:var(--p)}
+.bubble{background:#fff;color:#111;border-radius:16px;padding:10px 14px;font-size:19px;font-weight:600}
+.bubble b{display:block;font-size:14px;color:#c2185b}
+.tasks{list-style:none;display:grid;gap:8px}
+.tasks li{background:rgba(255,255,255,.1);border-left:8px solid var(--g);padding:9px 14px;border-radius:10px;font-size:22px}
+.hint{display:none;background:#3ddc97;color:#05301e;border-radius:12px;padding:10px 14px;font-size:19px;font-weight:600}
+body.showhint .hint{display:block}
+.amb{display:flex;align-items:center;gap:10px;font-size:20px;margin-bottom:10px;background:rgba(255,255,255,.1);padding:8px 12px;border-radius:12px}
+.amb button{font-size:28px;background:none;border:none;cursor:pointer}.amb .gone{opacity:.2;filter:grayscale(1)}
+.team{border:3px solid var(--c);border-radius:16px;padding:10px;margin-bottom:10px;background:rgba(0,0,0,.25)}
+.th{display:flex;align-items:center;gap:10px}
+.th .av{font-size:34px}.th small{display:block;opacity:.7}.th b{font-size:20px}
+.tot{margin-left:auto;font-size:46px;font-weight:800;color:var(--c)}
+.crit{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}
+.crit div{background:rgba(255,255,255,.08);border-radius:10px;padding:4px;text-align:center;font-size:14px}
+.crit em{font-style:normal;font-weight:800;font-size:22px;margin:0 6px}
+.crit button{width:28px;height:28px;border-radius:50%;border:none;font-weight:800;cursor:pointer;background:var(--c)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:none;border-radius:999px;padding:4px 10px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;background:var(--g);color:#05301e}
+.chip b{margin-left:5px}.chip.used{background:#555;color:#bbb;text-decoration:line-through}
+.ticker{background:#111;color:var(--y);overflow:hidden;white-space:nowrap;font-size:22px;font-weight:600;padding:6px 0;border-top:4px solid var(--p);border-bottom:4px solid var(--p);z-index:6}
+.ticker span{display:inline-block;padding-left:100%;animation:mq 38s linear infinite}
+@keyframes mq{to{transform:translateX(-100%)}}
+.controls{display:flex;flex-wrap:wrap;gap:8px;padding:10px 22px;justify-content:center;z-index:6}
+.controls button{font-family:inherit;font-weight:600;font-size:17px;border:none;border-radius:12px;padding:9px 14px;cursor:pointer;background:#fff;color:#111;box-shadow:0 4px 0 #8aa}
+.controls button:active{transform:translateY(3px);box-shadow:none}
+.controls .big{background:var(--p);color:#fff}.controls .go{background:var(--g)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:20;display:none;place-items:center}
+.overlay.show{display:grid}
+.modal{background:#fff;color:#111;border-radius:28px;padding:30px 40px;max-width:900px;width:92%;max-height:92vh;overflow:auto;border:8px solid var(--y)}
+.wild{text-align:center;animation:pop .5s}
+@keyframes pop{0%{transform:scale(.3) rotate(-10deg)}100%{transform:none}}
+.wild .ic{font-size:110px}.wild h2{font-size:46px;color:#c2185b}.wild p{font-size:28px;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:22px}
+td,th{padding:8px;border-bottom:2px solid #ddd;text-align:left}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.tag{border:none;border-radius:999px;padding:8px 14px;font-family:inherit;font-weight:600;font-size:17px;background:#ffe08a;cursor:pointer}
+textarea{width:100%;height:90px;font-family:inherit;font-size:17px;border-radius:10px;padding:8px;border:2px solid #aaa}
+.intro li{font-size:24px;margin:6px 0 6px 22px}
+/* แผนผัง */
+#mapO .modal{max-width:96vw;width:auto;padding:14px;display:flex;gap:14px;align-items:flex-start}
+#mapBox{position:relative;height:86vh;aspect-ratio:848/1024;touch-action:none;background:#2c4a92;border-radius:12px}
+#mapBox img{height:100%;width:100%;border-radius:12px;display:block;pointer-events:none}
+.tk{position:absolute;font-size:38px;transform:translate(-50%,-50%);cursor:grab;user-select:none;filter:drop-shadow(0 3px 3px #000)}
+.pal{display:grid;gap:8px}.pal button{font-size:26px;border:none;border-radius:12px;padding:8px 14px;cursor:pointer;background:#ffe08a;font-family:inherit}
+.pal small{font-size:14px;color:#444}
+</style>
+</head>
+<body>
+<canvas id="rain"></canvas><div id="dark"></div><div id="flash"></div>
+
+<header>
+  <div style="font-size:44px">🏥</div>
+  <div><h1>KSK CRISIS COMMAND</h1><small>โรงพยาบาลเขาสุกิม จ.จันทบุรี | เกมบัญชาการวิกฤตพายุ: เอาชีวิตรอดใน 45 นาที</small></div>
+  <span class="cl" id="cloud">☁️ ออฟไลน์</span>
+  <div class="pips" id="pips"></div>
+</header>
+
+<main>
+  <section class="panel" id="stage"></section>
+  <section class="panel" id="teams" style="position:relative;z-index:6"></section>
+</main>
+
+<div class="ticker"><span id="tk"></span></div>
+
+<div class="controls">
+  <button class="go" onclick="toggleTimer()">▶/⏸ จับเวลา (Space)</button>
+  <button class="big" onclick="next()">🚨 การ์ดวิกฤตถัดไป (N)</button>
+  <button onclick="wildCard()">🎲 Wild Card (W)</button>
+  <button onclick="openMap()">🗺️ แผนผัง (G)</button>
+  <button onclick="thunder()">⛈️ ฟ้าร้อง (T)</button>
+  <button onclick="toggleDark()">💡 ไฟดับ/ไฟติด (B)</button>
+  <button onclick="toggleMute()" id="mute">🔊 เสียง (M)</button>
+  <button onclick="toggleHint()">🕵️ เฉลย (H)</button>
+  <button onclick="openDebrief()">🏁 สรุปผล (D)</button>
+  <button onclick="cloudLoad()">☁️ โหลดจากคลาวด์</button>
+  <button onclick="fs()">⛶ เต็มจอ (F)</button>
+  <button onclick="resetAll()">♻️ รีเซ็ต</button>
+</div>
+
+<div class="overlay" id="wildO" onclick="this.classList.remove('show')"><div class="modal wild" id="wildM"></div></div>
+<div class="overlay" id="debO"><div class="modal" id="debM"></div></div>
+<div class="overlay" id="mapO" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div id="mapBox"><img id="mapImg" alt="แผนผัง รพ.เขาสุกิม"></div>
+    <div class="pal" id="pal"></div>
+  </div>
+</div>
+
+<script>
+/* ============ ตั้งค่า (แก้เฉพาะส่วนนี้) ============ */
+const CFG={
+  API:'',                 // วาง URL เว็บแอปของ Apps Script (ลงท้าย /exec) ถ้าเว้นว่าง = ทำงานออฟไลน์
+  KEY:'ksk2025',          // ต้องตรงกับ SECRET ใน Code.gs
+  MAP:'ksk-map.jpg'       // ไฟล์ภาพแผนผังในโฟลเดอร์เดียวกัน
+};
+const AV={anchor:'',villain:''};   // ลิงก์รูปตัวละคร (ถ้าเว้นว่างใช้อีโมจิ)
+const SESSION=new URLSearchParams(location.search).get('s')||('KSK-'+new Date().toISOString().slice(0,10));
+/* ================================================= */
+
+const TEAMS=[
+ {n:'ทีมบัญชาการ',sub:'Command | ผู้การเมฆ',e:'🧑‍✈️',c:'#ffd23f'},
+ {n:'ทีมแพทย์/พยาบาล',sub:'Medical | หมอใจดี',e:'🩺',c:'#ff4d8d'},
+ {n:'ทีมสนับสนุน/อาคาร',sub:'Logistics | ช่างกล้า',e:'🔧',c:'#26d0ff'},
+ {n:'ทีมบริหาร/สื่อสาร',sub:'Admin & Comms | น้องข่าวด่วน',e:'📣',c:'#3ddc97'}];
+const RES={gen:['⚡','ปั่นไฟ',2],fix:['🔧','ช่าง',1],net:['📡','5G',1],staff:['🩺','คนเสริม',1]};
+const CRIT=[['speed','⏱️ เร็ว'],['bcp','📋 BCP'],['coord','🤝 ประสาน']];
+const AMB_MAX=2, ROUND_SEC=300;
+
+const ROUNDS=[
+{t:'พายุเข้า',icon:'🌪️',power:1,rain:1,
+ head:'ลมกระโชกแรง ต้นไม้ล้มทับสายไฟหลัก ไฟดับทั้ง รพ. และหลังคาตึกผู้ป่วยในรั่ว!',
+ tasks:['ทุกทีมประเมินสถานการณ์ภายใน 1 นาที','เลือกลงการ์ดทรัพยากรแก้ไฟดับ/หลังคารั่ว','ทีมแพทย์: ขยับหมากย้ายผู้ป่วยในไปโซนปลอดภัย','ทีมบัญชาการ: ประกาศเปิด EOC ตามแผน'],
+ hint:'คาดหวัง: เปิด EOC, ระบุจุดจ่ายไฟสำรองให้จุดสำคัญก่อน, ย้ายผู้ป่วยที่ใช้อุปกรณ์ไฟฟ้า, กันพื้นที่รั่ว/ป้องกันไฟรั่ว',
+ villain:'ฮึ่ม... ไฟดับแล้วสินะ? นี่แค่เริ่มต้นเท่านั้น!',
+ say:'ข่าวด่วน พายุเข้าพื้นที่จันทบุรี ไฟฟ้าดับ โรงพยาบาลเขาสุกิม เข้าสู่ภาวะฉุกเฉิน',
+ news:['ด่วน! พายุเข้าพื้นที่จันทบุรี ไฟฟ้าดับหลายตำบล','ศูนย์บัญชาการ รพ.เขาสุกิม เริ่มเปิดปฏิบัติการ']},
+{t:'ฟ้าผ่า วิกฤตซ้อน',icon:'⚡',power:1,glitch:1,rain:1.2,
+ head:'ฟ้าผ่าลงระบบเครือข่าย ระบบ HIS ล่ม และมีผู้บาดเจ็บจากพายุส่งเข้า ER 5 ราย!',
+ tasks:['คัดกรองผู้บาดเจ็บ: แดง 1 / เหลือง 2 / เขียว 2','กู้ระบบด้วยการ์ด 5G หรือเปลี่ยนเป็นระบบกระดาษ (Manual)','ทีมที่ใช้การ์ดหมดแล้ว ต้องแก้ปัญหาเฉพาะหน้า','ทีมสื่อสาร: รายงานผู้บริหารและหน่วยงานเหนือขึ้นไป'],
+ hint:'คาดหวัง: เปิด Downtime Form, บันทึกผู้ป่วยด้วยกระดาษ, ผู้ป่วยแดงได้รับการดูแลก่อน, ต้องมีไฟก่อนจึงใช้ 5G ได้',
+ villain:'ระบบล่มแล้วจะจดด้วยอะไรล่ะ? ฮ่า ๆ ๆ',
+ say:'ข่าวด่วน ฟ้าผ่าระบบเครือข่าย ระบบ เอช ไอ เอส ล่ม ผู้บาดเจ็บเข้าห้องฉุกเฉิน ห้าราย',
+ news:['ฟ้าผ่าเครือข่ายขัดข้อง ระบบสารสนเทศ รพ. ล่ม','ผู้บาดเจ็บจากพายุทยอยเข้า ER']},
+{t:'ทางเข้าถูกปิด',icon:'🌳',power:1,rain:1.1,
+ head:'ต้นไม้ใหญ่และดินสไลด์ปิดทางเข้า รพ. รถพยาบาลเข้า-ออกไม่ได้ และเจ้าหน้าที่เวรบ่ายเข้างานไม่ได้!',
+ tasks:['ประสานเปิดเส้นทางสำรอง (อบต./กู้ภัย/ทหาร)','จัดอัตรากำลังเวรต่อเนื่อง (ใครอยู่ต่อ? ใครพัก?)','ตัดสินใจส่งต่อผู้ป่วยหนัก 1 ราย: ใครได้รถพยาบาลส่วนกลาง?','ทีมสนับสนุน: จัดที่พักและอาหารให้เจ้าหน้าที่ที่ติดอยู่'],
+ hint:'คาดหวัง: คุยข้ามทีมเรื่องรถพยาบาล, เจ้าหน้าที่ใช้การ์ดคนเสริม, มีขั้นตอนประสานส่งต่อชัดเจน',
+ villain:'ทางปิดแล้ว ใครจะมาช่วยพวกเธอ?',
+ say:'ข่าวด่วน ต้นไม้และดินสไลด์ปิดเส้นทางเข้าโรงพยาบาล รถพยาบาลเข้าออกไม่ได้',
+ news:['ดินสไลด์ปิดถนนเข้า รพ. รถพยาบาลติดขัด','เจ้าหน้าที่เวรบ่ายยังเข้างานไม่ได้']},
+{t:'ข่าวลือ & น้ำมันใกล้หมด',icon:'📱',power:1,rain:.9,
+ head:'โซเชียลลือว่า "รพ.ปิดแล้ว" ญาติแห่มาหน้า ER และน้ำมันเครื่องปั่นไฟเหลือใช้ได้อีก 30 นาที!',
+ tasks:['ทีมสื่อสาร: เขียนแถลงการณ์ 1 ข้อความ (ไม่เกิน 3 ประโยค)','จัดโซนญาติและ รปภ. หน้า ER','จัดลำดับจุดที่ต้องมีไฟ: ER / ห้องคลอด / ผู้ป่วยเครื่องช่วยหายใจ','ประสานขอเติมน้ำมันเครื่องปั่นไฟ'],
+ hint:'คาดหวัง: ข้อความชัดเจนว่า รพ.ยังเปิดให้บริการ, จัดลำดับไฟโดยดูความเสี่ยงต่อชีวิต, มีผู้ให้ข้อมูลเพียงจุดเดียว',
+ villain:'ข่าวปลอมแพร่เร็วกว่าลมพายุนะ!',
+ say:'ข่าวด่วน มีข่าวลือว่าโรงพยาบาลปิดให้บริการ ญาติผู้ป่วยทยอยมาที่ห้องฉุกเฉิน น้ำมันเครื่องปั่นไฟใกล้หมด',
+ news:['ข่าวลือ "รพ.ปิด" แพร่สะพัด โปรดตรวจสอบกับแหล่งข่าวทางการ','เครื่องปั่นไฟเหลือน้ำมันอีก 30 นาที']},
+{t:'พายุลูกสอง',icon:'🌀',power:1,rain:1.5,
+ head:'พายุลูกที่ 2 แรงกว่าเดิม! ผู้ป่วยวิกฤต 1 ราย (เครื่องช่วยหายใจ) ต้องดูแลต่อเนื่อง ใช้ทรัพยากรสุดท้ายให้คุ้มที่สุด!',
+ tasks:['ทบทวนการ์ดที่เหลือ แล้วตัดสินใจร่วมกันทั้ง รพ.','รับประกันไฟและออกซิเจนให้ผู้ป่วยวิกฤต','ทีมบัญชาการ: เขียน SITREP 3 บรรทัด','ร่างแผนฟื้นฟู 3 ข้อแรกหลังพายุผ่าน'],
+ hint:'คาดหวัง: ผู้ป่วยวิกฤตมีไฟต่อเนื่อง, SITREP ชัด (สถานการณ์ / ทรัพยากร / ความต้องการ), มีแผนฟื้นฟูตามลำดับความสำคัญ',
+ villain:'รอบสุดท้ายแล้ว! พวกเธอจะรอดไหม?',
+ say:'ข่าวด่วน พายุลูกที่สองกำลังเข้า ผู้ป่วยวิกฤตต้องการการดูแลต่อเนื่อง',
+ news:['พายุลูกที่ 2 รุนแรงกว่าเดิม','ทั้งโรงพยาบาลกำลังเดินเครื่องเต็มกำลัง']}
+];
+
+const WILD=[
+['🔥','ฟ้าผ่าซ้ำ!','เครื่องปั่นไฟขัดข้อง ทีมที่ลงการ์ดเครื่องปั่นไฟต้องแก้ปัญหาเฉพาะหน้า 1 นาที','thunder'],
+['👨‍👩‍👧','ญาติบุกเข้า ER!','ทีมสื่อสารต้องควบคุมสถานการณ์ภายใน 1 นาที','siren'],
+['📺','สื่อมวลชนมาถึงหน้า รพ.','เลือกผู้ให้สัมภาษณ์ 1 คน พูดได้ไม่เกิน 3 ประโยค','news'],
+['🤰','ผู้ป่วยคลอดฉุกเฉิน!','ทีมแพทย์ต้องหาห้องที่มีไฟและเตียงให้ได้','siren'],
+['🛗','ลิฟต์ค้าง!','มีผู้ป่วยและเจ้าหน้าที่ติดอยู่ ต้องส่งทีมช่างหรือหาทางออกอื่น','zap'],
+['💨','ท่อออกซิเจนรั่ว!','ทีมสนับสนุนตัดสินใจเรื่องจุดจ่ายออกซิเจนสำรอง','zap'],
+['📻','วิทยุสื่อสารแบตหมด','2 นาทีนี้ห้ามพูดข้ามทีม ใช้ใบสั่งการเป็นกระดาษเท่านั้น','zap'],
+['💧','น้ำประปาไม่ไหล','จัดลำดับน้ำสำรอง: ห้องผ่าตัด / ครัว / ห้องน้ำ','siren'],
+['😷','เจ้าหน้าที่ป่วยฉุกเฉิน','ทีมที่ถูกสุ่มเสียกำลังคน 1 คน หรือใช้การ์ดบุคลากรเสริมทดแทน','siren'],
+['🎁','ข่าวดี!','ไฟฟ้าส่วนภูมิภาคเข้าซ่อมเร็วกว่าคาด ทีมที่ประสานงานดีสุดรอบนี้ได้โบนัส +3','good']];
+
+const TAGS=['⚡ ไฟฟ้า','💻 ระบบ IT/HIS','👥 อัตรากำลัง','🏗️ อาคาร/หลังคา','📡 การสื่อสาร','🚑 การส่งต่อ/ทางเข้า','💊 ออกซิเจน/เวชภัณฑ์','📣 การแถลงข่าว'];
+const PINS=[['🛏️','ผู้ป่วย'],['🧑‍⚕️','บุคลากร'],['🚑','รถพยาบาล'],['🔥','จุดวิกฤต'],['⚡','จุดจ่ายไฟ'],['💧','น้ำสำรอง'],['🚧','ทางปิด']];
+
+/* ===== สถานะเกม ===== */
+const $=id=>document.getElementById(id);
+const LS='ksk_crisis_'+SESSION;
+function fresh(){return{round:0,secs:ROUND_SEC,running:false,amb:AMB_MAX,wildBag:[],hint:false,dark:false,map:[],
+ teams:TEAMS.map(()=>({s:{speed:0,bcp:0,coord:0},r:Object.fromEntries(Object.entries(RES).map(([k,v])=>[k,v[2]]))})),
+ tags:Object.fromEntries(TAGS.map(t=>[t,0])),notes:''}}
+let S=fresh();
+try{const x=JSON.parse(localStorage.getItem(LS)||'null');if(x){S=Object.assign(fresh(),x);S.running=false;}}catch(e){}
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}cloudSave()};
+
+/* ===== เชื่อม Google Sheets (Apps Script) ===== */
+function setCloud(st){const e=$('cloud');e.className='cl '+(st||'');e.textContent=!CFG.API?'☁️ ออฟไลน์':st==='ok'?'☁️ ซิงค์แล้ว · '+SESSION:st==='err'?'☁️ เชื่อมต่อไม่ได้':'☁️ กำลังส่ง...'}
+function post(body){
+ if(!CFG.API)return Promise.resolve(null);
+ setCloud('');
+ return fetch(CFG.API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({key:CFG.KEY,session:SESSION},body))})
+  .then(r=>r.json()).then(j=>{setCloud(j.ok?'ok':'err');return j}).catch(()=>{setCloud('err');return null})}
+let cT;function cloudSave(){if(!CFG.API)return;clearTimeout(cT);cT=setTimeout(()=>post({action:'save',state:S}),1500)}
+function logEv(type,detail){post({action:'log',round:S.round,type,detail})}
+async function cloudLoad(){
+ if(!CFG.API){alert('ยังไม่ได้ตั้งค่า API ใน index.html');return}
+ try{const r=await fetch(`${CFG.API}?action=load&key=${encodeURIComponent(CFG.KEY)}&session=${encodeURIComponent(SESSION)}`);const j=await r.json();
+  if(j.ok&&j.state){pauseTimer();S=Object.assign(fresh(),j.state);S.running=false;localStorage.setItem(LS,JSON.stringify(S));renderAll();setCloud('ok');alert('โหลดข้อมูลจากคลาวด์แล้ว')}
+  else alert('ไม่พบข้อมูลของรอบ "'+SESSION+'" ในคลาวด์')}catch(e){setCloud('err');alert('เชื่อมต่อคลาวด์ไม่ได้')}}
+async function sendFinal(){
+ if(!CFG.API){alert('ยังไม่ได้ตั้งค่า API ใน index.html');return}
+ S.notes=$('nt').value;save();
+ const j=await post({action:'final',ambLeft:S.amb,notes:S.notes,
+  teams:S.teams.map((t,i)=>({name:TEAMS[i].n,speed:t.s.speed,bcp:t.s.bcp,coord:t.s.coord,total:t.s.speed+t.s.bcp+t.s.coord,cardsLeft:Object.values(t.r).reduce((a,b)=>a+b,0)})),
+  tags:Object.entries(S.tags).filter(e=>e[1]).map(e=>({topic:e[0],count:e[1]}))});
+ alert(j&&j.ok?'ส่งผลเข้า Google Sheets เรียบร้อย':'ส่งไม่สำเร็จ ตรวจสอบ URL และรหัสอีกครั้ง')}
+
+/* ===== เสียง (สังเคราะห์ด้วย Web Audio ไม่ต้องมีไฟล์) ===== */
+const A=(()=>{let ctx,master,rainG,muted=false,rainSrc;
+ function init(){if(ctx)return;ctx=new(window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=muted?0:.85;master.connect(ctx.destination);startRain();}
+ function noise(sec){const b=ctx.createBuffer(1,ctx.sampleRate*sec,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b}
+ function startRain(){rainSrc=ctx.createBufferSource();rainSrc.buffer=noise(3);rainSrc.loop=true;const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=1400;rainG=ctx.createGain();rainG.gain.value=.16;rainSrc.connect(f);f.connect(rainG);rainG.connect(master);rainSrc.start();}
+ function tone(f,d,type='sine',v=.25,w=0,to){if(muted)return;init();const t=ctx.currentTime+w,o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d);}
+ function burst(d,fq,v,hp){if(muted)return;init();const s=ctx.createBufferSource();s.buffer=noise(d);const f=ctx.createBiquadFilter();f.type=hp?'highpass':'lowpass';f.frequency.setValueAtTime(fq,ctx.currentTime);if(!hp)f.frequency.exponentialRampToValueAtTime(60,ctx.currentTime+d);const g=ctx.createGain();g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
+ return{
+  init,get muted(){return muted},
+  setMute(m){muted=m;init();master.gain.value=m?0:.85;},
+  thunder(){burst(.15,3000,.9,true);burst(3.2,700,1.2);tone(60,2.5,'sine',.5,.1,25)},
+  siren(n=3){for(let i=0;i<n;i++)tone(650,.5,'sawtooth',.18,i*.55,950)},
+  news(){[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.28,i*.14))},
+  beep(){tone(900,.09,'square',.12)},
+  alarm(){for(let i=0;i<6;i++)tone(i%2?500:800,.25,'square',.22,i*.28)},
+  blackout(){tone(420,1.3,'sawtooth',.22,0,45);burst(.4,2000,.4,true)},
+  zap(){burst(.35,4000,.6,true);tone(2400,.35,'sawtooth',.2,0,90)},
+  good(){[784,988,1175,1568].forEach((f,i)=>tone(f,.3,'triangle',.28,i*.1))},
+  click(){tone(660,.07,'triangle',.15)},
+  buzz(){tone(140,.25,'square',.2)}
+ }})();
+function speak(t){if(A.muted||!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='th-TH';u.rate=.95;speechSynthesis.speak(u)}catch(e){}}
+function flash(){const f=$('flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
+function thunder(){flash();A.thunder()}
+
+/* ===== ฝน ===== */
+const cv=$('rain'),cx=cv.getContext('2d');let drops=[];
+function rs(){cv.width=innerWidth;cv.height=innerHeight;drops=Array.from({length:600},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,l:12+Math.random()*18,v:14+Math.random()*14}))}
+addEventListener('resize',rs);rs();
+function rainLoop(){const k=S.round?ROUNDS[S.round-1].rain:.5,n=Math.floor(380*k);cx.clearRect(0,0,cv.width,cv.height);cx.strokeStyle='rgba(170,210,255,.35)';cx.lineWidth=1.4;cx.beginPath();
+ for(let i=0;i<Math.min(n,drops.length);i++){const d=drops[i];cx.moveTo(d.x,d.y);cx.lineTo(d.x-d.l*.25,d.y+d.l);d.y+=d.v;d.x-=d.v*.25;if(d.y>cv.height){d.y=-20;d.x=Math.random()*cv.width+100}}
+ cx.stroke();requestAnimationFrame(rainLoop)}
+rainLoop();
+
+/* ===== ตัวจับเวลา ===== */
+let endAt=0,tId=null;
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+function startTimer(){if(S.running||S.secs<=0)return;S.running=true;endAt=Date.now()+S.secs*1000;tId=setInterval(tick,200);}
+function pauseTimer(){clearInterval(tId);S.running=false}
+function toggleTimer(){A.init();S.running?pauseTimer():startTimer();A.click();renderTimer()}
+function tick(){const left=Math.max(0,Math.ceil((endAt-Date.now())/1000));if(left!==S.secs){S.secs=left;if(left<=10&&left>0)A.beep();renderTimer();if(left===0){pauseTimer();A.alarm();flash();logEv('timer','หมดเวลารอบ '+S.round);save()}}}
+function renderTimer(){const el=$('tm');if(!el)return;const C=565.5;$('ring').setAttribute('stroke-dashoffset',C*(1-S.secs/ROUND_SEC));$('tt').textContent=fmt(S.secs);el.classList.toggle('low',S.secs<=60&&S.round>0)}
+
+/* ===== การเล่น ===== */
+function setRound(n){A.init();pauseTimer();S.round=n;S.secs=ROUND_SEC;const r=ROUNDS[n-1];
+ S.dark=!!r.power;document.body.classList.toggle('blackout',S.dark);document.body.classList.toggle('glitch',!!r.glitch);
+ renderAll();flash();A.thunder();setTimeout(()=>A.siren(3),500);setTimeout(()=>A.news(),2300);setTimeout(()=>speak(r.say),3000);
+ if(n===1)setTimeout(()=>A.blackout(),900);if(r.glitch)setTimeout(()=>A.zap(),1200);
+ startTimer();logEv('round','เริ่มรอบ '+n+': '+r.t);save()}
+function next(){S.round>=5?openDebrief():setRound(S.round+1)}
+function wildCard(){A.init();if(!S.wildBag.length)S.wildBag=WILD.map((_,i)=>i).sort(()=>Math.random()-.5);const w=WILD[S.wildBag.pop()];
+ $('wildM').innerHTML=`<div class="ic">${w[0]}</div><h2>🎲 WILD CARD: ${w[1]}</h2><p>${w[2]}</p><small>(คลิกเพื่อปิด)</small>`;$('wildO').classList.add('show');
+ flash();(A[w[3]]||A.siren)();speak(w[1]+' '+w[2]);logEv('wild',w[1]);save()}
+function toggleDark(){S.dark=!S.dark;document.body.classList.toggle('blackout',S.dark);S.dark?A.blackout():A.good();logEv('power',S.dark?'ไฟดับ':'ไฟกลับมา');save()}
+function toggleMute(){A.setMute(!A.muted);$('mute').textContent=A.muted?'🔇 เสียง (M)':'🔊 เสียง (M)'}
+function toggleHint(){S.hint=!S.hint;document.body.classList.toggle('showhint',S.hint)}
+function fs(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
+function sc(i,k,d){S.teams[i].s[k]=Math.max(0,S.teams[i].s[k]+d);A.click();renderTeams();logEv('score',`${TEAMS[i].n} ${k} ${d>0?'+':''}${d} = ${S.teams[i].s[k]}`);save()}
+function useRes(i,k){const r=S.teams[i].r;if(r[k]>0){r[k]--;A[k==='net'?'zap':'good']();logEv('resource',`${TEAMS[i].n} ใช้การ์ด ${RES[k][1]} (เหลือ ${r[k]})`)}else{r[k]=RES[k][2];A.click();logEv('resource',`${TEAMS[i].n} คืนการ์ด ${RES[k][1]}`)}renderTeams();save()}
+function useAmb(){if(S.amb>0){S.amb--;A.siren(1);logEv('ambulance','ใช้รถพยาบาล (เหลือ '+S.amb+')')}else{S.amb=AMB_MAX;A.click();logEv('ambulance','คืนรถพยาบาลครบ')}renderTeams();save()}
+function resetAll(){if(confirm('รีเซ็ตเกมทั้งหมด?')){pauseTimer();S=fresh();localStorage.removeItem(LS);document.body.classList.remove('blackout','glitch','showhint');renderAll();logEv('reset','รีเซ็ตเกม');save()}}
+
+/* ===== วาดหน้าจอ ===== */
+const av=(k,e)=>AV[k]?`<img src="${AV[k]}">`:e;
+function renderPips(){$('pips').innerHTML=ROUNDS.map((_,i)=>`<button class="pip ${S.round===i+1?'now':S.round>i+1?'done':''}" onclick="setRound(${i+1})">${i+1}</button>`).join('')}
+function renderStage(){const r=S.round?ROUNDS[S.round-1]:null;
+ if(!r){$('stage').innerHTML=`<div class="rhead"><span class="badge">BRIEFING</span><span class="rtitle">ยินดีต้อนรับสู่ KSK Crisis Command 🌩️</span></div>
+ <ul class="intro"><li>🎯 เป้าหมาย: <b>รักษาชีวิตผู้ป่วยและให้ รพ. ทำงานต่อได้ ใน 45 นาที</b></li><li>👥 4 ทีม ICS: บัญชาการ / แพทย์-พยาบาล / สนับสนุน-อาคาร / บริหาร-สื่อสาร</li><li>🃏 การ์ดทรัพยากรมีจำกัด ใช้แล้วหมดเลย คิดให้ดีก่อนลง!</li><li>🚑 รถพยาบาลมี <b>2 คันส่วนกลาง</b> ต้องคุยข้ามทีม</li><li>⏱️ แต่ละรอบมีเวลา 5 นาที หมดเวลาแล้วต้องตัดสินใจ</li><li>🏆 คะแนน: ความเร็ว + ถูกต้องตาม BCP + ประสานข้ามทีม</li></ul>
+ <div class="headline">พร้อมแล้วกด <b>N</b> หรือปุ่ม "การ์ดวิกฤตถัดไป" เพื่อเปิดรอบที่ 1 🚨</div>
+ <div class="chars"><div class="char anchor"><div class="avatar">${av('anchor','📺')}</div><div class="bubble"><b>น้องฝน ผู้ประกาศข่าว</b>เตรียมรับมือข่าวด่วนได้เลยค่ะ!</div></div><div class="char villain"><div class="avatar">${av('villain','🌩️')}</div><div class="bubble"><b>พายุ "ซ่า"</b>ฮ่า ๆ ๆ รอดูนะว่าจะรอดไหม</div></div></div>`;
+  $('tk').textContent='🌩️ KSK Crisis Command | โรงพยาบาลเขาสุกิม | ซ้อมแผนรับมือพายุ ✦ ';return}
+ $('stage').innerHTML=`<div class="rhead"><span class="badge">ROUND ${S.round}/5</span><span class="rtitle">${r.icon} ${r.t}</span></div>
+ <div class="row"><div class="timer" id="tm"><svg width="210" height="210"><circle cx="105" cy="105" r="90" fill="none" stroke="#2c4a92" stroke-width="16"/><circle id="ring" cx="105" cy="105" r="90" fill="none" stroke="#ffd23f" stroke-width="16" stroke-linecap="round" stroke-dasharray="565.5" stroke-dashoffset="0"/></svg><div class="t" id="tt">05:00</div></div>
+ <div class="headline">🚨 ${r.head}</div></div>
+ <ul class="tasks">${r.tasks.map(t=>`<li>${t}</li>`).join('')}</ul>
+ <div class="hint">🕵️ เฉลย Facilitator: ${r.hint}</div>
+ <div class="chars"><div class="char anchor"><div class="avatar">${av('anchor','📺')}</div><div class="bubble"><b>น้องฝน ข่าวด่วน</b>${r.news[0]}</div></div><div class="char villain"><div class="avatar">${av('villain','🌩️')}</div><div class="bubble"><b>พายุ "ซ่า"</b>${r.villain}</div></div></div>`;
+ $('tk').textContent='🔴 ข่าวด่วน: '+r.news.join(' ✦ ')+' ✦ ทุกทีมโปรดประสานงานผ่านศูนย์บัญชาการ ✦ ';renderTimer()}
+function renderTeams(){
+ $('teams').innerHTML=`<div class="amb">🚑 รถพยาบาลส่วนกลาง: ${Array.from({length:AMB_MAX},(_,i)=>`<button class="${i<S.amb?'':'gone'}" onclick="useAmb()">🚑</button>`).join('')} <small>(คลิก=ใช้ 1 คัน)</small></div>`+
+ S.teams.map((t,i)=>{const d=TEAMS[i],tot=t.s.speed+t.s.bcp+t.s.coord;
+ return`<div class="team" style="border-color:${d.c}"><div class="th"><span class="av">${d.e}</span><div><b>${d.n}</b><small>${d.sub}</small></div><div class="tot" style="color:${d.c}">${tot}</div></div>
+ <div class="crit">${CRIT.map(([k,l])=>`<div>${l}<br><button onclick="sc(${i},'${k}',-1)">−</button><em>${t.s[k]}</em><button onclick="sc(${i},'${k}',1)">+</button></div>`).join('')}</div>
+ <div class="chips">${Object.entries(RES).map(([k,[ic,nm,mx]])=>`<button class="chip ${t.r[k]?'':'used'}" onclick="useRes(${i},'${k}')">${ic} ${nm}<b>${t.r[k]}/${mx}</b></button>`).join('')}</div></div>`}).join('')}
+function renderAll(){renderPips();renderStage();renderTeams();document.body.classList.toggle('showhint',S.hint);document.body.classList.toggle('blackout',S.dark);setCloud(CFG.API?'':'')}
+
+/* ===== แผนผัง + หมากลากย้าย ===== */
+function openMap(){$('mapImg').src=CFG.MAP;$('mapO').classList.add('show');
+ $('pal').innerHTML=PINS.map(p=>`<button onclick="addPin('${p[0]}')">${p[0]} <small>${p[1]}</small></button>`).join('')+'<small>ลากเพื่อย้าย<br>ดับเบิลคลิกเพื่อลบ<br>กด Esc เพื่อปิด</small>';
+ drawMap()}
+function addPin(e){(S.map=S.map||[]).push({e,x:50,y:50});A.click();drawMap();logEv('map','วางหมาก '+e);save()}
+function drawMap(){const b=$('mapBox');b.querySelectorAll('.tk').forEach(n=>n.remove());
+ (S.map=S.map||[]).forEach((p,i)=>{const n=document.createElement('div');n.className='tk';n.textContent=p.e;n.style.left=p.x+'%';n.style.top=p.y+'%';
+  n.onpointerdown=ev=>{n.setPointerCapture(ev.pointerId);n.onpointermove=m=>{const r=b.getBoundingClientRect();
+   p.x=Math.min(100,Math.max(0,(m.clientX-r.left)/r.width*100));p.y=Math.min(100,Math.max(0,(m.clientY-r.top)/r.height*100));
+   n.style.left=p.x+'%';n.style.top=p.y+'%'}};
+  n.onpointerup=()=>{n.onpointermove=null;save()};
+  n.ondblclick=()=>{S.map.splice(i,1);drawMap();save()};
+  b.appendChild(n)})}
+
+/* ===== สรุปผล + จุดอ่อน ===== */
+function openDebrief(){pauseTimer();A.init();A.good();logEv('debrief','เข้าสู่การสรุปผล');
+ const rk=S.teams.map((t,i)=>({i,tot:t.s.speed+t.s.bcp+t.s.coord,left:Object.values(t.r).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.tot-a.tot);
+ const med=['🥇','🥈','🥉','🎖️'];
+ $('debM').innerHTML=`<h2 style="font-size:38px">🏁 สรุปผล KSK Crisis Command</h2>
+ <table><tr><th></th><th>ทีม</th><th>คะแนน</th><th>การ์ดเหลือ</th></tr>${rk.map((r,j)=>`<tr><td>${med[j]}</td><td>${TEAMS[r.i].e} ${TEAMS[r.i].n}</td><td><b>${r.tot}</b></td><td>${r.left}</td></tr>`).join('')}</table>
+ <p style="margin:10px 0">🚑 รถพยาบาลส่วนกลางเหลือ: <b>${S.amb}/${AMB_MAX}</b></p>
+ <h3 style="margin-top:12px">🔎 จุดอ่อนที่พบ (คลิกเพื่อนับครั้งที่ถูกพูดถึง)</h3>
+ <div class="tags" id="tg"></div>
+ <h3>📝 บันทึกข้อเสนอแนะ</h3><textarea id="nt" placeholder="เช่น เครื่องปั่นไฟไม่พอ, ไม่มีแผนสำรองเมื่อ HIS ล่มพร้อมไฟดับ ฯลฯ">${S.notes||''}</textarea>
+ <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="tag" style="background:#26d0ff" onclick="sendFinal()">☁️ ส่งผลเข้า Google Sheets</button><button class="tag" style="background:#3ddc97" onclick="copySum()">📋 คัดลอกสรุปส่งผู้บริหาร</button><button class="tag" onclick="closeDeb()">ปิด</button></div>`;
+ drawTags();$('debO').classList.add('show')}
+function drawTags(){$('tg').innerHTML=TAGS.map(t=>`<button class="tag" onclick="S.tags['${t}']++;A.click();drawTags();save()">${t} <b>${S.tags[t]}</b></button>`).join('')}
+function closeDeb(){S.notes=$('nt').value;save();$('debO').classList.remove('show')}
+function copySum(){S.notes=$('nt').value;const rk=S.teams.map((t,i)=>`${TEAMS[i].n}: ${t.s.speed+t.s.bcp+t.s.coord} คะแนน (การ์ดเหลือ ${Object.values(t.r).reduce((a,b)=>a+b,0)})`);
+ const tg=Object.entries(S.tags).filter(e=>e[1]).sort((a,b)=>b[1]-a[1]).map(e=>`- ${e[0]} (${e[1]} ครั้ง)`);
+ const txt=`สรุปการซ้อมแผนพายุ KSK Crisis Command | รพ.เขาสุกิม\nรอบ: ${SESSION}\n\nผลคะแนน\n${rk.join('\n')}\n\nรถพยาบาลส่วนกลางเหลือ ${S.amb}/${AMB_MAX}\n\nจุดอ่อนที่พบ\n${tg.join('\n')||'-'}\n\nข้อเสนอแนะ\n${S.notes||'-'}`;
+ navigator.clipboard.writeText(txt).then(()=>alert('คัดลอกแล้ว นำไปวางในรายงานได้เลย'));save()}
+
+/* ===== คีย์ลัด ===== */
+addEventListener('keydown',e=>{if(e.target.tagName==='TEXTAREA')return;const k=e.key.toLowerCase();
+ if(e.key==='Escape'){['mapO','wildO'].forEach(id=>$(id).classList.remove('show'));return}
+ if(e.code==='Space'){e.preventDefault();toggleTimer()}else if(k==='n')next();else if(k==='w')wildCard();else if(k==='t')thunder();else if(k==='b')toggleDark();
+ else if(k==='m')toggleMute();else if(k==='h')toggleHint();else if(k==='d')openDebrief();else if(k==='f')fs();else if(k==='g')openMap()});
+setInterval(()=>{if(S.running&&Math.random()<.25)thunder()},9000);
+addEventListener('click',()=>A.init(),{once:true});
+renderAll();
+</script>
+</body>
+</html>
