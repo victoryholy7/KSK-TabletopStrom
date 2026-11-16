@@ -3,95 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KSK Crisis Command - 10 Mission Simulation</title>
+<title>KSK Crisis Command - Hospital Simulator</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--y:#ffd23f;--p:#ff4d8d;--c:#26d0ff;--g:#3ddc97;--dark:#0b1630}
-body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(circle at 20% 0%,#1d3d82,var(--dark) 65%);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:15px}
-.container{max-width:960px;width:100%;margin:auto}
+:root{--y:#ffd23f;--p:#ff4d8d;--c:#26d0ff;--g:#3ddc97;--dark:#0b1630;--panel:#14264d}
+body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(circle at 20% 0%,#1d3d82,var(--dark) 65%);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px}
+.container{max-width:1050px;width:100%;margin:auto}
 
-/* หน้าเลือกภารกิจ (10 เหตุการณ์) */
-.hub-screen{padding:20px 0}
-.hub-header{text-align:center;margin-bottom:25px}
-.hub-header h1{font-size:36px;color:var(--y);margin-bottom:8px}
-.hub-header p{font-size:17px;opacity:.8}
-.mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
-.mission-card{background:rgba(20,38,77,.8);border:3px solid #2c4a92;border-radius:18px;padding:20px;cursor:pointer;transition:all .3s;position:relative}
-.mission-card:hover{transform:translateY(-50px);border-color:var(--y);background:rgba(20,38,77,1)}
-.mission-card.completed{border-color:var(--g);background:rgba(61,220,151,.1)}
-.mission-num{background:var(--y);color:#111;font-weight:800;padding:2px 10px;border-radius:99px;font-size:13px;display:inline-block;margin-bottom:8px}
-.mission-card h3{font-size:20px;color:#fff;margin-bottom:6px}
-.mission-card p{font-size:14px;opacity:.8;line-height:1.4}
+/* หน้าเลือกภารกิจ 10 เหตุการณ์ */
+.hub-screen{padding:10px 0}
+.hub-header{text-align:center;margin-bottom:20px}
+.hub-header h1{font-size:32px;color:var(--y);margin-bottom:6px}
+.hub-header p{font-size:16px;opacity:.8}
+.mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:20px}
+.mission-card{background:rgba(20,38,77,.85);border:3px solid #2c4a92;border-radius:16px;padding:18px;cursor:pointer;transition:all .3s}
+.mission-card:hover{transform:translateY(-4px);border-color:var(--y);background:rgba(20,38,77,1)}
+.mission-card.completed{border-color:var(--g);background:rgba(61,220,151,.15)}
+.mission-num{background:var(--y);color:#111;font-weight:800;padding:2px 10px;border-radius:99px;font-size:12px;display:inline-block;margin-bottom:6px}
+.mission-card h3{font-size:18px;color:#fff;margin-bottom:4px}
+.mission-card p{font-size:13px;opacity:.8;line-height:1.4}
 
-/* หน้าจอเกมจำลองสถานการณ์รายขั้นตอน */
-.game-screen{display:none;background:rgba(20,38,77,.95);border:3px solid #2c4a92;border-radius:22px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.game-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,.1);padding-bottom:12px;margin-bottom:18px}
-.mission-badge{background:var(--p);color:#fff;font-weight:800;padding:5px 14px;border-radius:99px;font-size:15px}
-.tries-box{font-size:16px;color:var(--y);font-weight:600}
+/* หน้าจอ Simulator หลัก */
+.sim-screen{display:none;background:rgba(20,38,77,.95);border:3px solid #2c4a92;border-radius:20px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.sim-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,.1);padding-bottom:12px;margin-bottom:16px}
+.sim-title{font-size:24px;font-weight:800;color:var(--y)}
 
-.step-title{font-size:24px;font-weight:800;color:var(--y);margin-bottom:8px}
-.step-desc{font-size:17px;line-height:1.5;background:rgba(0,0,0,.3);padding:15px;border-radius:12px;border-left:6px solid var(--c);margin-bottom:18px}
+/* พื้นที่จำลองสถานการณ์และช่องใส่ไอเทม */
+.sim-body{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.crisis-box{background:rgba(0,0,0,.3);border-radius:14px;padding:16px;border-left:6px solid var(--p)}
+.crisis-box h3{font-size:20px;color:var(--p);margin-bottom:8px}
+.crisis-box p{font-size:16px;line-height:1.5;margin-bottom:12px}
 
-.question-box{font-size:18px;font-weight:700;color:var(--c);margin-bottom:12px}
-.options-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px}
-.option-btn{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);color:#fff;padding:14px 18px;border-radius:12px;font-family:inherit;font-size:17px;font-weight:600;cursor:pointer;text-align:left;transition:all .2s}
-.option-btn:hover:not(:disabled){background:rgba(38,208,255,.2);border-color:var(--c);transform:translateX(4px)}
-.option-btn.correct{background:rgba(61,220,151,.3);border-color:var(--g);color:#fff}
-.option-btn.wrong{background:rgba(255,77,141,.3);border-color:var(--p);opacity:.5}
+.slots-container{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.slot{background:rgba(255,255,255,.05);border:2px dashed rgba(255,255,255,.3);border-radius:12px;padding:12px;text-align:center;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
+.slot.filled{border-style:solid;border-color:var(--g);background:rgba(61,220,151,.15)}
+.slot span{font-size:12px;opacity:.7;display:block;margin-top:4px}
+.slot .item-placed{font-size:15px;font-weight:700;color:var(--y)}
 
-.feedback-alert{display:none;padding:15px;border-radius:12px;margin-bottom:18px;font-size:16px;line-height:1.5;animation:fadeIn .3s}
-.feedback-alert.success{background:rgba(61,220,151,.2);border:2px solid var(--g);color:#fff}
-.feedback-alert.error{background:rgba(255,77,141,.2);border:2px solid var(--p);color:#fff}
+/* แผงคลังไอเทมด้านขวา (Inventory) */
+.inventory-panel{background:rgba(10,20,40,.8);border-radius:14px;padding:16px;border:2px solid #2c4a92;display:flex;flex-direction:column;max-height:480px;overflow:auto}
+.inventory-panel h4{font-size:16px;color:var(--c);margin-bottom:10px;text-align:center}
+.items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.item-card{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;user-select:none}
+.item-card:hover{background:rgba(38,208,255,.2);border-color:var(--c);transform:scale(1.03)}
+.item-card .icon{font-size:28px;margin-bottom:4px}
+.item-card .name{font-size:13px;font-weight:600}
 
-.action-bar{display:flex;justify-content:space-between;align-items:center;border-top:2px solid rgba(255,255,255,.1);padding-top:15px}
+/* แผงควบคุมด้านล่าง */
+.sim-footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;border-top:2px solid rgba(255,255,255,.1);padding-top:14px}
 .btn{background:#fff;color:#111;border:none;padding:10px 20px;border-radius:10px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:transform .1s}
 .btn:hover{transform:scale(1.05)}
-.btn-next{background:var(--g);color:#05301e}
+.btn-action{background:var(--g);color:#05301e}
 .btn-map{background:var(--c);color:#05301e}
+
+.alert-box{display:none;padding:12px;border-radius:10px;margin-top:12px;font-size:15px;animation:fadeIn .3s}
+.alert-box.success{background:rgba(61,220,151,.2);border:2px solid var(--g);color:#fff}
+.alert-box.error{background:rgba(255,77,141,.2);border:2px solid var(--p);color:#fff}
 
 /* Modal แผนผัง */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:100;padding:20px}
 .modal-content{background:#112240;border:3px solid var(--y);border-radius:20px;padding:25px;max-width:750px;width:100%;text-align:center;max-height:90vh;overflow:auto}
 .modal-content img{width:100%;border-radius:12px;margin:15px 0;border:2px solid #fff}
 
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@media (max-width:850px){.sim-body{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <div class="container">
   
-  <!-- หน้าเลือก 10 เหตุการณ์ (Mission Hub) -->
+  <!-- หน้า Hub เลือก 10 เหตุการณ์ -->
   <div class="hub-screen" id="hubScreen">
     <div class="hub-header">
-      <h1>🏥 KSK Crisis Command: 10 ภารกิจวิกฤต รพ.</h1>
-      <p>เลือกสถานการณ์จำลองเพื่อฝึกฝนขั้นตอนการปฏิบัติงาน ตัดสินใจเลือกเครื่องมือ ตัวละคร และทรัพยากรให้ถูกต้อง</p>
+      <h1>🏥 KSK Crisis Simulator: เลือกเหตุการณ์จำลอง</h1>
+      <p>เลือกสถานการณ์วิกฤต แล้วลาก/คลิกเลือก "ตัวละครและอุปกรณ์ไอเทม" ให้ถูกต้องเพื่อแก้ไขสถานการณ์</p>
     </div>
     <div class="mission-grid" id="missionGrid"></div>
   </div>
 
-  <!-- หน้าจอเกมจำลองสถานการณ์รายขั้นตอน -->
-  <div class="game-screen" id="gameScreen">
-    <div class="game-header">
-      <div class="mission-badge" id="missionBadge">เหตุการณ์ที่ 1</div>
-      <div class="tries-box" id="triesBox">❌ โอกาสผิดพลาด: 3/3 ครั้ง</div>
+  <!-- หน้าจอเกม Simulator หลัก -->
+  <div class="sim-screen" id="simScreen">
+    <div class="sim-header">
+      <div class="sim-title" id="simTitle">เหตุการณ์ที่ 1</div>
+      <button class="btn" style="background:#555;color:#fff" onclick="returnToHub()">🏠 กลับหน้าหลัก</button>
     </div>
 
-    <div class="step-title" id="stepTitle"></div>
-    <div class="step-desc" id="stepDesc"></div>
-
-    <div class="question-box" id="questionText"></div>
-    <div class="options-grid" id="optionsGrid"></div>
-
-    <div class="feedback-alert" id="feedbackAlert"></div>
-
-    <div class="action-bar">
-      <button class="btn btn-map" onclick="openMapModal()">🗺️ ดูแผนผัง รพ.</button>
-      <div style="display:flex;gap:10px">
-        <button class="btn" style="background:#555;color:#fff" onclick="returnToHub()">🏠 เลือกเหตุการณ์อื่น</button>
-        <button class="btn btn-next" id="nextBtn" onclick="nextStep()" style="display:none">ขั้นตอนถัดไป ➔</button>
+    <div class="sim-body">
+      <div class="crisis-box">
+        <h3>🚨 สถานการณ์วิกฤตหน้างาน</h3>
+        <p id="crisisDesc">กำลังโหลดข้อมูลสถานการณ์...</p>
+        <hr style="border:0;border-top:1px solid rgba(255,255,255,.15);margin:12px 0">
+        <h4 style="font-size:15px;color:var(--y);margin-bottom:8px">🧩 ช่องใส่ไอเทมแก้ปัญหา (คลิกช่องเพื่อใส่/ถอด):</h4>
+        <div class="slots-container" id="slotsContainer"></div>
+        <div class="alert-box" id="alertBox"></div>
       </div>
+
+      <div class="inventory-panel">
+        <h4>🎒 คลังไอเทมทั้งหมด (Inventory)</h4>
+        <p style="font-size:11px;opacity:.7;text-align:center;margin-bottom:8px">คลิกไอเทมเพื่อใส่ลงในช่องว่างซ้ายมือ</p>
+        <div class="items-grid" id="itemsGrid"></div>
+      </div>
+    </div>
+
+    <div class="sim-footer">
+      <button class="btn btn-map" onclick="openMapModal()">🗺️ ดูแผนผัง รพ.</button>
+      <button class="btn btn-action" id="verifyBtn" onclick="verifySolution()">⚡ ตรวจสอบผลลัพธ์การแก้ไข</button>
     </div>
   </div>
 
@@ -101,7 +119,7 @@ body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(
 <div class="modal-overlay" id="mapModal" onclick="if(event.target===this)closeMapModal()">
   <div class="modal-content">
     <h2 style="color:var(--y)">🗺️ แผนผังโรงพยาบาลเขาสุกิม</h2>
-    <p style="font-size:14px;opacity:.8">ใช้ประกอบการพิจารณาเลือกเส้นทางและจุดปฏิบัติการ</p>
+    <p style="font-size:14px;opacity:.8">ใช้ประกอบการวางแผนจัดวางทรัพยากรหน้างาน</p>
     <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80" alt="แผนผัง รพ.">
     <br>
     <button class="btn" onclick="closeMapModal()">ปิดหน้าต่าง</button>
@@ -109,373 +127,118 @@ body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(
 </div>
 
 <script>
-// ข้อมูล 10 เหตุการณ์วิกฤต (แต่ละเหตุการณ์มี 3 ขั้นตอนการดำเนินการที่ต้องเลือกให้ถูก)
+// รายการไอเทมทั้งหมดในเกม Simulator (มีไอคอนและชื่อ)
+const ALL_ITEMS = [
+  { id: 'c1', name: 'ผู้การเมฆ (บัญชาการ)', icon: '🧑‍✈️', type: 'char' },
+  { id: 'c2', name: 'หมอใจดี (ทีมแพทย์)', icon: '🩺', type: 'char' },
+  { id: 'c3', name: 'ช่างกล้า (ทีมอาคาร)', icon: '🔧', type: 'char' },
+  { id: 'c4', name: 'น้องข่าวด่วน (สื่อสาร)', icon: '📣', type: 'char' },
+  
+  { id: 't1', name: 'เครื่องปั่นไฟสำรอง', icon: '⚡', type: 'tool' },
+  { id: 't2', name: 'Downtime Form (กระดาษ)', icon: '📝', type: 'tool' },
+  { id: 't3', name: 'เน็ตสำรอง 5G', icon: '📡', type: 'tool' },
+  { id: 't4', name: 'ถังออกซิเจนพกพา', icon: '💨', type: 'tool' },
+  { id: 't5', name: 'รถพยาบาลฉุกเฉิน', icon: '🚑', type: 'tool' },
+  { id: 't6', name: 'ชุดอุปกรณ์ทำคลอด', icon: '👶', type: 'tool' },
+  { id: 't7', name: 'เลื่อยยนต์ตัดไม้', icon: '🪚', type: 'tool' },
+  { id: 't8', name: 'ถังน้ำสำรองฉุกเฉิน', icon: '💧', type: 'tool' }
+];
+
+// 10 เหตุการณ์จำลอง พร้อมกำหนดว่าต้องใช้ไอเทม ID อะไรบ้างถึงจะผ่าน
 const MISSIONS = [
   {
-    id: 1,
-    title: "1. พายุลมกระโชกแรง & ไฟดับทั้ง รพ.",
-    desc: "พายุฤดูร้อนพัดเข้าพื้นที่จันทบุรีอย่างรุนแรง ต้นไม้ใหญ่ล้มทับสายไฟแรงสูง ส่งผลให้ไฟฟ้าดับสนิททั้งโรงพยาบาล",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การสั่งการเบื้องต้นเพื่อเปิดปฏิบัติการฉุกเฉิน",
-        q: "ใครคือผู้มีอำนาจสูงสุดในการประกาศเปิดศูนย์ปฏิบัติการภาวะฉุกเฉิน (EOC) และควรสั่งการอย่างไร?",
-        options: [
-          { text: "🧑‍✈️ ผู้การเมฆ (ทีมบัญชาการ) สั่งเปิด EOC ทันที และประกาศแจ้งเตือนทุกแผนกผ่านวิทยุสื่อสาร", correct: true, exp: "ถูกต้อง! ผู้บัญชาการเหตุการณ์ต้องสั่งเปิด EOC เพื่อรวมศูนย์สั่งการ" },
-          { text: "🩺 หมอใจดี (ทีมแพทย์) วิ่งไปดึงปลั๊กเครื่องมือแพทย์ทุกตัวด้วยตัวเอง", correct: false, exp: "ผิดบทบาทหน้าที่ ทีมแพทย์ต้องดูแลคนไข้ ไม่ใช่ผู้สั่งการ EOC หลัก" },
-          { text: "🔧 ช่างกล้า (ทีมอาคาร) รอให้ไฟฟ้ากลับมาเองตามธรรมชาติโดยไม่ต้องทำอะไร", correct: false, exp: "ผิด! เกิดเหตุฉุกเฉินระดับนี้ต้องเปิด EOC ทันที จะรอไม่ได้" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การเลือกใช้เครื่องมือและอุปกรณ์พลังงานสำรอง",
-        q: "ตู้จ่ายไฟหลักดับสนิท อุปกรณ์ใดและทรัพยากรใดต้องถูกใช้งานเป็นลำดับแรกเพื่อกู้ชีพ?",
-        options: [
-          { text: "⚡ สั่งเดินเครื่องปั่นไฟสำรอง (Generator) และใช้การ์ด 'ปั่นไฟ' จ่ายให้โซน ER / ICU ด่วน", correct: true, exp: "ถูกต้อง! เครื่องปั่นไฟสำรองคือหัวใจสำคัญในการจ่ายไฟให้จุดวิกฤต" },
-          { text: "📱 แจกไฟฉายพกพาให้เจ้าหน้าที่เดินส่องทางเดินมืดๆ โดยไม่ต้องเปิดเครื่องปั่นไฟ", correct: false, exp: "ผิด! เครื่องมือแพทย์ในห้องฉุกเฉินต้องใช้ไฟฟ้าจากเครื่องปั่นไฟหลักเท่านั้น" },
-          { text: "🔌 ใช้สายพ่วงลากต่อไฟมาจากบ้านพักภายนอกโรงพยาบาล", correct: false, exp: "ผิดกฎความปลอดภัยและเป็นไปไม่ได้ในทางปฏิบัติ" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การประสานงานภายนอกเพื่อขอความช่วยเหลือ",
-        q: "หากน้ำมันเครื่องปั่นไฟสำรองคาดว่าจะหมดภายใน 2 ชั่วโมง ใครคือหน่วยงานภายนอกที่ต้องประสานเร่งด่วน?",
-        options: [
-          { text: "📣 น้องข่าวด่วน (ทีมสื่อสาร) ประสาน การไฟฟ้าส่วนภูมิภาค (PEA) และ ปภ. จังหวัด เพื่อขอสนับสนุนรถโมบายยูนิตและน้ำมันด่วน", correct: true, exp: "ถูกต้อง! ทีมสื่อสารต้องประสานหน่วยงานภายนอกเพื่อรองรับวิกฤตยืดเยื้อ" },
-          { text: "🧑‍✈️ สั่งให้พนักงานขับรถขับรถเก๋งไปซื้อน้ำมันถังแกลลอนที่ปั๊มน้ำมันเองทีละถัง", correct: false, exp: "ไม่เพียงพอต่อการใช้งานของโรงพยาบาลขนาดใหญ่ในภาวะวิกฤต" },
-          { text: "🩺 โทรแจ้งตำรวจจราจรให้มาช่วยทำแผลให้คนไข้", correct: false, exp: "ผิดประเด็น ปัญหาตอนนี้คือน้ำมันเครื่องปั่นไฟ ไม่ใช่เรื่องจราจร" }
-        ]
-      }
-    ]
+    id: 1, title: "1. พายุพัดเสาไฟหัก & ไฟดับทั้ง รพ.",
+    desc: "ลมกรรโชกแรงจัด ต้นไม้ล้มทับสายไฟหลัก ไฟฟ้าดับสนิททั้งโรงพยาบาล อุปกรณ์การแพทย์ในห้องฉุกเฉินกำลังจะหยุดทำงาน",
+    slots: 2, // ต้องใส่ไอเทม 2 ช่อง
+    required: ['c1', 't1'], // ต้องใช้ ผู้การเมฆ + เครื่องปั่นไฟ
+    successExp: "ยอดเยี่ยม! เปิด EOC และเดินเครื่องปั่นไฟสำรองกู้ระบบจุดวิกฤตสำเร็จ"
   },
   {
-    id: 2,
-    title: "2. ฟ้าผ่าซ้ำซ้อน & ระบบคอมพิวเตอร์ (HIS) ล่ม",
-    desc: "ท่ามกลางไฟดับ ฟ้าผ่าลงเสาสัญญาณหลัก ทำให้อินเทอร์เน็ตและระบบสารสนเทศโรงพยาบาล (HIS/HOSxP) ล่มใช้งานไม่ได้",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การแก้ปัญหาเฉพาะหน้าด้านข้อมูลผู้ป่วย",
-        q: "เมื่อระบบคอมพิวเตอร์ล่ม ทีมบริหารและเวชระเบียนต้องหยิบอุปกรณ์ใดมาใช้แทนทันที?",
-        options: [
-          { text: "📝 หยิบ 'Downtime Form (แบบฟอร์มกระดาษสำรองฉุกเฉิน)' ออกมาแจกทุกหน้างานเพื่อลงทะเบียนด้วยมือ", correct: true, exp: "ถูกต้อง! แผน BCP กำหนดให้ใช้ฟอร์มกระดาษทันทีเมื่อระบบสารสนเทศล่ม" },
-          { text: "💻 รอให้ช่างไอทีรีบูต์เครื่องคอมพิวเตอร์ซ้ำๆ จนกว่าจะติด", correct: false, exp: "เสียเวลาและทำให้ผู้ป่วยตกค้างหน้าห้องตรวจจำนวนมาก" },
-          { text: "🗣️ ให้เจ้าหน้าที่ตะโกนเรียกชื่อผู้ป่วยสลับกันไปมาด้วยปากเปล่า", correct: false, exp: "เกิดความผิดพลาดสูงมากในการจ่ายยาและรักษาพยาบาล" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การใช้การ์ดทรัพยากรดิจิทัลเพื่อกู้ระบบ",
-        q: "ทีมสนับสนุนจะกู้คืนระบบเครือข่ายชั่วคราวได้อย่างไร เมื่อไฟฟ้าหลักยังไม่มา?",
-        options: [
-          { text: "📡 ใช้การ์ด '5G / เน็ตสำรอง' ร่วมกับแบตเตอรี่สำรองเร้าเตอร์ เพื่อต่อระบบทะเบียนฉุกเฉิน", correct: true, exp: "ถูกต้อง! เน็ตสำรอง 5G ช่วยให้ระบบเวชระเบียนออนไลน์บางส่วนกลับมาใช้งานได้" },
-          { text: "🌲 ปีนขึ้นไปซ่อมเสาสัญญาณบนหลังคาตึกท่ามกลางพายุฝนฟ้าคะนอง", correct: false, exp: "อันตรายถึงชีวิตจากฟ้าผ่าซ้ำซ้อน ไม่อนุญาตให้ปฏิบัติงานกลางแจ้ง" },
-          { text: "📻 เปิดวิทยุธานินทร์ฟังเพลงแก้เครียด", correct: false, exp: "ไม่ช่วยแก้ปัญหาระบบสารสนเทศล่ม" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การสื่อสารความเสี่ยงให้บุคลากรทราบ",
-        q: "ใครควรเป็นผู้ออกประกาศแจ้งเตือนสถานการณ์ Downtime ให้แพทย์และพยาบาลทุกตึกรับทราบแนวทางปฏิบัติเดียวกัน?",
-        options: [
-          { text: "📣 ทีมบริหารและสื่อสาร ออกประกาศแนวปฏิบัติระบบกระดาษผ่านช่องทางกลุ่มไลน์ฉุกเฉินและวิทยุ", correct: true, exp: "ถูกต้อง! การสื่อสารภายในต้องรวดเร็วและเป็นทิศทางเดียวกัน" },
-          { text: "😴 ปล่อยให้แต่ละแผนกงดให้บริการไปก่อนจนกว่าพายุจะสงบ", correct: false, exp: "ผิดหลักการให้บริการทางการแพทย์ฉุกเฉิน" },
-          { text: "✉️ เขียนจดหมายใส่ขวดแก้วลอยน้ำไปแต่ละตึก", correct: false, exp: "ล้าสมัยและไม่ทันท่วงที" }
-        ]
-      }
-    ]
+    id: 2, title: "2. ฟ้าผ่าเครือข่าย HIS ล่ม",
+    desc: "ระบบคอมพิวเตอร์และเครือข่ายโรงพยาบาลล่มสนิทจากฟ้าผ่า เวชระเบียนไม่สามารถบันทึกข้อมูลคนไข้ผ่านหน้าจอได้",
+    slots: 2,
+    required: ['c4', 't2'], // ทีมสื่อสาร + ฟอร์มกระดาษ
+    successExp: "ถูกต้อง! แจกจ่าย Downtime Form กระดาษและใช้ระบบ Manual บันทึกชั่วคราวได้ราบรื่น"
   },
   {
-    id: 3,
-    title: "3. ต้นไม้ล้ม & ดินสไลด์ปิดทางเข้า รพ.",
-    desc: "ดินสไลด์และต้นไม้ใหญ่โค่นล้มทับเส้นทางเข้า-ออกหลักของโรงพยาบาล รถพยาบาลฉุกเฉินไม่สามารถวิ่งผ่านออกไปได้",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การประเมินเส้นทางและประสานภายนอก",
-        q: "ทีมใดต้องรับหน้าที่ประสานงานขอเครื่องจักรหนัก (รถแบ็คออฟ/เลื่อยยนต์) จากหน่วยงานภายนอก?",
-        options: [
-          { text: "🔧 ทีมสนับสนุน/อาคาร ประสาน ปภ. เทศบาล หรือค่ายทหารในพื้นที่ให้นำเครื่องจักรมาเคลียร์ทาง", correct: true, exp: "ถูกต้อง! ทีมอาคารและยานพาหนะต้องประสานหน่วยงานบรรเทาสาธารณภัยภายนอก" },
-          { text: "🩺 ให้พยาบาลวิชาการถือเลื่อยตัดไม้ขนาดเล็กไปตัดเองที่หน้าประตู", correct: false, exp: "ต้นไม้ใหญ่เกินกำลังคนและเสี่ยงอันตราย" },
-          { text: "📣 โทรเรียกบริษัทส่งอาหารมาส่งฟาสต์ฟู้ดแก้เครียด", correct: false, exp: "ไม่เกี่ยวข้องกับสถานการณ์ดินสไลด์ปิดถนน" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การบริหารจัดการรถพยาบาลฉุกเฉินส่วนกลาง",
-        q: "หากมีเคสวิกฤตต้องส่งต่อ (Refer) ออกนอก รพ. แต่ถนนหน้า รพ. ถูกปิด ทีมงานต้องใช้วิธีใด?",
-        options: [
-          { text: "🚑 ประสานจุดนัดพบเปลี่ยนถ่ายผู้ป่วย (Rendezvous Point) กับทีมกู้ชีพภายนอก และใช้รถขับเคลื่อน 4 ล้ออ้อมเส้นทางสำรอง", correct: true, exp: "ถูกต้อง! การกำหนดจุดส่งต่อภายนอกจุดที่ถนนขาดคือวิธีแก้ปัญหามาตรฐาน" },
-          { text: "🚁 สั่งให้ผู้ป่วยเดินเท้าฝ่ากองดินโคลนออกไปขึ้นรถเองที่ถนนใหญ่", correct: false, exp: "อันตรายและผิดหลักการเคลื่อนย้ายผู้ป่วยวิกฤต" },
-          { text: "❌ ปิดตายไม่รับส่งต่อเคสใดๆ ทั้งสิ้นปล่อยให้ตามยถากรรม", correct: false, exp: "ผิดจรรยาบรรณและมาตรฐานความปลอดภัย รพ." }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การจัดการเจ้าหน้าที่เวรบ่ายที่ตกค้าง",
-        q: "เจ้าหน้าที่เวรบ่ายเข้า รพ. ไม่ได้เพราะถนนขาด ผู้จัดการเวรต้องสั่งการอย่างไร?",
-        options: [
-          { text: "👥 ให้เจ้าหน้าที่เวรเช้าตรึงกำลังปฏิบัติงานต่อ (Overtime) พร้อมจัดหาอาหารและที่พักรองรับ และประสานรับส่งด้วยรถยกสูง", correct: true, exp: "ถูกต้อง! การบริหารกำลังคนทดแทนและการดูแลสวัสดิการคือหัวใจสำคัญ" },
-          { text: "🏃‍♂️ สั่งให้เจ้าหน้าที่ทุกคนว่ายน้ำลุยโคลนข้ามกำแพง รพ. เข้ามาทำงาน", correct: false, exp: "เสี่ยงต่อการบาดเจ็บของบุคลากรเพิ่มขึ้นไปอีก" },
-          { text: "🚪 ล็อคประตูโรงพยาบาลแล้วกลับบ้านนอน", correct: false, exp: "ละทิ้งหน้าที่ในยามวิกฤต" }
-        ]
-      }
-    ]
+    id: 3, title: "3. ดินสไลด์ปิดเส้นทางเข้า-ออก รพ.",
+    desc: "ดินโคลนและต้นไม้ใหญ่โค่นทับถนนหน้าโรงพยาบาล รถพยาบาลวิ่งรับ-ส่งต่อผู้ป่วยวิกฤตออกนอกพื้นที่ไม่ได้",
+    slots: 2,
+    required: ['c3', 't7'], // ช่างกล้า + เลื่อยยนต์/ประสาน ปภ.
+    successExp: "เยี่ยมมาก! ทีมอาคารนำเครื่องจักรเข้าเคลียร์เส้นทางและเปิดทางสำรองสำเร็จ"
   },
   {
-    id: 4,
-    title: "4. ข่าวลือโซเชียล 'รพ.ปิดบริการ' & ญาติล้น ER",
-    desc: "โซเชียลมีเดียปล่อยข่าวปลอมว่าโรงพยาบาลพังเสียหายและปิดให้บริการ ทำให้ญาติผู้ป่วยแห่มาที่ห้องฉุกเฉินด้วยความตื่นตระหนก",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การแถลงข่าวและชี้แจงข้อเท็จจริง",
-        q: "ใครและช่องทางใดเหมาะสมที่สุดในการสยบข่าวลือและชี้แจงความจริง?",
-        options: [
-          { text: "📣 ทีมบริหาร/สื่อสาร โพสต์แถลงการณ์ด่วนผ่านเพจทางการของ รพ. และตั้งจุดประชาสัมพันธ์หน้า ER", correct: true, exp: "ถูกต้อง! ต้องใช้ช่องทางทางการชี้แจงอย่างรวดเร็วเพื่อลดความตื่นตระหนก" },
-          { text: "🤫 สั่งปิดเพจเฟซบุ๊ก รพ. หนี แล้วบล็อกคอมเมนต์ทั้งหมด", correct: false, exp: "ยิ่งทำให้ประชาชนเข้าใจผิดและตื่นตระหนกหนักกว่าเดิม" },
-          { text: "📢 ส่งเสียงตะโกนบอกความจริงผ่านไมค์ลอยทีละคน", correct: false, exp: "ไม่เป็นระบบและควบคุมฝูงชนไม่ได้" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การควบคุมฝูงชนและรักษาความปลอดภัยหน้า ER",
-        q: "เพื่อความปลอดภัยของบุคลากรและผู้ป่วยในห้องฉุกเฉิน ทีม รปภ. และผู้บริหารต้องทำอย่างไร?",
-        options: [
-          { text: "🛡️ จัดตั้ง 'จุดคัดกรองญาติ (Family Waiting Area)' ด้านนอกโซนอันตราย พร้อม รปภ. ดูแลความเรียบร้อย", correct: true, exp: "ถูกต้อง! แยกโซนญาติออกจากพื้นที่ปฏิบัติงานทางการแพทย์เพื่อลดความชุลมุน" },
-          { text: "🚪 ล็อคประตูห้องฉุกเฉินขังตัวเองไว้ข้างในไม่ให้ใครเข้าออกเลย", correct: false, exp: "ทำให้ญาติยิ่งโกรธและอาจเกิดการพังประตูเข้ามาได้" },
-          { text: "🍿 แจกป๊อปคอร์นให้ญาติยืนกินรอหน้าห้องตรวจ", correct: false, exp: "ไม่เหมาะสมกับสถานการณ์วิกฤต" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การสื่อสารข้อมูลผู้ป่วยให้ญาติคลายกังวล",
-        q: "วิธีการใดช่วยลดความตื่นตระหนกของญาติที่มารอหน้า ER ได้ดีที่สุด?",
-        options: [
-          { text: "📋 จัดเจ้าหน้าที่ Liaison (ผู้ประสานงานญาติ) ออกมาอัปเดตอาการผู้ป่วยทุก 30 นาที", correct: true, exp: "ถูกต้อง! การสื่อสารสม่ำเสมอช่วยลดความวิตกกังวลและความขัดแย้ง" },
-          { text: "🔇 ทำเป็นไม่สนใจปล่อยให้ญาติยืนรอนานหลายชั่วโมงโดยไม่มีใครบอกอะไร", correct: false, exp: "เพิ่มความตึงเครียดและอาจนำไปสู่การทำร้ายร่างกายบุคลากร" },
-          { text: "📢 เปิดเพลงเสียงดังกลบเสียงโวยวายของญาติ", correct: false, exp: "เป็นการแก้ปัญหาที่ไม่ถูกจุด" }
-        ]
-      }
-    ]
+    id: 4, title: "4. ข่าวปลอมโซเชียล & ญาติล้น ER",
+    desc: "มีเพจปลอมปล่อยข่าวว่าโรงพยาบาลปิดตัวลง ญาติผู้ป่วยแห่มาออกันหน้าห้องฉุกเฉินจนเกิดความชุลมุนวุ่นวาย",
+    slots: 2,
+    required: ['c4', 'c1'], // น้องข่าวด่วน + ผู้การเมฆ
+    successExp: "ยอดเยี่ยม! ออกแถลงการณ์ชี้แจงข้อเท็จจริงและจัดตั้งจุดประสานงานญาติได้สงบเรียบร้อย"
   },
   {
-    id: 5,
-    title: "5. น้ำประปาไม่ไหล & ระบบสุขาภิบาลขัดข้อง",
-    desc: "แรงดันน้ำประปาเมืองตัดขาดเนื่องจากอุทกภัยรอบนอก ทำให้โรงพยาบาลไม่มีน้ำใช้ในระบบหอผู้ป่วยและห้องผ่าตัด",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การบริหารจัดการน้ำสำรองฉุกเฉิน",
-        q: "ทีมสนับสนุนและอาคารต้องตรวจสอบและเปิดใช้อุปกรณ์ใดเป็นอันดับแรก?",
-        options: [
-          { text: "💧 เปิดระบบถังเก็บน้ำสำรองใต้ดินและบนดาดฟ้า พร้อมจัดลำดับการใช้น้ำ (ห้องผ่าตัด/ICU มาก่อน)", correct: true, exp: "ถูกต้อง! ต้องบริหารจัดการน้ำสำรองตามลำดับความสำคัญทางการแพทย์" },
-          { text: "🌧️ เอาถังน้ำไปวางรองน้ำฝนจากชายคาหลังคารั่วมาใช้ล้างแผล", correct: false, exp: "น้ำฝนไม่ผ่านการฆ่าโรค เสี่ยงต่อการติดเชื้อในโรงพยาบาลสูงมาก" },
-          { text: "🚰 ปล่อยให้ทุกก๊อกน้ำไหลทิ้งไว้จนกว่าน้ำจะหมดถัง", correct: false, exp: "ทำให้ปริมาณน้ำสำรองหมดลงอย่างรวดเร็วโดยเปล่าประโยชน์" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การประสานรถน้ำภายนอก",
-        q: "หากน้ำสำรองในถังใกล้หมด ใครคือหน่วยงานที่ต้องรีบประสานขอรถบรรทุกน้ำ?",
-        options: [
-          { text: "🔧 ทีมสนับสนุน ประสาน องค์กรปกครองส่วนท้องถิ่น หรือการประปา นำรถน้ำมาเติมถังสำรอง รพ.", correct: true, exp: "ถูกต้อง! การขอสนับสนุนรถน้ำจากภายนอกคือแนวทางปฏิบัติมาตรฐาน" },
-          { text: "🌊 ให้เจ้าหน้าที่ทุกคนพากันเดินไปตักน้ำจากลำคลองธรรมชาติหลัง รพ.", correct: false, exp: "ไม่ปลอดภัยและไม่สะอาดพอสำหรับใช้ในโรงพยาบาล" },
-          { text: "🛒 สั่งน้ำดื่มขวดเล็กมาใช้ล้างตัวผู้ป่วยทั้งหมด", correct: false, exp: "สิ้นเปลืองงบประมาณและมีปริมาณไม่เพียงพอ" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> มาตรการควบคุมการใช้น้ำชั่วคราว",
-        q: "เพื่อประหยัดน้ำสำรอง ทีมบริหารควรประกาศมาตรการใดให้บุคลากรปฏิบัติ?",
-        options: [
-          { text: "🛑 งดใช้น้ำในกิจกรรมที่ไม่จำเป็นชั่วคราว เช่น งดซักผ้าปูที่นอนรอบพิเศษ และใช้เจลแอลกอฮอล์ล้างมือแทนน้ำ", correct: true, exp: "ถูกต้อง! การใช้เจลแอลกอฮอล์ทดแทนและการจำกัดกิจกรรมช่วยยืดอายุน้ำสำรอง" },
-          { text: "🚿 ปิดตึกแล้วไล่ให้คนไข้กลับบ้านไปอาบน้ำที่บ้านเอง", correct: false, exp: "ไม่อนุญาตให้ไล่คนไข้กลับบ้านตามอำเภอใจ" },
-          { text: "🚫 สั่งห้ามไม่ให้ใครเข้าห้องน้ำเลยตลอด 24 ชั่วโมง", correct: false, exp: "สร้างความเดือดร้อนและส่งผลเสียต่อสุขอนามัย" }
-        ]
-      }
-    ]
+    id: 5, title: "5. น้ำประปาไม่ไหลทั้งโรงพยาบาล",
+    desc: "ท่อประปาหลักเสียหายจากภัยพิบัติรอบนอก ไม่มีน้ำใช้ในระบบหอผู้ป่วยและห้องผ่าตัด",
+    slots: 2,
+    required: ['c3', 't8'], // ช่างกล้า + ถังน้ำสำรอง
+    successExp: "ถูกต้อง! เปิดใช้ระบบถังน้ำสำรองบนดาดฟ้าและประสานรถน้ำ อปท. เข้ามาเติมเสริม"
   },
   {
-    id: 6,
-    title: "6. ท่อออกซิเจนหลักรั่วไหล & ผู้ป่วยวิกฤตขาดแคลน",
-    desc: "แรงกระแทกจากพายุทำให้ท่อส่งออกซิเจนเหลวเมนหลักเกิดรอยรั่ว ความดันออกซิเจนตกวูบส่งผลต่อผู้ป่วยใช้เครื่องช่วยหายใจ",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การระงับเหตุเฉพาะหน้าด่วนที่สุด",
-        q: "เมื่อแรงดันออกซิเจนตก ทีมช่างและทีมแพทย์ต้องทำอย่างไรทันที?",
-        options: [
-          { text: "⚡ ปิดวาล์วเมนโซนที่รั่ว และสลับเปลี่ยนมาใช้ 'ถังออกซิเจนสำรองแบบพกพา (E-Tank)' ให้ผู้ป่วยวิกฤตทุกเตียงทันที", correct: true, exp: "ถูกต้อง! การเปลี่ยนมาใช้ถังสำรองรายเตียงคือมาตรการช่วยชีวิตเร่งด่วน" },
-          { text: "🛜 ยืนลุ้นเอาใจช่วยให้รอยรั่วประสานติดกันได้เอง", correct: false, exp: "ผู้ป่วยจะขาดออกซิเจนและเสียชีวิตภายในไม่กี่นาที" },
-          { text: "💨 ให้เจ้าหน้าที่ช่วยกันเป่าลมหายใจใส่ท่อออกซิเจนแทน", correct: false, exp: "เป็นไปไม่ได้และไม่ออกซิเจนบริสุทธิ์พอ" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การซ่อมแซมและตรวจสอบระบบท่อก๊าซ",
-        q: "ใครคือผู้มีหน้าที่รับผิดชอบตรวจสอบและเชื่อมต่อท่อก๊าซทางการแพทย์ที่เสียหาย?",
-        options: [
-          { text: "🔧 ทีมช่างอาคารร่วมกับบริษัทผู้ 1 ตรวจสอบระบบท่อ และเปิดใช้วาล์วสำรอง (Manifold Backup)", correct: true, exp: "ถูกต้อง! ต้องอาศัยผู้เชี่ยวชาญระบบก๊าซทางการแพทย์และทีมช่าง รพ." },
-          { text: "🎨 ให้แม่บ้านเอาสีทาบ้านมาทาทับรอยรั่ว", correct: false, exp: "อันตรายมาก ก๊าซออกซิเจนทำปฏิกิริยารุนแรงกับสารเคมีบางชนิด" },
-          { text: "🔨 ใช้ค้อนทุบอัดท่อเหล็กให้แบนปิดสนิท", correct: false, exp: "ทำให้ระบบจ่ายก๊าซพังเสียหายถาวรทั้งตึก" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การบริหารจัดการทรัพยากรก๊าซที่เหลือ",
-        q: "หากถังออกซิเจนสำรองมีจำกัด ทีมแพทย์ต้องจัดลำดับความสำคัญ (Triage) อย่างไร?",
-        options: [
-          { text: "🩺 จัดสรรถังออกซิเจนให้ผู้ป่วยวิกฤต (ICU/NICU และผู้ป่วยใช้เครื่องช่วยหายใจ) ก่อนเป็นอันดับแรกสูงสุด", correct: true, exp: "ถูกต้อง! ยึดหลักการแพทย์ฉุกเฉินจัดสรรทรัพยากรตามความรุนแรงของโรค" },
-          { text: "🎲 จับฉลากแจกถังออกซิเจนให้คนไข้ใครจับได้ก็ได้ใช้", correct: false, exp: "ผิดหลักจริยธรรมทางการแพทย์อย่างร้ายแรง" },
-          { text: "📦 เก็บถังออกซิเจนไว้ทั้งหมดในห้องล็อกเกอร์ส่วน1ไม่อนุญาตให้ใครใช้", correct: false, exp: "กักตุนเวชภัณฑ์ในยามวิกฤต" }
-        ]
-      }
-    ]
+    id: 6, title: "6. ท่อออกซิเจนเมนหลักรั่วไหล",
+    desc: "แรงกระแทกทำให้ท่อส่งออกซิเจนเหลวเกิดรอยรั่ว ผู้ป่วยในหอผู้ป่วยวิกฤตกำลังจะขาดออกซิเจน",
+    slots: 2,
+    required: ['c2', 't4'], // หมอใจดี + ถังออกซิเจนพกพา
+    successExp: "เยี่ยมมาก! สลับเปลี่ยนมาใช้ถังออกซิเจนพกพา (E-Tank) รายเตียงช่วยชีวิตผู้ป่วยทันเวลา"
   },
   {
-    id: 7,
-    title: "7. ลิฟต์ติดค้าง & มีผู้ป่วยติดอยู่ภายใน",
-    desc: "ไฟดับกะทันหันขณะพายุเข้า ทำให้ลิฟต์โดยสารรับส่งผู้ป่วยขัดข้องค้างระหว่างชั้น 2 และชั้น 3 โดยมีผู้ป่วยและญาติด้านใน",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การสื่อสารกับผู้ติดค้างในลิฟต์",
-        q: "สิ่งแรกที่ทีมช่วยเหลือต้องทำเมื่อไปถึงหน้าลิฟต์ที่ค้างคืออะไร?",
-        options: [
-          { text: "🗣️ ตะโกนสื่อสารให้กำลังใจผู้ติดภายใน บอกให้ตั้งสติ และห้ามงัดประตูลิฟต์ออกเองเด็ดขาด", correct: true, exp: "ถูกต้อง! ต้องสื่อสารให้ผู้ป่วยสงบสติอารมณ์และห้ามพยายามปีนออกเองอันตรายมาก" },
-          { text: "💣 เอาค้อนปอนด์ทุบประตูลิฟต์ให้พังทันทีโดยไม่ดูชั้น", correct: false, exp: "เสี่ยงทำให้ผู้ป่วยตกหลุมลิฟต์หรือบาดเจ็บรุนแรง" },
-          { text: "🚶‍♂️ เดินหนีปล่อยทิ้งไว้เพราะหมดเวลาเวรทำงาน", correct: false, exp: "ละเลยความปลอดภัยของผู้ป่วยในความดูแล" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การใช้กุญแจปลดล็อคและทีมช่างผู้ชำนาญ",
-        q: "ใครคือผู้มีอำนาจและอุปกรณ์ในการไขประตูลิฟต์ฉุกเฉินอย่างถูกต้องปลอดภัย?",
-        options: [
-          { text: "🔧 ทีมช่างอาคารผู้ชำนาญการ ร่วมกับบริษัทลิฟต์ ใช้กุญแจปลดล็อค (Emergency Key) และระบบเบรกมือโยก", correct: true, exp: "ถูกต้อง! ต้องใช้ช่างเทคนิคเฉพาะทางที่มีอุปกรณ์และคู่มือลิฟต์รุ่นนั้นๆ" },
-          { text: "🧹 ให้แม่บ้านใช้ไม้ถูพื้นแยงเข้าไปงัดประตูลิฟต์", correct: false, exp: "อุปกรณ์ไม่ถูกต้องและเสี่ยงตกร่องลิฟต์" },
-          { text: "📞 โทรเรียกช่างแอร์ซ่อมบ้านมาดูลิฟต์โรงพยาบาล", correct: false, exp: "ช่างแอร์ไม่เชี่ยวชาญระบบลิฟต์โดยสารขนาดใหญ่" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การประเมินสุขภาพหลังช่วยเหลือออกมา",
-        q: "เมื่อช่วยเหลือผู้ป่วยและญาติออกจากลิฟต์ได้แล้ว ขั้นตอนการแพทย์ใดต้องทำต่อทันที?",
-        options: [
-          { text: "🩺 ทีมแพทย์ ER ประเมินสัญญาณชีพ ตรวจสภาพจิตใจ และให้การปฐมพยาบาลภาวะตื่นตระหนก (Panic)", correct: true, exp: "ถูกต้อง! ผู้ป่วยที่ติดในที่แคบมืดอาจมีภาวะขาดอากาศหรือช็อกทางจิตใจ" },
-          { text: "✍️ ให้เซ็นใบยินยอมรับสภาพความซวยแล้วปล่อยกลับบ้านทันที", correct: false, exp: "ไม่ผ่านการตรวจประเมินทางการแพทย์" },
-          { text: "📸 ถ่ายรูปเซลฟี่ลงโซเชียลประจานความซวย", correct: false, exp: "ละเมิดสิทธิผู้ป่วยและผิดกฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA)" }
-        ]
-      }
-    ]
+    id: 7, title: "7. ลิฟต์ติดค้างระหว่างชั้น",
+    desc: "ไฟฟ้าดับกะทันหันทำให้ลิฟต์ขนส่งผู้ป่วยค้างระหว่างชั้น 2 และชั้น 3 มีผู้ป่วยติดอยู่ข้างใน",
+    slots: 2,
+    required: ['c3', 'c2'], // ช่างกล้า + หมอใจดี
+    successExp: "ถูกต้อง! ทีมช่างไขระบบฉุกเฉินช่วยเหลือผู้ป่วยออกมาได้อย่างปลอดภัย พร้อมทีมแพทย์ประเมินอาการ"
   },
   {
-    id: 8,
-    title: "8. ผู้ป่วยคลอดฉุกเฉินระหว่างไฟดับพายุโหม",
-    desc: "หญิงตั้งครรภ์แก่ใกล้คลอดประสบภาวะเจ็บครรภ์ฉุกเฉิน ทารกกำลังจะคลอดออกมาในโซนตึกผู้ป่วยในที่ไฟฟ้าดับสนิท",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การเคลื่อนย้ายและเลือกพื้นที่ปลอดภัย",
-        q: "ทีมแพทย์และพยาบาลต้องตัดสินใจอย่างไรท่ามกลางความมืดและพายุ?",
-        options: [
-          { text: "🏥 เคลื่อนย้ายคุณแม่ไป 'ห้องคลอดสำรอง' หรือจุดที่ติดตั้งไฟฉุกเฉินและเครื่องสำรองไฟพร้อมทันที", correct: true, exp: "ถูกต้อง! ต้องรีบย้ายไปยังพื้นที่ที่มีแสงสว่างและอุปกรณ์ทำคลอดพร้อมที่สุด" },
-          { text: "🛌 ทำคลอดบนเตียงนอนเดิมมืดๆ โดยใช้แสงไฟจากหน้าจอโทรศัพท์มือถือ", correct: false, exp: "เสี่ยงต่อการติดเชื้อและการมองเห็นที่ไม่ชัดเจนของทีมแพทย์" },
-          { text: "🚕 บอกให้คุณแม่กลั้นใจรออีก 3 วันจนกว่าพายุจะสงบแล้วค่อยคลอด", correct: false, exp: "เป็นไปไม่ได้ตามธรรมชาติทางชีววิทยา" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การเตรียมอุปกรณ์ช่วยชีวิตทารกแรกเกิด",
-        q: "อุปกรณ์สำคัญใดที่ทีมกุมารแพทย์ต้องเตรียมพร้อมรับมือภาวะแทรกซ้อน?",
-        options: [
-          { text: "👶 เตรียม 'Infant Warper (ตู้อบ/โคมไฟให้ความอบอุ่นเด็ก)' ชนิดใช้แบตเตอรี่ และชุดกู้ชีพทารก", correct: true, exp: "ถูกต้อง! ทารกแรกเกิดในภาวะพายุเสี่ยงภาวะตัวเย็นจัด (Hypothermia) ต้องให้ความอบอุ่นด่วน" },
-          { text: "🧊 เตรียมถังน้ำแข็งแช่เย็นจัดสำหรับเด็กแรกเกิด", correct: false, exp: "อันตรายถึงชีวิต! เด็กแรกเกิดห้ามโดนความเย็นจัดเด็ดขาด" },
-          { text: "🧸 เอาตุ๊กตาหมีมาให้คุณแม่กอดแทนลูก", correct: false, exp: "เด็กกำลังจะคลอดจริงไม่ใช่เรื่องล้อเล่น" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การบันทึกสถิติและรายงานศูนย์ EOC",
-        q: "เมื่อแม่และเด็กปลอดภัยดีแล้ว ทีมทำคลอดต้องทำสิ่งใดต่อ?",
-        options: [
-          { text: "📊 รายงานเคสด่วนเข้าศูนย์ EOC ว่า 'ปลอดภัยทั้งแม่และเด็ก' พร้อมบันทึกเวชระเบียนฉุกเฉิน", correct: true, exp: "ถูกต้อง! รายงานสถานการณ์ให้ศูนย์บัญชาการรับทราบเพื่อบันทึกสถิติจัดเก็บ" },
-          { text: "🎉 จุดพลุเฉลิมฉลองเสียงดังสนั่นโรงพยาบาลท่ามกลางพายุ", correct: false, exp: "เพิ่มความตื่นตระหนกและอันตรายจากประกายไฟ" },
-          { text: "🤫 เก็บเป็นความลับห้ามบอกใครเด็ดขาด", correct: false, exp: "ขัดต่อระบบรายงานทางการแพทย์" }
-        ]
-      }
-    ]
+    id: 8, title: "8. ผู้ป่วยคลอดฉุกเฉินท่ามกลางความมืด",
+    desc: "หญิงตั้งครรภ์เจ็บครรภ์คลอดกะทันหันในโซนตึกที่ไฟฟ้าดับสนิท ทารกกำลังจะคลอด",
+    slots: 2,
+    required: ['c2', 't6'], // หมอใจดี + ชุดทำคลอด
+    successExp: "ยอดเยี่ยม! เคลื่อนย้ายเข้าห้องคลอดสำรองและใช้ชุดอุปกรณ์ทำคลอดปลอดภัยทั้งแม่และเด็ก"
   },
   {
-    id: 9,
-    title: "9. Wild Card: เจ้าหน้าที่บาดเจ็บฉุกเฉินหน้างาน",
-    desc: "ขณะที่เจ้าหน้าที่กำลังช่วยกันย้ายกระสอบทรายกันน้ำท่วม มีกิ่งไม้ใหญ่ปลิวมากระแทกทีมสนับสนุนบาดเจ็บที่ขาและหมดสติ",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การช่วยเหลือเพื่อนร่วมงานเบื้องต้น",
-        q: "ทีมที่พบเห็นเหตุการณ์ต้องทำตามขั้นตอนการปฐมพยาบาลใดเป็นอันดับแรก?",
-        options: [
-          { text: "⛑️ ประเมินความปลอดภัยพื้นที่ ปลดภาระอันตราย และแจ้งทีม ER มารับตัวผู้บาดเจ็บเข้าห้องฉุกเฉินทันที", correct: true, exp: "ถูกต้อง! ความปลอดภัยของผู้ช่วยเหลือต้องมาอันดับแรก และส่งต่อผู้ป่วยเจ็บอย่างรวดเร็ว" },
-          { text: "📸 ถ่ายคลิปวิดีโอลง TikTok โพสต์ขอเรี่ยไรเงินบริจาคทันที", correct: false, exp: "ละเมิดความเป็นส่วนตัวและละเลยการช่วยเหลือเร่งด่วน" },
-          { text: "🧹 เอาไม้กวาดกวาดผู้บาดเจ็บไปไว้ข้างทางแล้วทำงานต่อ", correct: false, exp: "ไร้มนุษยธรรมและอาจทำให้กระดูกหักเคลื่อนผิดรูปหนักกว่าเดิม" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การจัดกำลังคนทดแทนอัตรากำลังที่หายไป",
-        q: "เมื่อกำลังคนในทีมลดลง 1 คนจากอุบัติเหตุ ผู้จัดการทีมต้องแก้ปัญหาอย่างไร?",
-        options: [
-          { text: "🩺 ใช้การ์ด 'คนเสริม (Staff Support)' ดึงเจ้าหน้าที่สำรองจากแผนกอื่นมาปฏิบัติงานแทนชั่วคราว", correct: true, exp: "ถูกต้อง! การใช้กำลังคนสำรองตามแผน BCP ช่วยทดแทนอัตรากำลังที่ขาดหายไปได้" },
-          { text: "🛑 สั่งปิดแผนกทั้งหมดแล้วกลับบ้านกันให้หมด", correct: false, exp: "โรงพยาบาลไม่สามารถหยุดให้บริการได้" },
-          { text: "🤖 เอาหุ่นยนต์พลาสติกมาเดินถือแฟ้มแทนคน", correct: false, exp: "เทคโนโลยีปัจจุบันยังทดแทนแรงงานคนในภาวะวิกฤตหน้างานไม่ได้" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การรายงานอุบัติเหตุตามระบบความปลอดภัย (IC/OSH)",
-        q: "ขั้นตอนสุดท้ายหลังการรักษาพยาบาลเพื่อนร่วมงานเสร็จสิ้นคือข้อใด?",
-        options: [
-          { text: "📋 บันทึกรายงานอุบัติเหตุจากการทำงาน (Incident Report) เพื่อนำมาปรับปรุงมาตรการความปลอดภัยองค์กร", correct: true, exp: "ถูกต้อง! ต้องบันทึกสถิติอุบัติเหตุเพื่อหาแนวทางป้องกันไม่ให้เกิดขึ้นซ้ำ" },
-          { text: "🔥 เผาทำลายหลักฐานเสื้อผ้าที่เปื้อนเลือดทิ้งทั้งหมด", correct: false, exp: "ทำลายหลักฐานและผิดกฎการจัดการขยะติดเชื้อ" },
-          { text: "🤐 แกล้งทำเป็นว่าไม่มีอะไรเกิดขึ้น", correct: false, exp: "พลาดโอกาสในการพัฒนาความปลอดภัยในการทำงานของ รพ." }
-        ]
-      }
-    ]
+    id: 9, title: "9. เจ้าหน้าที่บาดเจ็บฉุกเฉินหน้างาน",
+    desc: "เจ้าหน้าที่ภาคสนามถูกกิ่งไม้ปลิวมากระแทกได้รับบาดเจ็บสาหัสและหมดสติขณะปฏิบัติงาน",
+    slots: 2,
+    required: ['c2', 't5'], // หมอใจดี + รถพยาบาล
+    successExp: "ถูกต้อง! ปฐมพยาบาลเบื้องต้นและส่งทีมรถพยาบาลรับตัวเข้าห้องฉุกเฉินทันที"
   },
   {
-    id: 10,
-    title: "10. พายุสงบ & สรุปบทเรียนถอดบทเรียน (AAR)",
-    desc: "ผ่านพ้น 45 นาทีอันยาวนาน พายุอ่อนกำลังลงและประกาศยกเลิกภาวะฉุกเฉิน ทุกทีมต้องเข้าร่วมกระบวนการสรุปผลขั้นสุดท้าย",
-    steps: [
-      {
-        desc: "<b>ขั้นตอนที่ 1:</b> การสำรวจความเสียหายภาพรวม (Damage Assessment)",
-        q: "ใครต้องเป็นผู้นำทีมเดินสำรวจความเสียหายของอาคารและระบบหลังพายุสงบ?",
-        options: [
-          { text: "🔧 ทีมสนับสนุน/อาคาร ร่วมกับวิศวกรและผู้บริหาร เดินสำรวจโครงสร้างตึก ระบบไฟ และรอยรั่วซึม", correct: true, exp: "ถูกต้อง! ต้องให้ผู้เชี่ยวชาญด้านอาคารตรวจสอบความปลอดภัยทางโครงสร้างก่อนเปิดตึกใช้งาน" },
-          { text: "👶 ให้เด็กฝึกงานเดินตรวจดูด้วยตาเปล่าคนเดียวรอบตึกมืดๆ", correct: false, exp: "อันตรายจากโครงสร้างอาจพังถล่มซ้ำ" },
-          { text: "🔮 ให้หมอดูมานั่งทางในทำนายว่าตึกจะถล่มไหม", correct: false, exp: "ขาดหลักวิชาการทางวิศวกรรม" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 2:</b> การประชุมสรุปบทเรียนร่วมกัน (After Action Review - AAR)",
-        q: "กระบวนการ AAR ที่ดีหลังซ้อมแผนเสร็จควรเน้นเรื่องใดมากที่สุด?",
-        options: [
-          { text: "💬 เปิดโอกาสให้ทุกทีมสะท้อนปัญหา จุดอ่อน และอุปสรรคที่พบอย่างตรงไปตรงมาเพื่อปรับปรุงแผน BCP", correct: true, exp: "ถูกต้อง! แก่นแท้ของ AAR คือการเรียนรู้จากข้อผิดพลาดเพื่อพัฒนาแผนให้ดีขึ้น" },
-          { text: "🏆 แจกรางวัลกล่าวโทษหาตัวคนผิดที่ทำให้เกิดข้อผิดพลาดในทีม", correct: false, exp: "สร้างบรรยากาศเชิงลบและทำให้คนไม่กล้ารายงานความจริง" },
-          { text: "📜 นั่งเงียบๆ ต่างคนต่างแยกย้ายกลับบ้านโดยไม่มีการพูดคุย", correct: false, exp: "เสียประโยชน์จากการฝึกซ้อมแผนอย่างน่าเสียดาย" }
-        ]
-      },
-      {
-        desc: "<b>ขั้นตอนที่ 3:</b> การจัดทำรายงานเสนอผู้บริหารสูงสุด",
-        q: "ขั้นตอนสุดท้ายก่อนจบภารกิจ 45 นาทีคือนำข้อมูลอะไรไปส่งผู้บริหาร?",
-        options: [
-          { text: "📊 สรุปผลคะแนน ข้อเสนอแนะ และแผนปรับปรุงเร่งด่วน (Corrective Action Plan) เสนอผู้บริหาร รพ.", correct: true, exp: "ถูกต้อง! นำเสนอรายงานรูปธรรมเพื่อนำไปจัดสรรงบประมาณและพัฒนา รพ. ต่อไป 🎉" },
-          { text: "🎨 ส่งภาพวาดระบายสีรูปพายุฝน", correct: false, exp: "ไม่เป็นทางการและไม่ตอบโจทย์การบริหารงานโรงพยาบาล" },
-          { text: "🗑️ ลบไฟล์ข้อมูลทั้งหมดทิ้งแล้วเริ่มต้นนับหนึ่งใหม่", correct: false, exp: "สูญหายข้อมูลสำคัญทั้งหมดที่ซ้อมมา" }
-        ]
-      }
-    ]
+    id: 10, title: "10. พายุสงบ & สรุปบทเรียน AAR",
+    desc: "สถานการณ์พายุคลี่คลาย ทุกหน่วยงานต้องร่วมกันถอดบทเรียนความเสียหายเพื่อจัดทำรายงานเสนอผู้บริหาร",
+    slots: 2,
+    required: ['c1', 'c4'], // ผู้การเมฆ + น้องข่าวด่วน
+    successExp: "สำเร็จภารกิจทั้งหมด! จัดประชุม AAR และสรุปรายงานแผน BCP ส่งผู้บริหารได้สมบูรณ์แบบ 🎉"
   }
 ];
 
-// ตัวแปรสถานะเกมปัจจุบัน
 let currentMission = null;
-let currentStepIdx = 0;
-let errorsLeft = 3;
-let completedMissions = JSON.parse(localStorage.getItem('ksk_completed') || '[]');
+let currentSlots = []; // เก็บ item ID ที่ผู้เล่นใส่ลงในช่อง
+let completedMissions = JSON.parse(localStorage.getItem('ksk_sim_done') || '[]');
 
 const $ = id => document.getElementById(id);
 
-// แสดงหน้า Hub เลือกภารกิจ
+// แสดงหน้าหลัก Hub
 function renderHub() {
   $('hubScreen').style.display = 'block';
-  $('gameScreen').style.display = 'none';
+  $('simScreen').style.display = 'none';
 
   let html = '';
   MISSIONS.forEach(m => {
     const isDone = completedMissions.includes(m.id);
     html += `
-      <div class="mission-card ${isDone ? 'completed' : ''}" onclick="startMission(${m.id})">
-        <span class="mission-num">เหตุการณ์ที่ ${m.id} / 10</span>
+      <div class="mission-card ${isDone ? 'completed' : ''}" onclick="startSim(${m.id})">
+        <span class="mission-num">ภารกิจที่ ${m.id} / 10</span>
         <h3>${m.title}</h3>
         <p>${m.desc}</p>
-        <div style="margin-top:12px;font-size:14px;color:${isDone ? 'var(--g)' : 'var(--y)'};font-weight:600">
-          ${isDone ? '✔ ผ่านภารกิจแล้ว (คลิกเล่นซ้ำได้)' : '▶ เริ่มดำเนินการขั้นตอนนี้'}
+        <div style="margin-top:10px;font-size:13px;color:${isDone ? 'var(--g)' : 'var(--y)'};font-weight:600">
+          ${isDone ? '✔ ผ่านสถานการณ์แล้ว (เล่นซ้ำได้)' : '▶ เริ่มจำลองสถานการณ์'}
         </div>
       </div>
     `;
@@ -483,142 +246,118 @@ function renderHub() {
   $('missionGrid').innerHTML = html;
 }
 
-// เริ่มเล่นเหตุการณ์ที่เลือก
-function startMission(id) {
+// เริ่มเล่น Simulator ของภารกิจนั้นๆ
+function startSim(id) {
   currentMission = MISSIONS.find(m => m.id === id);
-  currentStepIdx = 0;
-  errorsLeft = 3;
+  currentSlots = new Array(currentMission.slots).fill(null);
 
   $('hubScreen').style.display = 'none';
-  $('gameScreen').style.display = 'block';
-  loadStep();
-}
+  $('simScreen').style.display = 'block';
+  $('simTitle').textContent = `ภารกิจที่ ${currentMission.id}: ${currentMission.title}`;
+  $('crisisDesc').textContent = currentMission.desc;
 
-// โหลดขั้นตอนปัจจุบัน
-function loadStep() {
-  const step = currentMission.steps[currentStepIdx];
-  $('missionBadge').textContent = `ภารกิจที่ ${currentMission.id}: ขั้นตอนที่ ${currentStepIdx + 1} จาก 3`;
-  $('triesBox').innerHTML = `❌ โอกาสผิดพลาด: ${errorsLeft}/3 ครั้ง`;
-  $('stepTitle').textContent = currentMission.title;
-  $('stepDesc').innerHTML = step.desc;
-  $('questionText').textContent = step.q;
-
-  // ซ่อนปุ่มถัดไปและแจ้งเตือน
-  $('nextBtn').style.display = 'none';
-  const alertBox = $('feedbackAlert');
+  const alertBox = $('alertBox');
   alertBox.style.display = 'none';
-  alertBox.className = 'feedback-alert';
+  alertBox.className = 'alert-box';
 
-  // สุ่มสลับตัวเลือกข้อสอบเพื่อความสนุก
-  let opts = [...step.options];
-  opts.sort(() => Math.random() - 0.5);
-
-  let html = '';
-  opts.forEach((opt, idx) => {
-    html += `<button class="option-btn" id="opt-${idx}" onclick='checkAnswer(${JSON.stringify(opt)}, ${idx})'>${opt.text}</button>`;
-  });
-  $('optionsGrid').innerHTML = html;
+  renderSlots();
+  renderInventory();
 }
 
-// ตรวจสอบคำตอบ
-function checkAnswer(opt, btnIdx) {
-  const alertBox = $('feedbackAlert');
-  const btn = $(`opt-${btnIdx}`);
+// วาดช่องใส่ไอเทม (Slots)
+function renderSlots() {
+  let html = '';
+  for (let i = 0; i < currentMission.slots; i++) {
+    const itemId = currentSlots[i];
+    const item = ALL_ITEMS.find(it => it.id === itemId);
 
-  if (opt.correct) {
-    // เลือกถูก
-    btn.className = 'option-btn correct';
-    disableAllOptions();
-
-    alertBox.innerHTML = `✅ <b>ยอดเยี่ยม! ตัดสินใจถูกต้อง:</b> ${opt.exp}`;
-    alertBox.className = 'feedback-alert success';
-    alertBox.style.display = 'block';
-
-    // ถ้าผ่านครบ 3 ขั้นตอนของเหตุการณ์นี้
-    if (currentStepIdx < currentMission.steps.length - 1) {
-      $('nextBtn').style.display = 'block';
-      $('nextBtn').textContent = 'ไปยังขั้นตอนถัดไป ➔';
+    if (item) {
+      html += `
+        <div class="slot filled" onclick="removeItem(${i})" title="คลิกเพื่อถอดไอเทมออก">
+          <div style="font-size:24px">${item.icon}</div>
+          <div class="item-placed">${item.name}</div>
+          <span>(คลิกเพื่อถอด)</span>
+        </div>
+      `;
     } else {
-      // จบภารกิจนี้แล้ว
-      if (!completedMissions.includes(currentMission.id)) {
-        completedMissions.push(currentMission.id);
-        localStorage.setItem('ksk_completed', JSON.stringify(completedMissions));
-      }
-      $('nextBtn').style.display = 'block';
-      $('nextBtn').textContent = '🏆 สำเร็จภารกิจ! กลับหน้าหลัก';
-      $('nextBtn').onclick = returnToHub;
+      html += `
+        <div class="slot" onclick="focusSlot(${i})">
+          <span>➕ ช่องว่างที่ ${i+1}</span>
+          <span style="font-size:11px">เลือกไอเทมจากขวามาใส่</span>
+        </div>
+      `;
     }
+  }
+  $('slotsContainer').innerHTML = html;
+}
+
+// วาดแผงคลังไอเทมขวามือ
+function renderInventory() {
+  let html = '';
+  ALL_ITEMS.forEach(it => {
+    html += `
+      <div class="item-card" onclick="selectItem('${it.id}')">
+        <div class="icon">${it.icon}</div>
+        <div class="name">${it.name}</div>
+      </div>
+    `;
+  });
+  $('itemsGrid').innerHTML = html;
+}
+
+// เมื่อคลิกไอเทมจากคลังขวา ให้นำไปใส่ช่องว่างช่องแรกที่ว่างอยู่
+function selectItem(itemId) {
+  const emptyIdx = currentSlots.indexOf(null);
+  if (emptyIdx !== -1) {
+    currentSlots[emptyIdx] = itemId;
+    renderSlots();
   } else {
-    // เลือกผิด
-    errorsLeft--;
-    $('triesBox').innerHTML = `❌ โอกาสผิดพลาด: ${errorsLeft}/3 ครั้ง`;
-    btn.className = 'option-btn wrong';
-    btn.disabled = true;
-
-    if (errorsLeft > 0) {
-      alertBox.innerHTML = `⚠️ <b>ยังไม่ถูกต้องครับ:</b> ${opt.exp}<br><em>กรุณาวิเคราะห์แล้วลองเลือกใหม่อีกครั้ง (เหลือโอกาสอีก ${errorsLeft} ครั้ง)</em>`;
-      alertBox.className = 'feedback-alert error';
-      alertBox.style.display = 'block';
-    } else {
-      // ผิดครบ 3 ครั้ง เฉลยคำตอบที่ถูกแล้วพาไปต่อ
-      disableAllOptions();
-      highlightCorrectOption();
-      alertBox.innerHTML = `❌ <b>โอกาสหมดลงแล้ว!</b> คุณตอบผิดครบ 3 ครั้ง<br><b>คำตอบที่ถูกต้องคือ:</b> ${getCorrectExp()}<br><em>ระบบจะพาคุณข้ามไปขั้นตอนถัดไป</em>`;
-      alertBox.className = 'feedback-alert error';
-      alertBox.style.display = 'block';
-
-      // เปิดปุ่มไปต่อ
-      setTimeout(() => {
-        if (currentStepIdx < currentMission.steps.length - 1) {
-          $('nextBtn').style.display = 'block';
-          $('nextBtn').textContent = 'ไปยังขั้นตอนถัดไป (ผ่านแบบมีเงื่อนไข) ➔';
-        } else {
-          if (!completedMissions.includes(currentMission.id)) {
-            completedMissions.push(currentMission.id);
-            localStorage.setItem('ksk_completed', JSON.stringify(completedMissions));
-          }
-          $('nextBtn').style.display = 'block';
-          $('nextBtn').textContent = '🏠 กลับหน้าหลัก';
-          $('nextBtn').onclick = returnToHub;
-        }
-      }, 1500);
-    }
+    // ถ้าเต็มทุกช่องแล้ว ให้แทนที่ช่องสุดท้าย
+    currentSlots[currentSlots.length - 1] = itemId;
+    renderSlots();
   }
 }
 
-function disableAllOptions() {
-  const btns = document.querySelectorAll('.option-btn');
-  btns.forEach(b => b.disabled = true);
+// ถอดไอเทมออกจากช่อง
+function removeItem(index) {
+  currentSlots[index] = null;
+  renderSlots();
 }
 
-function highlightCorrectOption() {
-  const step = currentMission.steps[currentStepIdx];
-  const btns = document.querySelectorAll('.option-btn');
-  btns.forEach(b => {
-    step.options.forEach(opt => {
-      if (opt.correct && b.textContent.includes(opt.text.substring(0, 15))) {
-        b.className = 'option-btn correct';
-      }
-    });
-  });
+function focusSlot(index) {
+  // ฟังก์ชันเสริม รองรับการเลือกช่อง
 }
 
-function getCorrectExp() {
-  const step = currentMission.steps[currentStepIdx];
-  const corr = step.options.find(o => o.correct);
-  return corr ? corr.text + " (" + corr.exp + ")" : "";
-}
+// ตรวจสอบความถูกต้องของไอเทมที่เลือก
+function verifySolution() {
+  const alertBox = $('alertBox');
+  
+  // เช็คว่าผู้เล่นใส่ไอเทมครบทุกช่องหรือยัง
+  if (currentSlots.includes(null)) {
+    alertBox.innerHTML = `⚠️ <b>ข้อมูลยังไม่ครบ:</b> กรุณาเลือกไอเทมตัวละครและอุปกรณ์ใส่ให้ครบทุกช่องก่อนตรวจสอบ!`;
+    alertBox.className = 'alert-box error';
+    alertBox.style.display = 'block';
+    return;
+  }
 
-// ไปขั้นตอนถัดไปในภารกิจเดิม
-function nextStep() {
-  if (currentStepIdx < currentMission.steps.length - 1) {
-    currentStepIdx++;
-    errorsLeft = 3;
-    loadStep();
-    // คืนค่าปุ่ม next เป็นฟังก์ชันปกติ
-    $('nextBtn').onclick = nextStep;
+  // ตรวจสอบว่าไอเทมที่เลือก ตรงกับที่กำหนดไว้หรือไม่ (ไม่สนลำดับการวาง)
+  const isMatch = currentMission.required.every(reqId => currentSlots.includes(reqId)) &&
+                  currentSlots.length === currentMission.required.length;
+
+  if (isMatch) {
+    alertBox.innerHTML = `🎉 <b>ถูกต้องสมบูรณ์แบบ!</b> ${currentMission.successExp}`;
+    alertBox.className = 'alert-box success';
+    alertBox.style.display = 'block';
+
+    // บันทึกสถานะผ่านภารกิจ
+    if (!completedMissions.includes(currentMission.id)) {
+      completedMissions.push(currentMission.id);
+      localStorage.setItem('ksk_sim_done', JSON.stringify(completedMissions));
+    }
   } else {
-    returnToHub();
+    alertBox.innerHTML = `❌ <b>ยังไม่ถูกต้องครับ:</b> การเลือกไอเทมชุดนี้ยังไม่สอดคล้องกับการแก้ปัญหาสถานการณ์วิกฤตนี้ ลองพิจารณาบทบาทและเครื่องมือใหม่อีกครั้ง!`;
+    alertBox.className = 'alert-box error';
+    alertBox.style.display = 'block';
   }
 }
 
@@ -629,7 +368,7 @@ function returnToHub() {
 function openMapModal() { $('mapModal').style.display = 'grid'; }
 function closeMapModal() { $('mapModal').style.display = 'none'; }
 
-// เริ่มต้นรันระบบ
+// เริ่มต้นรันหน้าแรก
 renderHub();
 </script>
 
