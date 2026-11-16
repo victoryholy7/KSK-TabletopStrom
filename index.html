@@ -3,455 +3,635 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KSK Crisis Command</title>
+<title>KSK Crisis Command - 10 Mission Simulation</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--y:#ffd23f;--p:#ff4d8d;--c:#26d0ff;--g:#3ddc97;--o:#ff8a3d}
-body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(circle at 20% 0%,#1d3d82,#0b1630 65%);color:#fff;height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;overflow:hidden}
-#rain{position:fixed;inset:0;z-index:0;pointer-events:none}
-#dark{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .8s;
- background:radial-gradient(ellipse at center,rgba(0,0,12,0) 45%,rgba(0,0,12,.55) 100%)}
-body.blackout #dark{opacity:1;animation:flick 5s infinite}
-@keyframes flick{0%,100%{opacity:1}46%{opacity:1}48%{opacity:.6}50%{opacity:1}}
-#flash{position:fixed;inset:0;background:#fff;opacity:0;z-index:9;pointer-events:none}
-#flash.go{animation:fl .9s}
-@keyframes fl{0%{opacity:0}8%{opacity:.9}16%{opacity:.1}28%{opacity:.7}100%{opacity:0}}
-body.glitch #stage{animation:gl 2.5s infinite}
-@keyframes gl{0%,92%,100%{transform:none;filter:none}94%{transform:translateX(-6px);filter:hue-rotate(90deg)}96%{transform:translateX(6px);filter:hue-rotate(-90deg)}}
-header,main,.ticker,.controls{position:relative;z-index:2}
-header{display:flex;align-items:center;gap:18px;padding:8px 22px;background:linear-gradient(90deg,#ff4d8d,#ff8a3d,#ffd23f);color:#111;z-index:6}
-header h1{font-weight:800;font-size:30px;letter-spacing:1px}
-header small{display:block;font-weight:600;font-size:15px}
-.cl{margin-left:auto;background:#111;color:#fff;border-radius:999px;padding:4px 14px;font-size:14px;font-weight:600;white-space:nowrap}
-.cl.ok{color:var(--g)}.cl.err{color:var(--p)}
-.pips{display:flex;gap:8px}
-.pip{width:44px;height:44px;border-radius:50%;border:3px solid #111;background:#fff;font-weight:800;font-size:20px;cursor:pointer;font-family:inherit}
-.pip.done{background:#3ddc97}.pip.now{background:#111;color:var(--y);transform:scale(1.15)}
-main{display:grid;grid-template-columns:1.55fr 1fr;gap:16px;padding:12px 22px;min-height:0}
-.panel{background:rgba(20,38,77,.9);border:3px solid #2c4a92;border-radius:22px;padding:18px;overflow:auto;min-height:0}
-#stage{display:flex;flex-direction:column;gap:12px}
-.rhead{display:flex;align-items:center;gap:14px}
-.badge{background:var(--y);color:#111;font-weight:800;padding:4px 18px;border-radius:999px;font-size:22px}
-.rtitle{font-size:40px;font-weight:800}
-.row{display:flex;gap:18px;align-items:center}
-.timer{position:relative;width:210px;height:210px;flex:none}
-.timer svg{width:100%;height:100%;transform:rotate(-90deg)}
-.timer .t{position:absolute;inset:0;display:grid;place-items:center;font-size:56px;font-weight:800}
-.timer.low .t{color:var(--p);animation:pulse .6s infinite}
-@keyframes pulse{50%{transform:scale(1.12)}}
-.headline{font-size:34px;font-weight:800;line-height:1.35;color:var(--y);text-shadow:0 0 18px rgba(255,210,63,.35)}
-.chars{display:flex;gap:14px}
-.char{display:flex;gap:10px;align-items:flex-start;flex:1}
-.avatar{font-size:56px;width:84px;height:84px;border-radius:50%;display:grid;place-items:center;flex:none;overflow:hidden}
-.avatar img{width:100%;height:100%;object-fit:cover}
-.anchor .avatar{background:var(--c)}.villain .avatar{background:var(--p)}
-.bubble{background:#fff;color:#111;border-radius:16px;padding:10px 14px;font-size:19px;font-weight:600}
-.bubble b{display:block;font-size:14px;color:#c2185b}
-.tasks{list-style:none;display:grid;gap:8px}
-.tasks li{background:rgba(255,255,255,.12);border-left:8px solid var(--g);padding:9px 14px;border-radius:10px;font-size:22px}
-.hint{display:none;background:#3ddc97;color:#05301e;border-radius:12px;padding:10px 14px;font-size:19px;font-weight:600}
-body.showhint .hint{display:block}
-.amb{display:flex;align-items:center;gap:10px;font-size:20px;margin-bottom:10px;background:rgba(255,255,255,.1);padding:8px 12px;border-radius:12px}
-.amb button{font-size:28px;background:none;border:none;cursor:pointer}.amb .gone{opacity:.2;filter:grayscale(1)}
-.team{border:3px solid var(--c);border-radius:16px;padding:10px;margin-bottom:10px;background:rgba(0,0,0,.25)}
-.th{display:flex;align-items:center;gap:10px}
-.th .av{font-size:34px}.th small{display:block;opacity:.7}.th b{font-size:20px}
-.tot{margin-left:auto;font-size:46px;font-weight:800;color:var(--c)}
-.crit{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}
-.crit div{background:rgba(255,255,255,.08);border-radius:10px;padding:4px;text-align:center;font-size:14px}
-.crit em{font-style:normal;font-weight:800;font-size:22px;margin:0 6px}
-.crit button{width:28px;height:28px;border-radius:50%;border:none;font-weight:800;cursor:pointer;background:var(--c)}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:none;border-radius:999px;padding:4px 10px;font-family:inherit;font-weight:600;font-size:14px;cursor:pointer;background:var(--g);color:#05301e;display:inline-block}
-.chip b{margin-left:5px}.chip.used{background:#555;color:#bbb;text-decoration:line-through}
-.ticker{background:#111;color:var(--y);overflow:hidden;white-space:nowrap;font-size:22px;font-weight:600;padding:6px 0;border-top:4px solid var(--p);border-bottom:4px solid var(--p);z-index:6}
-.ticker span{display:inline-block;padding-left:100%;animation:mq 38s linear infinite}
-@keyframes mq{to{transform:translateX(-100%)}}
-.controls{display:flex;flex-wrap:wrap;gap:8px;padding:8px 22px;justify-content:center;z-index:6;background:rgba(0,0,0,.25)}
-.controls button{font-family:inherit;font-weight:600;font-size:16px;border:none;border-radius:12px;padding:8px 12px;cursor:pointer;background:#fff;color:#111;box-shadow:0 4px 0 #8aa}
-.controls button:active{transform:translateY(3px);box-shadow:none}
-.controls .big{background:var(--p);color:#fff}.controls .go{background:var(--g)}.controls .help{background:var(--y)}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:20;display:none;place-items:center}
-.overlay.show{display:grid}
-.modal{background:#fff;color:#111;border-radius:28px;padding:30px 40px;max-width:900px;width:92%;max-height:92vh;overflow:auto;border:8px solid var(--y)}
-.wild{text-align:center;animation:pop .5s}
-@keyframes pop{0%{transform:scale(.3) rotate(-10deg)}100%{transform:none}}
-.wild .ic{font-size:110px}.wild h2{font-size:46px;color:#c2185b}.wild p{font-size:28px;margin:10px 0}
-table{width:100%;border-collapse:collapse;font-size:22px}
-td,th{padding:8px;border-bottom:2px solid #ddd;text-align:left}
-.tags{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-.tag{border:none;border-radius:999px;padding:8px 14px;font-family:inherit;font-weight:600;font-size:17px;background:#ffe08a;cursor:pointer}
-textarea{width:100%;height:90px;font-family:inherit;font-size:17px;border-radius:10px;padding:8px;border:2px solid #aaa}
-.intro li{font-size:24px;margin:6px 0 6px 22px}
-/* แผนผังดิจิทัล */
-#mapO .modal{max-width:96vw;width:auto;padding:14px;display:flex;gap:14px;align-items:flex-start}
-#mapBox{position:relative;height:84vh;aspect-ratio:848/1024;touch-action:none;background:#2c4a92;border-radius:12px;display:grid;place-items:center;color:#fff;text-align:center;font-size:18px}
-#mapBox img{position:absolute;inset:0;height:100%;width:100%;border-radius:12px;display:block;pointer-events:none}
-.tk{position:absolute;font-size:38px;transform:translate(-50%,-50%);cursor:grab;user-select:none;filter:drop-shadow(0 3px 3px #000);z-index:2}
-.pal{display:grid;gap:8px}.pal button{font-size:26px;border:none;border-radius:12px;padding:8px 14px;cursor:pointer;background:#ffe08a;font-family:inherit}
-.pal small{font-size:14px;color:#444}
-/* คู่มือสอนเล่น */
-#tutO{z-index:30}
-#tutO .modal{max-width:1000px;padding:20px 30px;border-color:var(--c)}
-.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.tabs button{font-family:inherit;font-weight:600;font-size:18px;border:none;border-radius:999px;padding:8px 18px;cursor:pointer;background:#e6eefc;color:#1d3d82}
-.tabs button.on{background:var(--p);color:#fff}
-.tabs .x{margin-left:auto;background:#eee;color:#333}
-.tstep{display:grid;grid-template-columns:150px 1fr;gap:22px;align-items:center;min-height:300px}
-.tbig{font-size:110px;text-align:center;animation:pop .4s}
-.tstep h2{font-size:34px;color:#c2185b;margin-bottom:6px}
-.tstep p{font-size:21px;margin-bottom:6px}
-.tstep ul,.tstep ol{margin:6px 0 6px 24px;font-size:20px;line-height:1.5}
-.tstep table{font-size:18px;margin-top:6px}
-.tstep .note{background:#fff3c4;border-left:6px solid var(--y);padding:8px 12px;border-radius:8px;font-size:18px;margin-top:8px}
-.tstep .try{font-size:16px;color:#555;margin-top:8px}
-.tstep kbd{background:#222;color:#ffd23f;border-radius:6px;padding:1px 8px;font-family:inherit;font-weight:600}
-.tnav{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px}
-.tnav button{font-family:inherit;font-weight:600;font-size:19px;border:none;border-radius:12px;padding:10px 22px;cursor:pointer;background:var(--c);color:#04222d}
-.tnav button:disabled{opacity:.3;cursor:default}
-.tnav .nx{background:var(--p);color:#fff}
-.tdots{display:flex;gap:7px;align-items:center}
-.tdot{width:12px;height:12px;border-radius:50%;background:#ccc;border:none;cursor:pointer;padding:0}
-.tdot.on{background:var(--p);transform:scale(1.35)}
-.tcount{font-size:15px;color:#666;margin-left:8px}
-/* จอเตี้ย / หน้าต่างเล็ก: ย่อขนาดอัตโนมัติ */
-@media (max-height:860px){
- header{padding:4px 16px}header h1{font-size:22px}header small{font-size:12px}
- .pip{width:34px;height:34px;font-size:16px}
- main{padding:8px 16px;gap:10px}.panel{padding:12px}
- .badge{font-size:16px}.rtitle{font-size:28px}
- .timer{width:140px;height:140px}.timer .t{font-size:38px}
- .headline{font-size:24px}.tasks li{font-size:17px;padding:6px 12px}.tasks{gap:5px}
- .avatar{width:56px;height:56px;font-size:36px}.bubble{font-size:15px;padding:6px 10px}
- .team{padding:8px;margin-bottom:8px}.tot{font-size:34px}.th b{font-size:17px}
- .ticker{font-size:16px;padding:3px 0}
- .controls{padding:5px 12px;gap:6px}.controls button{font-size:13px;padding:5px 9px}
- .intro li{font-size:18px}
- #tutO .modal{padding:14px 22px}
- .tstep{min-height:0;grid-template-columns:90px 1fr;gap:14px}
- .tbig{font-size:68px}.tstep h2{font-size:25px}.tstep p{font-size:17px}.tstep ul,.tstep ol{font-size:16px;line-height:1.4}
- .tstep table{font-size:15px}.tstep .note{font-size:15px}
- .tabs button{font-size:15px;padding:5px 14px}.tnav button{font-size:16px;padding:7px 16px}
-}
-@media (max-width:1100px){main{grid-template-columns:1fr}body{overflow:auto;height:auto;min-height:100vh}}
-@media (max-width:700px){.tstep{grid-template-columns:1fr}.tbig{font-size:64px}}
+:root{--y:#ffd23f;--p:#ff4d8d;--c:#26d0ff;--g:#3ddc97;--dark:#0b1630}
+body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(circle at 20% 0%,#1d3d82,var(--dark) 65%);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:15px}
+.container{max-width:960px;width:100%;margin:auto}
+
+/* หน้าเลือกภารกิจ (10 เหตุการณ์) */
+.hub-screen{padding:20px 0}
+.hub-header{text-align:center;margin-bottom:25px}
+.hub-header h1{font-size:36px;color:var(--y);margin-bottom:8px}
+.hub-header p{font-size:17px;opacity:.8}
+.mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px}
+.mission-card{background:rgba(20,38,77,.8);border:3px solid #2c4a92;border-radius:18px;padding:20px;cursor:pointer;transition:all .3s;position:relative}
+.mission-card:hover{transform:translateY(-50px);border-color:var(--y);background:rgba(20,38,77,1)}
+.mission-card.completed{border-color:var(--g);background:rgba(61,220,151,.1)}
+.mission-num{background:var(--y);color:#111;font-weight:800;padding:2px 10px;border-radius:99px;font-size:13px;display:inline-block;margin-bottom:8px}
+.mission-card h3{font-size:20px;color:#fff;margin-bottom:6px}
+.mission-card p{font-size:14px;opacity:.8;line-height:1.4}
+
+/* หน้าจอเกมจำลองสถานการณ์รายขั้นตอน */
+.game-screen{display:none;background:rgba(20,38,77,.95);border:3px solid #2c4a92;border-radius:22px;padding:25px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.game-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,.1);padding-bottom:12px;margin-bottom:18px}
+.mission-badge{background:var(--p);color:#fff;font-weight:800;padding:5px 14px;border-radius:99px;font-size:15px}
+.tries-box{font-size:16px;color:var(--y);font-weight:600}
+
+.step-title{font-size:24px;font-weight:800;color:var(--y);margin-bottom:8px}
+.step-desc{font-size:17px;line-height:1.5;background:rgba(0,0,0,.3);padding:15px;border-radius:12px;border-left:6px solid var(--c);margin-bottom:18px}
+
+.question-box{font-size:18px;font-weight:700;color:var(--c);margin-bottom:12px}
+.options-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:20px}
+.option-btn{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);color:#fff;padding:14px 18px;border-radius:12px;font-family:inherit;font-size:17px;font-weight:600;cursor:pointer;text-align:left;transition:all .2s}
+.option-btn:hover:not(:disabled){background:rgba(38,208,255,.2);border-color:var(--c);transform:translateX(4px)}
+.option-btn.correct{background:rgba(61,220,151,.3);border-color:var(--g);color:#fff}
+.option-btn.wrong{background:rgba(255,77,141,.3);border-color:var(--p);opacity:.5}
+
+.feedback-alert{display:none;padding:15px;border-radius:12px;margin-bottom:18px;font-size:16px;line-height:1.5;animation:fadeIn .3s}
+.feedback-alert.success{background:rgba(61,220,151,.2);border:2px solid var(--g);color:#fff}
+.feedback-alert.error{background:rgba(255,77,141,.2);border:2px solid var(--p);color:#fff}
+
+.action-bar{display:flex;justify-content:space-between;align-items:center;border-top:2px solid rgba(255,255,255,.1);padding-top:15px}
+.btn{background:#fff;color:#111;border:none;padding:10px 20px;border-radius:10px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:transform .1s}
+.btn:hover{transform:scale(1.05)}
+.btn-next{background:var(--g);color:#05301e}
+.btn-map{background:var(--c);color:#05301e}
+
+/* Modal แผนผัง */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:100;padding:20px}
+.modal-content{background:#112240;border:3px solid var(--y);border-radius:20px;padding:25px;max-width:750px;width:100%;text-align:center;max-height:90vh;overflow:auto}
+.modal-content img{width:100%;border-radius:12px;margin:15px 0;border:2px solid #fff}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-<canvas id="rain"></canvas><div id="dark"></div><div id="flash"></div>
 
-<header>
-  <div style="font-size:38px">🏥</div>
-  <div><h1>KSK CRISIS COMMAND</h1><small>โรงพยาบาลเขาสุกิม จ.จันทบุรี | เกมบัญชาการวิกฤตพายุ: เอาชีวิตรอดใน 45 นาที</small></div>
-  <span class="cl" id="cloud">☁️ ออฟไลน์</span>
-  <div class="pips" id="pips"></div>
-</header>
-
-<main>
-  <section class="panel" id="stage"></section>
-  <section class="panel" id="teams" style="position:relative;z-index:6"></section>
-</main>
-
-<div class="ticker"><span id="tk"></span></div>
-
-<div class="controls">
-  <button class="help" onclick="openTut()">📖 วิธีเล่น (?)</button>
-  <button class="go" onclick="toggleTimer()">▶/⏸ จับเวลา (Space)</button>
-  <button class="big" onclick="next()">🚨 การ์ดวิกฤตถัดไป (N)</button>
-  <button onclick="wildCard()">🎲 Wild Card (W)</button>
-  <button onclick="openMap()">🗺️ แผนผัง รพ. (G)</button>
-  <button onclick="thunder()">⛈️ ฟ้าร้อง (T)</button>
-  <button onclick="toggleDark()">💡 ไฟดับ/ไฟติด (B)</button>
-  <button onclick="toggleMute()" id="mute">🔊 เสียง (M)</button>
-  <button onclick="toggleHint()">🕵️ เฉลย (H)</button>
-  <button onclick="openDebrief()">🏁 สรุปผล (D)</button>
-  <button onclick="cloudLoad()">☁️ โหลดจากคลาวด์</button>
-  <button onclick="fs()">⛶ เต็มจอ (F)</button>
-  <button onclick="resetAll()">♻️ รีเซ็ต</button>
-</div>
-
-<div class="overlay" id="wildO" onclick="this.classList.remove('show')"><div class="modal wild" id="wildM"></div></div>
-<div class="overlay" id="debO"><div class="modal" id="debM"></div></div>
-<div class="overlay" id="mapO" onclick="if(event.target===this)this.classList.remove('show')">
-  <div class="modal">
-    <div id="mapBox"><span id="mapMsg">กำลังโหลดแผนผัง...</span><img id="mapImg" alt="แผนผัง รพ.เขาสุกิม"></div>
-    <div class="pal" id="pal"></div>
+<div class="container">
+  
+  <!-- หน้าเลือก 10 เหตุการณ์ (Mission Hub) -->
+  <div class="hub-screen" id="hubScreen">
+    <div class="hub-header">
+      <h1>🏥 KSK Crisis Command: 10 ภารกิจวิกฤต รพ.</h1>
+      <p>เลือกสถานการณ์จำลองเพื่อฝึกฝนขั้นตอนการปฏิบัติงาน ตัดสินใจเลือกเครื่องมือ ตัวละคร และทรัพยากรให้ถูกต้อง</p>
+    </div>
+    <div class="mission-grid" id="missionGrid"></div>
   </div>
+
+  <!-- หน้าจอเกมจำลองสถานการณ์รายขั้นตอน -->
+  <div class="game-screen" id="gameScreen">
+    <div class="game-header">
+      <div class="mission-badge" id="missionBadge">เหตุการณ์ที่ 1</div>
+      <div class="tries-box" id="triesBox">❌ โอกาสผิดพลาด: 3/3 ครั้ง</div>
+    </div>
+
+    <div class="step-title" id="stepTitle"></div>
+    <div class="step-desc" id="stepDesc"></div>
+
+    <div class="question-box" id="questionText"></div>
+    <div class="options-grid" id="optionsGrid"></div>
+
+    <div class="feedback-alert" id="feedbackAlert"></div>
+
+    <div class="action-bar">
+      <button class="btn btn-map" onclick="openMapModal()">🗺️ ดูแผนผัง รพ.</button>
+      <div style="display:flex;gap:10px">
+        <button class="btn" style="background:#555;color:#fff" onclick="returnToHub()">🏠 เลือกเหตุการณ์อื่น</button>
+        <button class="btn btn-next" id="nextBtn" onclick="nextStep()" style="display:none">ขั้นตอนถัดไป ➔</button>
+      </div>
+    </div>
+  </div>
+
 </div>
-<div class="overlay" id="tutO" onclick="if(event.target===this)closeTut()">
-  <div class="modal" id="tutM"></div>
+
+<!-- Modal แผนผัง รพ. -->
+<div class="modal-overlay" id="mapModal" onclick="if(event.target===this)closeMapModal()">
+  <div class="modal-content">
+    <h2 style="color:var(--y)">🗺️ แผนผังโรงพยาบาลเขาสุกิม</h2>
+    <p style="font-size:14px;opacity:.8">ใช้ประกอบการพิจารณาเลือกเส้นทางและจุดปฏิบัติการ</p>
+    <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80" alt="แผนผัง รพ.">
+    <br>
+    <button class="btn" onclick="closeMapModal()">ปิดหน้าต่าง</button>
+  </div>
 </div>
 
 <script>
-/* ============ ตั้งค่าระบบดิจิทัล (แผนผังฝังในตัวทันที) ============ */
-const CFG={
-  API:'',                 // วาง URL เว็บแอปของ Apps Script ถ้าต้องการเก็บลง Google Sheets
-  KEY:'ksk2025',          
-  MAP:'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAJoAlgBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=' // ฝังภาพแผนผัง รพ. ไว้ในระบบดิจิทัลเรียบร้อย
-};
-const AV={anchor:'',villain:''};   
-const SESSION=new URLSearchParams(location.search).get('s')||('KSK-'+new Date().toISOString().slice(0,10));
-
-const TEAMS=[
- {n:'ทีมบัญชาการ',sub:'Command | ผู้การเมฆ',e:'🧑‍✈️',c:'#ffd23f'},
- {n:'ทีมแพทย์/พยาบาล',sub:'Medical | หมอใจดี',e:'🩺',c:'#ff4d8d'},
- {n:'ทีมสนับสนุน/อาคาร',sub:'Logistics | ช่างกล้า',e:'🔧',c:'#26d0ff'},
- {n:'ทีมบริหาร/สื่อสาร',sub:'Admin & Comms | น้องข่าวด่วน',e:'📣',c:'#3ddc97'}];
-const RES={gen:['⚡','ปั่นไฟ',2],fix:['🔧','ช่าง',1],net:['📡','5G',1],staff:['🩺','คนเสริม',1]};
-const CRIT=[['speed','⏱️ เร็ว'],['bcp','📋 BCP'],['coord','🤝 ประสาน']];
-const AMB_MAX=2, ROUND_SEC=300;
-
-const ROUNDS=[
-{t:'พายุเข้า',icon:'🌪️',power:1,rain:1,
- head:'ลมกระโชกแรง ต้นไม้ล้มทับสายไฟหลัก ไฟดับทั้ง รพ. และหลังคาตึกผู้ป่วยในรั่ว!',
- tasks:['ทุกทีมประเมินสถานการณ์ภายใน 1 นาที','คลิกใช้การ์ดทรัพยากรดิจิทัลด้านล่างเพื่อแก้ไฟดับ/หลังคารั่ว','ทีมแพทย์: เปิดปุ่ม "แผนผัง รพ." ลากหมากย้ายผู้ป่วยในไปโซนปลอดภัย','ทีมบัญชาการ: ประกาศเปิด EOC ตามแผน'],
- hint:'คาดหวัง: เปิด EOC, ระบุจุดจ่ายไฟสำรองให้จุดสำคัญก่อน, ย้ายผู้ป่วยที่ใช้อุปกรณ์ไฟฟ้า, กันพื้นที่รั่ว/ป้องกันไฟรั่ว',
- villain:'ฮึ่ม... ไฟดับแล้วสินะ? นี่แค่เริ่มต้นเท่านั้น!',
- say:'ข่าวด่วน พายุเข้าพื้นที่จันทบุรี ไฟฟ้าดับ โรงพยาบาลเขาสุกิม เข้าสู่ภาวะฉุกเฉิน',
- news:['ด่วน! พายุเข้าพื้นที่จันทบุรี ไฟฟ้าดับหลายตำบล','ศูนย์บัญชาการ รพ.เขาสุกิม เริ่มเปิดปฏิบัติการ']},
-{t:'ฟ้าผ่า วิกฤตซ้อน',icon:'⚡',power:1,glitch:1,rain:1.2,
- head:'ฟ้าผ่าลงระบบเครือข่าย ระบบ HIS ล่ม และมีผู้บาดเจ็บจากพายุส่งเข้า ER 5 ราย!',
- tasks:['คัดกรองผู้บาดเจ็บ: แดง 1 / เหลือง 2 / เขียว 2','กู้ระบบด้วยการคลิกการ์ด 5G ดิจิทัล หรือเปิดใช้ระบบกระดาษ (Manual)','ทีมที่ใช้การ์ดหมดแล้ว ต้องแก้ปัญหาเฉพาะหน้า','ทีมสื่อสาร: รายงานผู้บริหารและหน่วยงานเหนือขึ้นไป'],
- hint:'คาดหวัง: เปิด Downtime Form, บันทึกผู้ป่วยด้วยกระดาษ, ผู้ป่วยแดงได้รับการดูแลก่อน, ต้องมีไฟก่อนจึงใช้ 5G ได้',
- villain:'ระบบล่มแล้วจะจดด้วยอะไรล่ะ? ฮ่า ๆ ๆ',
- say:'ข่าวด่วน ฟ้าผ่าระบบเครือข่าย ระบบ เอช ไอ เอส ล่ม ผู้บาดเจ็บเข้าห้องฉุกเฉิน ห้าราย',
- news:['ฟ้าผ่าเครือข่ายขัดข้อง ระบบสารสนเทศ รพ. ล่ม','ผู้บาดเจ็บจากพายุทยอยเข้า ER']},
-{t:'ทางเข้าถูกปิด',icon:'🌳',power:1,rain:1.1,
- head:'ต้นไม้ใหญ่และดินสไลด์ปิดทางเข้า รพ. รถพยาบาลเข้า-ออกไม่ได้ และเจ้าหน้าที่เวรบ่ายเข้างานไม่ได้!',
- tasks:['คลิกเปิดแผนผังดิจิทัลเพื่อดูเส้นทาง และประสานเปิดเส้นทางสำรอง','จัดอัตรากำลังเวรต่อเนื่อง (ใครอยู่ต่อ? ใครพัก?)','ตัดสินใจส่งต่อผู้ป่วยหนัก 1 ราย: คลิกใช้รถพยาบาลส่วนกลาง','ทีมสนับสนุน: จัดที่พักและอาหารให้เจ้าหน้าที่ที่ติดอยู่'],
- hint:'คาดหวัง: คุยข้ามทีมเรื่องรถพยาบาล, เจ้าหน้าที่ใช้การ์ดคนเสริม, มีขั้นตอนประสานส่งต่อชัดเจน',
- villain:'ทางปิดแล้ว ใครจะมาช่วยพวกเธอ?',
- say:'ข่าวด่วน ต้นไม้และดินสไลด์ปิดเส้นทางเข้าโรงพยาบาล รถพยาบาลเข้าออกไม่ได้',
- news:['ดินสไลด์ปิดถนนเข้า รพ. รถพยาบาลติดขัด','เจ้าหน้าที่เวรบ่ายยังเข้างานไม่ได้']},
-{t:'ข่าวลือ & น้ำมันใกล้หมด',icon:'📱',power:1,rain:.9,
- head:'โซเชียลลือว่า "รพ.ปิดแล้ว" ญาติแห่มาหน้า ER และน้ำมันเครื่องปั่นไฟเหลือใช้ได้อีก 30 นาที!',
- tasks:['ทีมสื่อสาร: เขียนแถลงการณ์ 1 ข้อความ (ไม่เกิน 3 ประโยค)','จัดโซนญาติและ รปภ. หน้า ER','จัดลำดับจุดที่ต้องมีไฟ: ER / ห้องคลอด / ผู้ป่วยเครื่องช่วยหายใจ','ประสานขอเติมน้ำมันเครื่องปั่นไฟ'],
- hint:'คาดหวัง: ข้อความชัดเจนว่า รพ.ยังเปิดให้บริการ, จัดลำดับไฟโดยดูความเสี่ยงต่อชีวิต, มีผู้ให้ข้อมูลเพียงจุดเดียว',
- villain:'ข่าวปลอมแพร่เร็วกว่าลมพายุนะ!',
- say:'ข่าวด่วน มีข่าวลือว่าโรงพยาบาลปิดให้บริการ ญาติผู้ป่วยทยอยมาที่ห้องฉุกเฉิน น้ำมันเครื่องปั่นไฟใกล้หมด',
- news:['ข่าวลือ "รพ.ปิด" แพร่สะพัด โปรดตรวจสอบกับแหล่งข่าวทางการ','เครื่องปั่นไฟเหลือน้ำมันอีก 30 นาที']},
-{t:'พายุลูกสอง',icon:'🌀',power:1,rain:1.5,
- head:'พายุลูกที่ 2 แรงกว่าเดิม! ผู้ป่วยวิกฤต 1 ราย (เครื่องช่วยหายใจ) ต้องดูแลต่อเนื่อง ใช้ทรัพยากรสุดท้ายให้คุ้มที่สุด!',
- tasks:['ทบทวนการ์ดดิจิทัลที่เหลือ แล้วตัดสินใจร่วมกันทั้ง รพ.','รับประกันไฟและออกซิเจนให้ผู้ป่วยวิกฤต','ทีมบัญชาการ: เขียน SITREP 3 บรรทัด','ร่างแผนฟื้นฟู 3 ข้อแรกหลังพายุผ่าน'],
- hint:'คาดหวัง: ผู้ป่วยวิกฤตมีไฟต่อเนื่อง, SITREP ชัด (สถานการณ์ / ทรัพยากร / ความต้องการ), มีแผนฟื้นฟูตามลำดับความสำคัญ',
- villain:'รอบสุดท้ายแล้ว! พวกเธอจะรอดไหม?',
- say:'ข่าวด่วน พายุลูกที่สองกำลังเข้า ผู้ป่วยวิกฤตต้องการการดูแลต่อเนื่อง',
- news:['พายุลูกที่ 2 รุนแรงกว่าเดิม','ทั้งโรงพยาบาลกำลังเดินเครื่องเต็มกำลัง']}
+// ข้อมูล 10 เหตุการณ์วิกฤต (แต่ละเหตุการณ์มี 3 ขั้นตอนการดำเนินการที่ต้องเลือกให้ถูก)
+const MISSIONS = [
+  {
+    id: 1,
+    title: "1. พายุลมกระโชกแรง & ไฟดับทั้ง รพ.",
+    desc: "พายุฤดูร้อนพัดเข้าพื้นที่จันทบุรีอย่างรุนแรง ต้นไม้ใหญ่ล้มทับสายไฟแรงสูง ส่งผลให้ไฟฟ้าดับสนิททั้งโรงพยาบาล",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การสั่งการเบื้องต้นเพื่อเปิดปฏิบัติการฉุกเฉิน",
+        q: "ใครคือผู้มีอำนาจสูงสุดในการประกาศเปิดศูนย์ปฏิบัติการภาวะฉุกเฉิน (EOC) และควรสั่งการอย่างไร?",
+        options: [
+          { text: "🧑‍✈️ ผู้การเมฆ (ทีมบัญชาการ) สั่งเปิด EOC ทันที และประกาศแจ้งเตือนทุกแผนกผ่านวิทยุสื่อสาร", correct: true, exp: "ถูกต้อง! ผู้บัญชาการเหตุการณ์ต้องสั่งเปิด EOC เพื่อรวมศูนย์สั่งการ" },
+          { text: "🩺 หมอใจดี (ทีมแพทย์) วิ่งไปดึงปลั๊กเครื่องมือแพทย์ทุกตัวด้วยตัวเอง", correct: false, exp: "ผิดบทบาทหน้าที่ ทีมแพทย์ต้องดูแลคนไข้ ไม่ใช่ผู้สั่งการ EOC หลัก" },
+          { text: "🔧 ช่างกล้า (ทีมอาคาร) รอให้ไฟฟ้ากลับมาเองตามธรรมชาติโดยไม่ต้องทำอะไร", correct: false, exp: "ผิด! เกิดเหตุฉุกเฉินระดับนี้ต้องเปิด EOC ทันที จะรอไม่ได้" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การเลือกใช้เครื่องมือและอุปกรณ์พลังงานสำรอง",
+        q: "ตู้จ่ายไฟหลักดับสนิท อุปกรณ์ใดและทรัพยากรใดต้องถูกใช้งานเป็นลำดับแรกเพื่อกู้ชีพ?",
+        options: [
+          { text: "⚡ สั่งเดินเครื่องปั่นไฟสำรอง (Generator) และใช้การ์ด 'ปั่นไฟ' จ่ายให้โซน ER / ICU ด่วน", correct: true, exp: "ถูกต้อง! เครื่องปั่นไฟสำรองคือหัวใจสำคัญในการจ่ายไฟให้จุดวิกฤต" },
+          { text: "📱 แจกไฟฉายพกพาให้เจ้าหน้าที่เดินส่องทางเดินมืดๆ โดยไม่ต้องเปิดเครื่องปั่นไฟ", correct: false, exp: "ผิด! เครื่องมือแพทย์ในห้องฉุกเฉินต้องใช้ไฟฟ้าจากเครื่องปั่นไฟหลักเท่านั้น" },
+          { text: "🔌 ใช้สายพ่วงลากต่อไฟมาจากบ้านพักภายนอกโรงพยาบาล", correct: false, exp: "ผิดกฎความปลอดภัยและเป็นไปไม่ได้ในทางปฏิบัติ" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การประสานงานภายนอกเพื่อขอความช่วยเหลือ",
+        q: "หากน้ำมันเครื่องปั่นไฟสำรองคาดว่าจะหมดภายใน 2 ชั่วโมง ใครคือหน่วยงานภายนอกที่ต้องประสานเร่งด่วน?",
+        options: [
+          { text: "📣 น้องข่าวด่วน (ทีมสื่อสาร) ประสาน การไฟฟ้าส่วนภูมิภาค (PEA) และ ปภ. จังหวัด เพื่อขอสนับสนุนรถโมบายยูนิตและน้ำมันด่วน", correct: true, exp: "ถูกต้อง! ทีมสื่อสารต้องประสานหน่วยงานภายนอกเพื่อรองรับวิกฤตยืดเยื้อ" },
+          { text: "🧑‍✈️ สั่งให้พนักงานขับรถขับรถเก๋งไปซื้อน้ำมันถังแกลลอนที่ปั๊มน้ำมันเองทีละถัง", correct: false, exp: "ไม่เพียงพอต่อการใช้งานของโรงพยาบาลขนาดใหญ่ในภาวะวิกฤต" },
+          { text: "🩺 โทรแจ้งตำรวจจราจรให้มาช่วยทำแผลให้คนไข้", correct: false, exp: "ผิดประเด็น ปัญหาตอนนี้คือน้ำมันเครื่องปั่นไฟ ไม่ใช่เรื่องจราจร" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: "2. ฟ้าผ่าซ้ำซ้อน & ระบบคอมพิวเตอร์ (HIS) ล่ม",
+    desc: "ท่ามกลางไฟดับ ฟ้าผ่าลงเสาสัญญาณหลัก ทำให้อินเทอร์เน็ตและระบบสารสนเทศโรงพยาบาล (HIS/HOSxP) ล่มใช้งานไม่ได้",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การแก้ปัญหาเฉพาะหน้าด้านข้อมูลผู้ป่วย",
+        q: "เมื่อระบบคอมพิวเตอร์ล่ม ทีมบริหารและเวชระเบียนต้องหยิบอุปกรณ์ใดมาใช้แทนทันที?",
+        options: [
+          { text: "📝 หยิบ 'Downtime Form (แบบฟอร์มกระดาษสำรองฉุกเฉิน)' ออกมาแจกทุกหน้างานเพื่อลงทะเบียนด้วยมือ", correct: true, exp: "ถูกต้อง! แผน BCP กำหนดให้ใช้ฟอร์มกระดาษทันทีเมื่อระบบสารสนเทศล่ม" },
+          { text: "💻 รอให้ช่างไอทีรีบูต์เครื่องคอมพิวเตอร์ซ้ำๆ จนกว่าจะติด", correct: false, exp: "เสียเวลาและทำให้ผู้ป่วยตกค้างหน้าห้องตรวจจำนวนมาก" },
+          { text: "🗣️ ให้เจ้าหน้าที่ตะโกนเรียกชื่อผู้ป่วยสลับกันไปมาด้วยปากเปล่า", correct: false, exp: "เกิดความผิดพลาดสูงมากในการจ่ายยาและรักษาพยาบาล" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การใช้การ์ดทรัพยากรดิจิทัลเพื่อกู้ระบบ",
+        q: "ทีมสนับสนุนจะกู้คืนระบบเครือข่ายชั่วคราวได้อย่างไร เมื่อไฟฟ้าหลักยังไม่มา?",
+        options: [
+          { text: "📡 ใช้การ์ด '5G / เน็ตสำรอง' ร่วมกับแบตเตอรี่สำรองเร้าเตอร์ เพื่อต่อระบบทะเบียนฉุกเฉิน", correct: true, exp: "ถูกต้อง! เน็ตสำรอง 5G ช่วยให้ระบบเวชระเบียนออนไลน์บางส่วนกลับมาใช้งานได้" },
+          { text: "🌲 ปีนขึ้นไปซ่อมเสาสัญญาณบนหลังคาตึกท่ามกลางพายุฝนฟ้าคะนอง", correct: false, exp: "อันตรายถึงชีวิตจากฟ้าผ่าซ้ำซ้อน ไม่อนุญาตให้ปฏิบัติงานกลางแจ้ง" },
+          { text: "📻 เปิดวิทยุธานินทร์ฟังเพลงแก้เครียด", correct: false, exp: "ไม่ช่วยแก้ปัญหาระบบสารสนเทศล่ม" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การสื่อสารความเสี่ยงให้บุคลากรทราบ",
+        q: "ใครควรเป็นผู้ออกประกาศแจ้งเตือนสถานการณ์ Downtime ให้แพทย์และพยาบาลทุกตึกรับทราบแนวทางปฏิบัติเดียวกัน?",
+        options: [
+          { text: "📣 ทีมบริหารและสื่อสาร ออกประกาศแนวปฏิบัติระบบกระดาษผ่านช่องทางกลุ่มไลน์ฉุกเฉินและวิทยุ", correct: true, exp: "ถูกต้อง! การสื่อสารภายในต้องรวดเร็วและเป็นทิศทางเดียวกัน" },
+          { text: "😴 ปล่อยให้แต่ละแผนกงดให้บริการไปก่อนจนกว่าพายุจะสงบ", correct: false, exp: "ผิดหลักการให้บริการทางการแพทย์ฉุกเฉิน" },
+          { text: "✉️ เขียนจดหมายใส่ขวดแก้วลอยน้ำไปแต่ละตึก", correct: false, exp: "ล้าสมัยและไม่ทันท่วงที" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 3,
+    title: "3. ต้นไม้ล้ม & ดินสไลด์ปิดทางเข้า รพ.",
+    desc: "ดินสไลด์และต้นไม้ใหญ่โค่นล้มทับเส้นทางเข้า-ออกหลักของโรงพยาบาล รถพยาบาลฉุกเฉินไม่สามารถวิ่งผ่านออกไปได้",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การประเมินเส้นทางและประสานภายนอก",
+        q: "ทีมใดต้องรับหน้าที่ประสานงานขอเครื่องจักรหนัก (รถแบ็คออฟ/เลื่อยยนต์) จากหน่วยงานภายนอก?",
+        options: [
+          { text: "🔧 ทีมสนับสนุน/อาคาร ประสาน ปภ. เทศบาล หรือค่ายทหารในพื้นที่ให้นำเครื่องจักรมาเคลียร์ทาง", correct: true, exp: "ถูกต้อง! ทีมอาคารและยานพาหนะต้องประสานหน่วยงานบรรเทาสาธารณภัยภายนอก" },
+          { text: "🩺 ให้พยาบาลวิชาการถือเลื่อยตัดไม้ขนาดเล็กไปตัดเองที่หน้าประตู", correct: false, exp: "ต้นไม้ใหญ่เกินกำลังคนและเสี่ยงอันตราย" },
+          { text: "📣 โทรเรียกบริษัทส่งอาหารมาส่งฟาสต์ฟู้ดแก้เครียด", correct: false, exp: "ไม่เกี่ยวข้องกับสถานการณ์ดินสไลด์ปิดถนน" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การบริหารจัดการรถพยาบาลฉุกเฉินส่วนกลาง",
+        q: "หากมีเคสวิกฤตต้องส่งต่อ (Refer) ออกนอก รพ. แต่ถนนหน้า รพ. ถูกปิด ทีมงานต้องใช้วิธีใด?",
+        options: [
+          { text: "🚑 ประสานจุดนัดพบเปลี่ยนถ่ายผู้ป่วย (Rendezvous Point) กับทีมกู้ชีพภายนอก และใช้รถขับเคลื่อน 4 ล้ออ้อมเส้นทางสำรอง", correct: true, exp: "ถูกต้อง! การกำหนดจุดส่งต่อภายนอกจุดที่ถนนขาดคือวิธีแก้ปัญหามาตรฐาน" },
+          { text: "🚁 สั่งให้ผู้ป่วยเดินเท้าฝ่ากองดินโคลนออกไปขึ้นรถเองที่ถนนใหญ่", correct: false, exp: "อันตรายและผิดหลักการเคลื่อนย้ายผู้ป่วยวิกฤต" },
+          { text: "❌ ปิดตายไม่รับส่งต่อเคสใดๆ ทั้งสิ้นปล่อยให้ตามยถากรรม", correct: false, exp: "ผิดจรรยาบรรณและมาตรฐานความปลอดภัย รพ." }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การจัดการเจ้าหน้าที่เวรบ่ายที่ตกค้าง",
+        q: "เจ้าหน้าที่เวรบ่ายเข้า รพ. ไม่ได้เพราะถนนขาด ผู้จัดการเวรต้องสั่งการอย่างไร?",
+        options: [
+          { text: "👥 ให้เจ้าหน้าที่เวรเช้าตรึงกำลังปฏิบัติงานต่อ (Overtime) พร้อมจัดหาอาหารและที่พักรองรับ และประสานรับส่งด้วยรถยกสูง", correct: true, exp: "ถูกต้อง! การบริหารกำลังคนทดแทนและการดูแลสวัสดิการคือหัวใจสำคัญ" },
+          { text: "🏃‍♂️ สั่งให้เจ้าหน้าที่ทุกคนว่ายน้ำลุยโคลนข้ามกำแพง รพ. เข้ามาทำงาน", correct: false, exp: "เสี่ยงต่อการบาดเจ็บของบุคลากรเพิ่มขึ้นไปอีก" },
+          { text: "🚪 ล็อคประตูโรงพยาบาลแล้วกลับบ้านนอน", correct: false, exp: "ละทิ้งหน้าที่ในยามวิกฤต" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 4,
+    title: "4. ข่าวลือโซเชียล 'รพ.ปิดบริการ' & ญาติล้น ER",
+    desc: "โซเชียลมีเดียปล่อยข่าวปลอมว่าโรงพยาบาลพังเสียหายและปิดให้บริการ ทำให้ญาติผู้ป่วยแห่มาที่ห้องฉุกเฉินด้วยความตื่นตระหนก",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การแถลงข่าวและชี้แจงข้อเท็จจริง",
+        q: "ใครและช่องทางใดเหมาะสมที่สุดในการสยบข่าวลือและชี้แจงความจริง?",
+        options: [
+          { text: "📣 ทีมบริหาร/สื่อสาร โพสต์แถลงการณ์ด่วนผ่านเพจทางการของ รพ. และตั้งจุดประชาสัมพันธ์หน้า ER", correct: true, exp: "ถูกต้อง! ต้องใช้ช่องทางทางการชี้แจงอย่างรวดเร็วเพื่อลดความตื่นตระหนก" },
+          { text: "🤫 สั่งปิดเพจเฟซบุ๊ก รพ. หนี แล้วบล็อกคอมเมนต์ทั้งหมด", correct: false, exp: "ยิ่งทำให้ประชาชนเข้าใจผิดและตื่นตระหนกหนักกว่าเดิม" },
+          { text: "📢 ส่งเสียงตะโกนบอกความจริงผ่านไมค์ลอยทีละคน", correct: false, exp: "ไม่เป็นระบบและควบคุมฝูงชนไม่ได้" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การควบคุมฝูงชนและรักษาความปลอดภัยหน้า ER",
+        q: "เพื่อความปลอดภัยของบุคลากรและผู้ป่วยในห้องฉุกเฉิน ทีม รปภ. และผู้บริหารต้องทำอย่างไร?",
+        options: [
+          { text: "🛡️ จัดตั้ง 'จุดคัดกรองญาติ (Family Waiting Area)' ด้านนอกโซนอันตราย พร้อม รปภ. ดูแลความเรียบร้อย", correct: true, exp: "ถูกต้อง! แยกโซนญาติออกจากพื้นที่ปฏิบัติงานทางการแพทย์เพื่อลดความชุลมุน" },
+          { text: "🚪 ล็อคประตูห้องฉุกเฉินขังตัวเองไว้ข้างในไม่ให้ใครเข้าออกเลย", correct: false, exp: "ทำให้ญาติยิ่งโกรธและอาจเกิดการพังประตูเข้ามาได้" },
+          { text: "🍿 แจกป๊อปคอร์นให้ญาติยืนกินรอหน้าห้องตรวจ", correct: false, exp: "ไม่เหมาะสมกับสถานการณ์วิกฤต" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การสื่อสารข้อมูลผู้ป่วยให้ญาติคลายกังวล",
+        q: "วิธีการใดช่วยลดความตื่นตระหนกของญาติที่มารอหน้า ER ได้ดีที่สุด?",
+        options: [
+          { text: "📋 จัดเจ้าหน้าที่ Liaison (ผู้ประสานงานญาติ) ออกมาอัปเดตอาการผู้ป่วยทุก 30 นาที", correct: true, exp: "ถูกต้อง! การสื่อสารสม่ำเสมอช่วยลดความวิตกกังวลและความขัดแย้ง" },
+          { text: "🔇 ทำเป็นไม่สนใจปล่อยให้ญาติยืนรอนานหลายชั่วโมงโดยไม่มีใครบอกอะไร", correct: false, exp: "เพิ่มความตึงเครียดและอาจนำไปสู่การทำร้ายร่างกายบุคลากร" },
+          { text: "📢 เปิดเพลงเสียงดังกลบเสียงโวยวายของญาติ", correct: false, exp: "เป็นการแก้ปัญหาที่ไม่ถูกจุด" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 5,
+    title: "5. น้ำประปาไม่ไหล & ระบบสุขาภิบาลขัดข้อง",
+    desc: "แรงดันน้ำประปาเมืองตัดขาดเนื่องจากอุทกภัยรอบนอก ทำให้โรงพยาบาลไม่มีน้ำใช้ในระบบหอผู้ป่วยและห้องผ่าตัด",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การบริหารจัดการน้ำสำรองฉุกเฉิน",
+        q: "ทีมสนับสนุนและอาคารต้องตรวจสอบและเปิดใช้อุปกรณ์ใดเป็นอันดับแรก?",
+        options: [
+          { text: "💧 เปิดระบบถังเก็บน้ำสำรองใต้ดินและบนดาดฟ้า พร้อมจัดลำดับการใช้น้ำ (ห้องผ่าตัด/ICU มาก่อน)", correct: true, exp: "ถูกต้อง! ต้องบริหารจัดการน้ำสำรองตามลำดับความสำคัญทางการแพทย์" },
+          { text: "🌧️ เอาถังน้ำไปวางรองน้ำฝนจากชายคาหลังคารั่วมาใช้ล้างแผล", correct: false, exp: "น้ำฝนไม่ผ่านการฆ่าโรค เสี่ยงต่อการติดเชื้อในโรงพยาบาลสูงมาก" },
+          { text: "🚰 ปล่อยให้ทุกก๊อกน้ำไหลทิ้งไว้จนกว่าน้ำจะหมดถัง", correct: false, exp: "ทำให้ปริมาณน้ำสำรองหมดลงอย่างรวดเร็วโดยเปล่าประโยชน์" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การประสานรถน้ำภายนอก",
+        q: "หากน้ำสำรองในถังใกล้หมด ใครคือหน่วยงานที่ต้องรีบประสานขอรถบรรทุกน้ำ?",
+        options: [
+          { text: "🔧 ทีมสนับสนุน ประสาน องค์กรปกครองส่วนท้องถิ่น หรือการประปา นำรถน้ำมาเติมถังสำรอง รพ.", correct: true, exp: "ถูกต้อง! การขอสนับสนุนรถน้ำจากภายนอกคือแนวทางปฏิบัติมาตรฐาน" },
+          { text: "🌊 ให้เจ้าหน้าที่ทุกคนพากันเดินไปตักน้ำจากลำคลองธรรมชาติหลัง รพ.", correct: false, exp: "ไม่ปลอดภัยและไม่สะอาดพอสำหรับใช้ในโรงพยาบาล" },
+          { text: "🛒 สั่งน้ำดื่มขวดเล็กมาใช้ล้างตัวผู้ป่วยทั้งหมด", correct: false, exp: "สิ้นเปลืองงบประมาณและมีปริมาณไม่เพียงพอ" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> มาตรการควบคุมการใช้น้ำชั่วคราว",
+        q: "เพื่อประหยัดน้ำสำรอง ทีมบริหารควรประกาศมาตรการใดให้บุคลากรปฏิบัติ?",
+        options: [
+          { text: "🛑 งดใช้น้ำในกิจกรรมที่ไม่จำเป็นชั่วคราว เช่น งดซักผ้าปูที่นอนรอบพิเศษ และใช้เจลแอลกอฮอล์ล้างมือแทนน้ำ", correct: true, exp: "ถูกต้อง! การใช้เจลแอลกอฮอล์ทดแทนและการจำกัดกิจกรรมช่วยยืดอายุน้ำสำรอง" },
+          { text: "🚿 ปิดตึกแล้วไล่ให้คนไข้กลับบ้านไปอาบน้ำที่บ้านเอง", correct: false, exp: "ไม่อนุญาตให้ไล่คนไข้กลับบ้านตามอำเภอใจ" },
+          { text: "🚫 สั่งห้ามไม่ให้ใครเข้าห้องน้ำเลยตลอด 24 ชั่วโมง", correct: false, exp: "สร้างความเดือดร้อนและส่งผลเสียต่อสุขอนามัย" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 6,
+    title: "6. ท่อออกซิเจนหลักรั่วไหล & ผู้ป่วยวิกฤตขาดแคลน",
+    desc: "แรงกระแทกจากพายุทำให้ท่อส่งออกซิเจนเหลวเมนหลักเกิดรอยรั่ว ความดันออกซิเจนตกวูบส่งผลต่อผู้ป่วยใช้เครื่องช่วยหายใจ",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การระงับเหตุเฉพาะหน้าด่วนที่สุด",
+        q: "เมื่อแรงดันออกซิเจนตก ทีมช่างและทีมแพทย์ต้องทำอย่างไรทันที?",
+        options: [
+          { text: "⚡ ปิดวาล์วเมนโซนที่รั่ว และสลับเปลี่ยนมาใช้ 'ถังออกซิเจนสำรองแบบพกพา (E-Tank)' ให้ผู้ป่วยวิกฤตทุกเตียงทันที", correct: true, exp: "ถูกต้อง! การเปลี่ยนมาใช้ถังสำรองรายเตียงคือมาตรการช่วยชีวิตเร่งด่วน" },
+          { text: "🛜 ยืนลุ้นเอาใจช่วยให้รอยรั่วประสานติดกันได้เอง", correct: false, exp: "ผู้ป่วยจะขาดออกซิเจนและเสียชีวิตภายในไม่กี่นาที" },
+          { text: "💨 ให้เจ้าหน้าที่ช่วยกันเป่าลมหายใจใส่ท่อออกซิเจนแทน", correct: false, exp: "เป็นไปไม่ได้และไม่ออกซิเจนบริสุทธิ์พอ" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การซ่อมแซมและตรวจสอบระบบท่อก๊าซ",
+        q: "ใครคือผู้มีหน้าที่รับผิดชอบตรวจสอบและเชื่อมต่อท่อก๊าซทางการแพทย์ที่เสียหาย?",
+        options: [
+          { text: "🔧 ทีมช่างอาคารร่วมกับบริษัทผู้ 1 ตรวจสอบระบบท่อ และเปิดใช้วาล์วสำรอง (Manifold Backup)", correct: true, exp: "ถูกต้อง! ต้องอาศัยผู้เชี่ยวชาญระบบก๊าซทางการแพทย์และทีมช่าง รพ." },
+          { text: "🎨 ให้แม่บ้านเอาสีทาบ้านมาทาทับรอยรั่ว", correct: false, exp: "อันตรายมาก ก๊าซออกซิเจนทำปฏิกิริยารุนแรงกับสารเคมีบางชนิด" },
+          { text: "🔨 ใช้ค้อนทุบอัดท่อเหล็กให้แบนปิดสนิท", correct: false, exp: "ทำให้ระบบจ่ายก๊าซพังเสียหายถาวรทั้งตึก" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การบริหารจัดการทรัพยากรก๊าซที่เหลือ",
+        q: "หากถังออกซิเจนสำรองมีจำกัด ทีมแพทย์ต้องจัดลำดับความสำคัญ (Triage) อย่างไร?",
+        options: [
+          { text: "🩺 จัดสรรถังออกซิเจนให้ผู้ป่วยวิกฤต (ICU/NICU และผู้ป่วยใช้เครื่องช่วยหายใจ) ก่อนเป็นอันดับแรกสูงสุด", correct: true, exp: "ถูกต้อง! ยึดหลักการแพทย์ฉุกเฉินจัดสรรทรัพยากรตามความรุนแรงของโรค" },
+          { text: "🎲 จับฉลากแจกถังออกซิเจนให้คนไข้ใครจับได้ก็ได้ใช้", correct: false, exp: "ผิดหลักจริยธรรมทางการแพทย์อย่างร้ายแรง" },
+          { text: "📦 เก็บถังออกซิเจนไว้ทั้งหมดในห้องล็อกเกอร์ส่วน1ไม่อนุญาตให้ใครใช้", correct: false, exp: "กักตุนเวชภัณฑ์ในยามวิกฤต" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 7,
+    title: "7. ลิฟต์ติดค้าง & มีผู้ป่วยติดอยู่ภายใน",
+    desc: "ไฟดับกะทันหันขณะพายุเข้า ทำให้ลิฟต์โดยสารรับส่งผู้ป่วยขัดข้องค้างระหว่างชั้น 2 และชั้น 3 โดยมีผู้ป่วยและญาติด้านใน",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การสื่อสารกับผู้ติดค้างในลิฟต์",
+        q: "สิ่งแรกที่ทีมช่วยเหลือต้องทำเมื่อไปถึงหน้าลิฟต์ที่ค้างคืออะไร?",
+        options: [
+          { text: "🗣️ ตะโกนสื่อสารให้กำลังใจผู้ติดภายใน บอกให้ตั้งสติ และห้ามงัดประตูลิฟต์ออกเองเด็ดขาด", correct: true, exp: "ถูกต้อง! ต้องสื่อสารให้ผู้ป่วยสงบสติอารมณ์และห้ามพยายามปีนออกเองอันตรายมาก" },
+          { text: "💣 เอาค้อนปอนด์ทุบประตูลิฟต์ให้พังทันทีโดยไม่ดูชั้น", correct: false, exp: "เสี่ยงทำให้ผู้ป่วยตกหลุมลิฟต์หรือบาดเจ็บรุนแรง" },
+          { text: "🚶‍♂️ เดินหนีปล่อยทิ้งไว้เพราะหมดเวลาเวรทำงาน", correct: false, exp: "ละเลยความปลอดภัยของผู้ป่วยในความดูแล" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การใช้กุญแจปลดล็อคและทีมช่างผู้ชำนาญ",
+        q: "ใครคือผู้มีอำนาจและอุปกรณ์ในการไขประตูลิฟต์ฉุกเฉินอย่างถูกต้องปลอดภัย?",
+        options: [
+          { text: "🔧 ทีมช่างอาคารผู้ชำนาญการ ร่วมกับบริษัทลิฟต์ ใช้กุญแจปลดล็อค (Emergency Key) และระบบเบรกมือโยก", correct: true, exp: "ถูกต้อง! ต้องใช้ช่างเทคนิคเฉพาะทางที่มีอุปกรณ์และคู่มือลิฟต์รุ่นนั้นๆ" },
+          { text: "🧹 ให้แม่บ้านใช้ไม้ถูพื้นแยงเข้าไปงัดประตูลิฟต์", correct: false, exp: "อุปกรณ์ไม่ถูกต้องและเสี่ยงตกร่องลิฟต์" },
+          { text: "📞 โทรเรียกช่างแอร์ซ่อมบ้านมาดูลิฟต์โรงพยาบาล", correct: false, exp: "ช่างแอร์ไม่เชี่ยวชาญระบบลิฟต์โดยสารขนาดใหญ่" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การประเมินสุขภาพหลังช่วยเหลือออกมา",
+        q: "เมื่อช่วยเหลือผู้ป่วยและญาติออกจากลิฟต์ได้แล้ว ขั้นตอนการแพทย์ใดต้องทำต่อทันที?",
+        options: [
+          { text: "🩺 ทีมแพทย์ ER ประเมินสัญญาณชีพ ตรวจสภาพจิตใจ และให้การปฐมพยาบาลภาวะตื่นตระหนก (Panic)", correct: true, exp: "ถูกต้อง! ผู้ป่วยที่ติดในที่แคบมืดอาจมีภาวะขาดอากาศหรือช็อกทางจิตใจ" },
+          { text: "✍️ ให้เซ็นใบยินยอมรับสภาพความซวยแล้วปล่อยกลับบ้านทันที", correct: false, exp: "ไม่ผ่านการตรวจประเมินทางการแพทย์" },
+          { text: "📸 ถ่ายรูปเซลฟี่ลงโซเชียลประจานความซวย", correct: false, exp: "ละเมิดสิทธิผู้ป่วยและผิดกฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA)" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 8,
+    title: "8. ผู้ป่วยคลอดฉุกเฉินระหว่างไฟดับพายุโหม",
+    desc: "หญิงตั้งครรภ์แก่ใกล้คลอดประสบภาวะเจ็บครรภ์ฉุกเฉิน ทารกกำลังจะคลอดออกมาในโซนตึกผู้ป่วยในที่ไฟฟ้าดับสนิท",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การเคลื่อนย้ายและเลือกพื้นที่ปลอดภัย",
+        q: "ทีมแพทย์และพยาบาลต้องตัดสินใจอย่างไรท่ามกลางความมืดและพายุ?",
+        options: [
+          { text: "🏥 เคลื่อนย้ายคุณแม่ไป 'ห้องคลอดสำรอง' หรือจุดที่ติดตั้งไฟฉุกเฉินและเครื่องสำรองไฟพร้อมทันที", correct: true, exp: "ถูกต้อง! ต้องรีบย้ายไปยังพื้นที่ที่มีแสงสว่างและอุปกรณ์ทำคลอดพร้อมที่สุด" },
+          { text: "🛌 ทำคลอดบนเตียงนอนเดิมมืดๆ โดยใช้แสงไฟจากหน้าจอโทรศัพท์มือถือ", correct: false, exp: "เสี่ยงต่อการติดเชื้อและการมองเห็นที่ไม่ชัดเจนของทีมแพทย์" },
+          { text: "🚕 บอกให้คุณแม่กลั้นใจรออีก 3 วันจนกว่าพายุจะสงบแล้วค่อยคลอด", correct: false, exp: "เป็นไปไม่ได้ตามธรรมชาติทางชีววิทยา" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การเตรียมอุปกรณ์ช่วยชีวิตทารกแรกเกิด",
+        q: "อุปกรณ์สำคัญใดที่ทีมกุมารแพทย์ต้องเตรียมพร้อมรับมือภาวะแทรกซ้อน?",
+        options: [
+          { text: "👶 เตรียม 'Infant Warper (ตู้อบ/โคมไฟให้ความอบอุ่นเด็ก)' ชนิดใช้แบตเตอรี่ และชุดกู้ชีพทารก", correct: true, exp: "ถูกต้อง! ทารกแรกเกิดในภาวะพายุเสี่ยงภาวะตัวเย็นจัด (Hypothermia) ต้องให้ความอบอุ่นด่วน" },
+          { text: "🧊 เตรียมถังน้ำแข็งแช่เย็นจัดสำหรับเด็กแรกเกิด", correct: false, exp: "อันตรายถึงชีวิต! เด็กแรกเกิดห้ามโดนความเย็นจัดเด็ดขาด" },
+          { text: "🧸 เอาตุ๊กตาหมีมาให้คุณแม่กอดแทนลูก", correct: false, exp: "เด็กกำลังจะคลอดจริงไม่ใช่เรื่องล้อเล่น" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การบันทึกสถิติและรายงานศูนย์ EOC",
+        q: "เมื่อแม่และเด็กปลอดภัยดีแล้ว ทีมทำคลอดต้องทำสิ่งใดต่อ?",
+        options: [
+          { text: "📊 รายงานเคสด่วนเข้าศูนย์ EOC ว่า 'ปลอดภัยทั้งแม่และเด็ก' พร้อมบันทึกเวชระเบียนฉุกเฉิน", correct: true, exp: "ถูกต้อง! รายงานสถานการณ์ให้ศูนย์บัญชาการรับทราบเพื่อบันทึกสถิติจัดเก็บ" },
+          { text: "🎉 จุดพลุเฉลิมฉลองเสียงดังสนั่นโรงพยาบาลท่ามกลางพายุ", correct: false, exp: "เพิ่มความตื่นตระหนกและอันตรายจากประกายไฟ" },
+          { text: "🤫 เก็บเป็นความลับห้ามบอกใครเด็ดขาด", correct: false, exp: "ขัดต่อระบบรายงานทางการแพทย์" }
+        ]
+      }
+    ]
+  },
+  {
+    id: 9,
+    title: "9. Wild Card: เจ้าหน้าที่บาดเจ็บฉุกเฉินหน้างาน",
+    desc: "ขณะที่เจ้าหน้าที่กำลังช่วยกันย้ายกระสอบทรายกันน้ำท่วม มีกิ่งไม้ใหญ่ปลิวมากระแทกทีมสนับสนุนบาดเจ็บที่ขาและหมดสติ",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การช่วยเหลือเพื่อนร่วมงานเบื้องต้น",
+        q: "ทีมที่พบเห็นเหตุการณ์ต้องทำตามขั้นตอนการปฐมพยาบาลใดเป็นอันดับแรก?",
+        options: [
+          { text: "⛑️ ประเมินความปลอดภัยพื้นที่ ปลดภาระอันตราย และแจ้งทีม ER มารับตัวผู้บาดเจ็บเข้าห้องฉุกเฉินทันที", correct: true, exp: "ถูกต้อง! ความปลอดภัยของผู้ช่วยเหลือต้องมาอันดับแรก และส่งต่อผู้ป่วยเจ็บอย่างรวดเร็ว" },
+          { text: "📸 ถ่ายคลิปวิดีโอลง TikTok โพสต์ขอเรี่ยไรเงินบริจาคทันที", correct: false, exp: "ละเมิดความเป็นส่วนตัวและละเลยการช่วยเหลือเร่งด่วน" },
+          { text: "🧹 เอาไม้กวาดกวาดผู้บาดเจ็บไปไว้ข้างทางแล้วทำงานต่อ", correct: false, exp: "ไร้มนุษยธรรมและอาจทำให้กระดูกหักเคลื่อนผิดรูปหนักกว่าเดิม" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การจัดกำลังคนทดแทนอัตรากำลังที่หายไป",
+        q: "เมื่อกำลังคนในทีมลดลง 1 คนจากอุบัติเหตุ ผู้จัดการทีมต้องแก้ปัญหาอย่างไร?",
+        options: [
+          { text: "🩺 ใช้การ์ด 'คนเสริม (Staff Support)' ดึงเจ้าหน้าที่สำรองจากแผนกอื่นมาปฏิบัติงานแทนชั่วคราว", correct: true, exp: "ถูกต้อง! การใช้กำลังคนสำรองตามแผน BCP ช่วยทดแทนอัตรากำลังที่ขาดหายไปได้" },
+          { text: "🛑 สั่งปิดแผนกทั้งหมดแล้วกลับบ้านกันให้หมด", correct: false, exp: "โรงพยาบาลไม่สามารถหยุดให้บริการได้" },
+          { text: "🤖 เอาหุ่นยนต์พลาสติกมาเดินถือแฟ้มแทนคน", correct: false, exp: "เทคโนโลยีปัจจุบันยังทดแทนแรงงานคนในภาวะวิกฤตหน้างานไม่ได้" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การรายงานอุบัติเหตุตามระบบความปลอดภัย (IC/OSH)",
+        q: "ขั้นตอนสุดท้ายหลังการรักษาพยาบาลเพื่อนร่วมงานเสร็จสิ้นคือข้อใด?",
+        options: [
+          { text: "📋 บันทึกรายงานอุบัติเหตุจากการทำงาน (Incident Report) เพื่อนำมาปรับปรุงมาตรการความปลอดภัยองค์กร", correct: true, exp: "ถูกต้อง! ต้องบันทึกสถิติอุบัติเหตุเพื่อหาแนวทางป้องกันไม่ให้เกิดขึ้นซ้ำ" },
+          { text: "🔥 เผาทำลายหลักฐานเสื้อผ้าที่เปื้อนเลือดทิ้งทั้งหมด", correct: false, exp: "ทำลายหลักฐานและผิดกฎการจัดการขยะติดเชื้อ" },
+          { text: "🤐 แกล้งทำเป็นว่าไม่มีอะไรเกิดขึ้น", correct: false, exp: "พลาดโอกาสในการพัฒนาความปลอดภัยในการทำงานของ รพ." }
+        ]
+      }
+    ]
+  },
+  {
+    id: 10,
+    title: "10. พายุสงบ & สรุปบทเรียนถอดบทเรียน (AAR)",
+    desc: "ผ่านพ้น 45 นาทีอันยาวนาน พายุอ่อนกำลังลงและประกาศยกเลิกภาวะฉุกเฉิน ทุกทีมต้องเข้าร่วมกระบวนการสรุปผลขั้นสุดท้าย",
+    steps: [
+      {
+        desc: "<b>ขั้นตอนที่ 1:</b> การสำรวจความเสียหายภาพรวม (Damage Assessment)",
+        q: "ใครต้องเป็นผู้นำทีมเดินสำรวจความเสียหายของอาคารและระบบหลังพายุสงบ?",
+        options: [
+          { text: "🔧 ทีมสนับสนุน/อาคาร ร่วมกับวิศวกรและผู้บริหาร เดินสำรวจโครงสร้างตึก ระบบไฟ และรอยรั่วซึม", correct: true, exp: "ถูกต้อง! ต้องให้ผู้เชี่ยวชาญด้านอาคารตรวจสอบความปลอดภัยทางโครงสร้างก่อนเปิดตึกใช้งาน" },
+          { text: "👶 ให้เด็กฝึกงานเดินตรวจดูด้วยตาเปล่าคนเดียวรอบตึกมืดๆ", correct: false, exp: "อันตรายจากโครงสร้างอาจพังถล่มซ้ำ" },
+          { text: "🔮 ให้หมอดูมานั่งทางในทำนายว่าตึกจะถล่มไหม", correct: false, exp: "ขาดหลักวิชาการทางวิศวกรรม" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 2:</b> การประชุมสรุปบทเรียนร่วมกัน (After Action Review - AAR)",
+        q: "กระบวนการ AAR ที่ดีหลังซ้อมแผนเสร็จควรเน้นเรื่องใดมากที่สุด?",
+        options: [
+          { text: "💬 เปิดโอกาสให้ทุกทีมสะท้อนปัญหา จุดอ่อน และอุปสรรคที่พบอย่างตรงไปตรงมาเพื่อปรับปรุงแผน BCP", correct: true, exp: "ถูกต้อง! แก่นแท้ของ AAR คือการเรียนรู้จากข้อผิดพลาดเพื่อพัฒนาแผนให้ดีขึ้น" },
+          { text: "🏆 แจกรางวัลกล่าวโทษหาตัวคนผิดที่ทำให้เกิดข้อผิดพลาดในทีม", correct: false, exp: "สร้างบรรยากาศเชิงลบและทำให้คนไม่กล้ารายงานความจริง" },
+          { text: "📜 นั่งเงียบๆ ต่างคนต่างแยกย้ายกลับบ้านโดยไม่มีการพูดคุย", correct: false, exp: "เสียประโยชน์จากการฝึกซ้อมแผนอย่างน่าเสียดาย" }
+        ]
+      },
+      {
+        desc: "<b>ขั้นตอนที่ 3:</b> การจัดทำรายงานเสนอผู้บริหารสูงสุด",
+        q: "ขั้นตอนสุดท้ายก่อนจบภารกิจ 45 นาทีคือนำข้อมูลอะไรไปส่งผู้บริหาร?",
+        options: [
+          { text: "📊 สรุปผลคะแนน ข้อเสนอแนะ และแผนปรับปรุงเร่งด่วน (Corrective Action Plan) เสนอผู้บริหาร รพ.", correct: true, exp: "ถูกต้อง! นำเสนอรายงานรูปธรรมเพื่อนำไปจัดสรรงบประมาณและพัฒนา รพ. ต่อไป 🎉" },
+          { text: "🎨 ส่งภาพวาดระบายสีรูปพายุฝน", correct: false, exp: "ไม่เป็นทางการและไม่ตอบโจทย์การบริหารงานโรงพยาบาล" },
+          { text: "🗑️ ลบไฟล์ข้อมูลทั้งหมดทิ้งแล้วเริ่มต้นนับหนึ่งใหม่", correct: false, exp: "สูญหายข้อมูลสำคัญทั้งหมดที่ซ้อมมา" }
+        ]
+      }
+    ]
+  }
 ];
 
-const WILD=[
-['🔥','ฟ้าผ่าซ้ำ!','เครื่องปั่นไฟขัดข้อง ทีมที่ลงการ์ดเครื่องปั่นไฟต้องแก้ปัญหาเฉพาะหน้า 1 นาที','thunder'],
-['👨‍👩‍👧','ญาติบุกเข้า ER!','ทีมสื่อสารต้องควบคุมสถานการณ์ภายใน 1 นาที','siren'],
-['📺','สื่อมวลชนมาถึงหน้า รพ.','เลือกผู้ให้สัมภาษณ์ 1 คน พูดได้ไม่เกิน 3 ประโยค','news'],
-['🤰','ผู้ป่วยคลอดฉุกเฉิน!','ทีมแพทย์ต้องหาห้องที่มีไฟและเตียงให้ได้','siren'],
-['🛗','ลิฟต์ค้าง!','มีผู้ป่วยและเจ้าหน้าที่ติดอยู่ ต้องส่งทีมช่างหรือหาทางออกอื่น','zap'],
-['💨','ท่อออกซิเจนรั่ว!','ทีมสนับสนุนตัดสินใจเรื่องจุดจ่ายออกซิเจนสำรอง','zap'],
-['📻','วิทยุสื่อสารแบตหมด','2 นาทีนี้ห้ามพูดข้ามทีม ใช้ใบสั่งการเป็นกระดาษเท่านั้น','zap'],
-['💧','น้ำประปาไม่ไหล','จัดลำดับน้ำสำรอง: ห้องผ่าตัด / ครัว / ห้องน้ำ','siren'],
-['😷','เจ้าหน้าที่ป่วยฉุกเฉิน','ทีมที่ถูกสุ่มเสียกำลังคน 1 คน หรือใช้การ์ดบุคลากรเสริมทดแทน','siren'],
-['🎁','ข่าวดี!','ไฟฟ้าส่วนภูมิภาคเข้าซ่อมเร็วกว่าคาด ทีมที่ประสานงานดีสุดรอบนี้ได้โบนัส +3','good']];
+// ตัวแปรสถานะเกมปัจจุบัน
+let currentMission = null;
+let currentStepIdx = 0;
+let errorsLeft = 3;
+let completedMissions = JSON.parse(localStorage.getItem('ksk_completed') || '[]');
 
-const TAGS=['⚡ ไฟฟ้า','💻 ระบบ IT/HIS','👥 อัตรากำลัง','🏗️ อาคาร/หลังคา','📡 การสื่อสาร','🚑 การส่งต่อ/ทางเข้า','💊 ออกซิเจน/เวชภัณฑ์','📣 การแถลงข่าว'];
-const PINS=[['🛏️','ผู้ป่วย'],['🧑‍⚕️','บุคลากร'],['🚑','รถพยาบาล'],['🔥','จุดวิกฤต'],['⚡','จุดจ่ายไฟ'],['💧','น้ำสำรอง'],['🚧','ทางปิด']];
+const $ = id => document.getElementById(id);
 
-/* ===== คู่มือระบบดิจิทัล ===== */
-const TUT={
-play:[
-{i:'🎯',t:'เป้าหมาย: เอาชีวิตรอดใน 45 นาที',h:`<p>พายุกำลังถล่ม <b>โรงพยาบาลเขาสุกิม</b> ทุกทีมต้องช่วยกันรักษาชีวิตผู้ป่วยและทำให้ รพ. ทำงานต่อได้ผ่านระบบดิจิทัลนี้</p>
-<ul><li>เกมมี <b>5 รอบวิกฤต</b> รอบละ <b>5 นาที</b></li><li>ใช้ปุ่ม <b>🗺️ แผนผัง รพ.</b> บนจอเพื่อลากหมากจำลองสถานการณ์</li><li>คลิกใช้การ์ดทรัพยากรดิจิทัลที่แผงด้านขวาเมื่อใช้งาน</li></ul>
-<div class="note">ทุกอย่างรวมอยู่ในระบบนี้แล้ว ไม่ต้องใช้อุปกรณ์กระดาษบนโต๊ะ</div>`},
-{i:'🗺️',t:'แผนผัง รพ. ดิจิทัล (ลากย้ายได้)',h:`<ul><li>กดปุ่ม <b>🗺️ แผนผัง รพ.</b> ด้านล่างจอเพื่อเปิดแผนผัง</li><li>คลิกเลือกหมุดด้านข้าง (เช่น 🛏️ ผู้ป่วย, 🚑 รถพยาบาล, 🔥 จุดวิกฤต) เพื่อวางลงบนแผนผัง</li><li><b>ลากเพื่อย้ายตำแหน่ง</b> และ <b>ดับเบิลคลิกเพื่อลบหมุด</b></li></ul>
-<div class="note">ช่วยให้ทุกทีมเห็นภาพตรงกันบนจอใหญ่ทันที</div>`},
-{i:'🃏',t:'การ์ดทรัพยากรดิจิทัล (คลิกใช้ได้เลย)',h:`<table><tr><th>การ์ดดิจิทัล</th><th>จำนวน</th><th>วิธีใช้</th></tr>
-<tr><td>⚡ ปั่นไฟ</td><td>2 ใบ/ทีม</td><td>คลิกที่ชิปเพื่อใช้กู้ไฟ (เปลี่ยนเป็นสีเทา)</td></tr>
-<tr><td>🔧 ช่าง / 📡 5G</td><td>1 ใบ/ทีม</td><td>คลิกเพื่อตัดจำนวนเมื่อใช้งานจริง</td></tr>
-<tr><td>🚑 รถพยาบาล</td><td>2 คันกลาง</td><td>คลิกที่ไอคอนรถพยาบาลด้านบนเพื่อใช้ร่วมกัน</td></tr></table>
-<p class="try">ระบบจะบันทึกสถานะการใช้การ์ดอัตโนมัติ</p>`}
-],
-gm:[
-{i:'🧰',t:'วิธีดำเนินเกมผ่านระบบ',h:`<ol><li>เปิดหน้าจอนี้ผ่านคอมพิวเตอร์หรือต่อโปรเจกเตอร์/ทีวี</li><li>กดปุ่ม <kbd>N</kbd> เพื่อเริ่มรอบที่ 1 ระบบจะจำลองเสียงฝนและข่าวด่วน</li><li>คอยควบคุมคะแนน (ความเร็ว, BCP, ประสาน) และกดใช้การ์ดตามที่ทีมแจ้ง</li></ol>
-<div class="note">ทุกอย่างควบคุมได้จากหน้าจอเดียว สะดวกและรวดเร็ว</div>`}
-]};
-let tutMode='play',tutI=0;
-function openTut(m,silent){if(m)tutMode=m;tutI=0;drawTut();$('tutO').classList.add('show');if(!silent){A.init();A.news()}}
-function closeTut(){$('tutO').classList.remove('show');try{localStorage.setItem('ksk_tut_seen','1')}catch(e){}}
-function tutSet(m){tutMode=m;tutI=0;A.click();drawTut()}
-function tutGo(i){tutI=i;A.click();drawTut()}
-function tutMove(d){const L=TUT[tutMode];
- if(d>0&&tutI===L.length-1){A.good();closeTut();return}
- tutI=Math.min(L.length-1,Math.max(0,tutI+d));A.click();drawTut()}
-function drawTut(){const L=TUT[tutMode],s=L[tutI],last=tutI===L.length-1;
- $('tutM').innerHTML=`<div class="tabs">
-  <button class="${tutMode==='play'?'on':''}" onclick="tutSet('play')">🎮 สำหรับผู้เล่น</button>
-  <button class="${tutMode==='gm'?'on':''}" onclick="tutSet('gm')">🎛️ สำหรับ Facilitator</button>
-  <button class="x" onclick="closeTut()">✕ ปิด</button></div>
- <div class="tstep"><div class="tbig" key="${tutMode}${tutI}">${s.i}</div><div><h2>${s.t}</h2>${s.h}</div></div>
- <div class="tnav"><button onclick="tutMove(-1)" ${tutI===0?'disabled':''}>◀ ย้อนกลับ</button>
-  <div class="tdots">${L.map((_,i)=>`<button class="tdot ${i===tutI?'on':''}" onclick="tutGo(${i})"></button>`).join('')}<span class="tcount">${tutI+1}/${L.length}</span></div>
-  <button class="nx" onclick="tutMove(1)">${last?'เริ่มเลย ✔':'ถัดไป ▶'}</button></div>`}
+// แสดงหน้า Hub เลือกภารกิจ
+function renderHub() {
+  $('hubScreen').style.display = 'block';
+  $('gameScreen').style.display = 'none';
 
-/* ===== สถานะเกม ===== */
-const $=id=>document.getElementById(id);
-const LS='ksk_crisis_'+SESSION;
-function fresh(){return{round:0,secs:ROUND_SEC,running:false,amb:AMB_MAX,wildBag:[],hint:false,dark:false,map:[],
- teams:TEAMS.map(()=>({s:{speed:0,bcp:0,coord:0},r:Object.fromEntries(Object.entries(RES).map(([k,v])=>[k,v[2]]))})),
- tags:Object.fromEntries(TAGS.map(t=>[t,0])),notes:''}}
-let S=fresh();
-try{const x=JSON.parse(localStorage.getItem(LS)||'null');if(x){S=Object.assign(fresh(),x);S.running=false;}}catch(e){}
-const save=()=>{try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}cloudSave()};
+  let html = '';
+  MISSIONS.forEach(m => {
+    const isDone = completedMissions.includes(m.id);
+    html += `
+      <div class="mission-card ${isDone ? 'completed' : ''}" onclick="startMission(${m.id})">
+        <span class="mission-num">เหตุการณ์ที่ ${m.id} / 10</span>
+        <h3>${m.title}</h3>
+        <p>${m.desc}</p>
+        <div style="margin-top:12px;font-size:14px;color:${isDone ? 'var(--g)' : 'var(--y)'};font-weight:600">
+          ${isDone ? '✔ ผ่านภารกิจแล้ว (คลิกเล่นซ้ำได้)' : '▶ เริ่มดำเนินการขั้นตอนนี้'}
+        </div>
+      </div>
+    `;
+  });
+  $('missionGrid').innerHTML = html;
+}
 
-function setCloud(st){const e=$('cloud');e.className='cl '+(st||'');e.textContent=!CFG.API?'☁️ ดิจิทัลพร้อมใช้งาน':st==='ok'?'☁️ ซิงค์แล้ว':'☁️ บันทึกแล้ว'}
-function post(body){if(!CFG.API)return Promise.resolve(null);return fetch(CFG.API,{method:'POST',body:JSON.stringify(body)}).then(r=>r.json()).catch(()=>null)}
-let cT;function cloudSave(){if(!CFG.API)return;clearTimeout(cT);cT=setTimeout(()=>post({action:'save',state:S}),1500)}
-function logEv(type,detail){}
+// เริ่มเล่นเหตุการณ์ที่เลือก
+function startMission(id) {
+  currentMission = MISSIONS.find(m => m.id === id);
+  currentStepIdx = 0;
+  errorsLeft = 3;
 
-/* ===== ระบบเสียง ===== */
-const A=(()=>{let ctx,master,rainG,muted=false,rainSrc;
- function init(){if(ctx){if(ctx.state==='suspended')ctx.resume();return}ctx=new(window.AudioContext||window.webkitAudioContext)();master=ctx.createGain();master.gain.value=muted?0:.85;master.connect(ctx.destination);startRain();}
- function noise(sec){const b=ctx.createBuffer(1,ctx.sampleRate*sec,ctx.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b}
- function startRain(){rainSrc=ctx.createBufferSource();rainSrc.buffer=noise(3);rainSrc.loop=true;const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=1400;rainG=ctx.createGain();rainG.gain.value=.16;rainSrc.connect(f);f.connect(rainG);rainG.connect(master);rainSrc.start();}
- function tone(f,d,type='sine',v=.25,w=0,to){if(muted)return;init();const t=ctx.currentTime+w,o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(to)o.frequency.exponentialRampToValueAtTime(to,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d);}
- function burst(d,fq,v,hp){if(muted)return;init();const s=ctx.createBufferSource();s.buffer=noise(d);const f=ctx.createBiquadFilter();f.type=hp?'highpass':'lowpass';f.frequency.setValueAtTime(fq,ctx.currentTime);if(!hp)f.frequency.exponentialRampToValueAtTime(60,ctx.currentTime+d);const g=ctx.createGain();g.gain.setValueAtTime(v,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
- return{
-  init,get muted(){return muted},
-  setMute(m){muted=m;init();master.gain.value=m?0:.85;},
-  thunder(){burst(.15,3000,.9,true);burst(3.2,700,1.2);tone(60,2.5,'sine',.5,.1,25)},
-  siren(n=3){for(let i=0;i<n;i++)tone(650,.5,'sawtooth',.18,i*.55,950)},
-  news(){[523,659,784,1047].forEach((f,i)=>tone(f,.25,'triangle',.28,i*.14))},
-  beep(){tone(900,.09,'square',.12)},
-  alarm(){for(let i=0;i<6;i++)tone(i%2?500:800,.25,'square',.22,i*.28)},
-  blackout(){tone(420,1.3,'sawtooth',.22,0,45);burst(.4,2000,.4,true)},
-  zap(){burst(.35,4000,.6,true);tone(2400,.35,'sawtooth',.2,0,90)},
-  good(){[784,988,1175,1568].forEach((f,i)=>tone(f,.3,'triangle',.28,i*.1))},
-  click(){tone(660,.07,'triangle',.15)},
-  buzz(){tone(140,.25,'square',.2)}
- }})();
-function speak(t){if(A.muted||!window.speechSynthesis)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='th-TH';u.rate=.95;speechSynthesis.speak(u)}catch(e){}}
-function flash(){const f=$('flash');f.classList.remove('go');void f.offsetWidth;f.classList.add('go')}
-function thunder(){flash();A.thunder()}
+  $('hubScreen').style.display = 'none';
+  $('gameScreen').style.display = 'block';
+  loadStep();
+}
 
-/* ===== ฝน ===== */
-const cv=$('rain'),cx=cv.getContext('2d');let drops=[];
-function rs(){cv.width=innerWidth;cv.height=innerHeight;drops=Array.from({length:600},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,l:12+Math.random()*18,v:14+Math.random()*14}))}
-addEventListener('resize',rs);rs();
-function rainLoop(){const k=S.round?ROUNDS[S.round-1].rain:.5,n=Math.floor(380*k);cx.clearRect(0,0,cv.width,cv.height);cx.strokeStyle='rgba(170,210,255,.35)';cx.lineWidth=1.4;cx.beginPath();
- for(let i=0;i<Math.min(n,drops.length);i++){const d=drops[i];cx.moveTo(d.x,d.y);cx.lineTo(d.x-d.l*.25,d.y+d.l);d.y+=d.v;d.x-=d.v*.25;if(d.y>cv.height){d.y=-20;d.x=Math.random()*cv.width+100}}
- cx.stroke();requestAnimationFrame(rainLoop)}
-rainLoop();
+// โหลดขั้นตอนปัจจุบัน
+function loadStep() {
+  const step = currentMission.steps[currentStepIdx];
+  $('missionBadge').textContent = `ภารกิจที่ ${currentMission.id}: ขั้นตอนที่ ${currentStepIdx + 1} จาก 3`;
+  $('triesBox').innerHTML = `❌ โอกาสผิดพลาด: ${errorsLeft}/3 ครั้ง`;
+  $('stepTitle').textContent = currentMission.title;
+  $('stepDesc').innerHTML = step.desc;
+  $('questionText').textContent = step.q;
 
-/* ===== ตัวจับเวลา ===== */
-let endAt=0,tId=null;
-const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
-function startTimer(){if(S.running||S.secs<=0)return;S.running=true;endAt=Date.now()+S.secs*1000;tId=setInterval(tick,200);}
-function pauseTimer(){clearInterval(tId);S.running=false}
-function toggleTimer(){A.init();S.running?pauseTimer():startTimer();A.click();renderTimer()}
-function tick(){const left=Math.max(0,Math.ceil((endAt-Date.now())/1000));if(left!==S.secs){S.secs=left;if(left<=10&&left>0)A.beep();renderTimer();if(left===0){pauseTimer();A.alarm();flash();save()}}}
-function renderTimer(){const el=$('tm');if(!el)return;const C=565.5;$('ring').setAttribute('stroke-dashoffset',C*(1-S.secs/ROUND_SEC));$('tt').textContent=fmt(S.secs);el.classList.toggle('low',S.secs<=60&&S.round>0)}
+  // ซ่อนปุ่มถัดไปและแจ้งเตือน
+  $('nextBtn').style.display = 'none';
+  const alertBox = $('feedbackAlert');
+  alertBox.style.display = 'none';
+  alertBox.className = 'feedback-alert';
 
-/* ===== การเล่น ===== */
-function setRound(n){A.init();pauseTimer();S.round=n;S.secs=ROUND_SEC;const r=ROUNDS[n-1];
- S.dark=!!r.power;document.body.classList.toggle('blackout',S.dark);document.body.classList.toggle('glitch',!!r.glitch);
- renderAll();flash();A.thunder();setTimeout(()=>A.siren(3),500);setTimeout(()=>A.news(),2300);setTimeout(()=>speak(r.say),3000);
- if(n===1)setTimeout(()=>A.blackout(),900);if(r.glitch)setTimeout(()=>A.zap(),1200);
- startTimer();save()}
-function next(){S.round>=5?openDebrief():setRound(S.round+1)}
-function wildCard(){A.init();if(!S.wildBag.length)S.wildBag=WILD.map((_,i)=>i).sort(()=>Math.random()-.5);const w=WILD[S.wildBag.pop()];
- $('wildM').innerHTML=`<div class="ic">${w[0]}</div><h2>🎲 WILD CARD: ${w[1]}</h2><p>${w[2]}</p><small>(คลิกเพื่อปิด)</small>`;$('wildO').classList.add('show');
- flash();(A[w[3]]||A.siren)();speak(w[1]+' '+w[2]);save()}
-function toggleDark(){S.dark=!S.dark;document.body.classList.toggle('blackout',S.dark);S.dark?A.blackout():A.good();save()}
-function toggleMute(){A.setMute(!A.muted);$('mute').textContent=A.muted?'🔇 เสียง (M)':'🔊 เสียง (M)'}
-function toggleHint(){S.hint=!S.hint;document.body.classList.toggle('showhint',S.hint)}
-function fs(){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}
-function sc(i,k,d){S.teams[i].s[k]=Math.max(0,S.teams[i].s[k]+d);A.click();renderTeams();save()}
-function useRes(i,k){const r=S.teams[i].r;if(r[k]>0){r[k]--;A[k==='net'?'zap':'good']()}else{r[k]=RES[k][2];A.click()}renderTeams();save()}
-function useAmb(){if(S.amb>0){S.amb--;A.siren(1)}else{S.amb=AMB_MAX;A.click()}renderTeams();save()}
-function resetAll(){if(confirm('รีเซ็ตเกมทั้งหมดใช่ไหม?')){pauseTimer();S=fresh();localStorage.removeItem(LS);document.body.classList.remove('blackout','glitch','showhint');renderAll();save()}}
+  // สุ่มสลับตัวเลือกข้อสอบเพื่อความสนุก
+  let opts = [...step.options];
+  opts.sort(() => Math.random() - 0.5);
 
-/* ===== วาดหน้าจอ ===== */
-const av=(k,e)=>AV[k]?`<img src="${AV[k]}">`:e;
-function renderPips(){$('pips').innerHTML=ROUNDS.map((_,i)=>`<button class="pip ${S.round===i+1?'now':S.round>i+1?'done':''}" onclick="setRound(${i+1})">${i+1}</button>`).join('')}
-function renderStage(){const r=S.round?ROUNDS[S.round-1]:null;
- if(!r){$('stage').innerHTML=`<div class="rhead"><span class="badge">BRIEFING</span><span class="rtitle">ยินดีต้อนรับสู่ KSK Crisis Command 🌩️</span></div>
- <ul class="intro"><li>🎯 เป้าหมาย: <b>รักษาชีวิตผู้ป่วยและให้ รพ. ทำงานต่อได้ ใน 45 นาที</b></li><li>🗺️ <b>แผนผัง รพ. และการ์ดทรัพยากร</b> อยู่ในระบบดิจิทัลทั้งหมดแล้ว!</li><li>👥 4 ทีม ICS: บัญชาการ / แพทย์-พยาบาล / สนับสนุน-อาคาร / บริหาร-สื่อสาร</li><li>⏱️ แต่ละรอบมีเวลา 5 นาที กดปุ่ม <b>แผนผัง รพ.</b> ด้านล่างเพื่อเริ่มใช้งานหมากดิจิทัล</li></ul>
- <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="tag" style="background:#ffd23f;font-size:20px" onclick="openTut('play')">📖 ดูวิธีเล่นในระบบ</button><button class="tag" style="background:#26d0ff;font-size:20px" onclick="openMap()">🗺️ เปิดแผนผัง รพ. ดิจิทัล</button></div>
- <div class="headline">พร้อมแล้วกด <b>N</b> หรือปุ่ม "การ์ดวิกฤตถัดไป" เพื่อเปิดรอบที่ 1 🚨</div>
- <div class="chars"><div class="char anchor"><div class="avatar">${av('anchor','📺')}</div><div class="bubble"><b>น้องฝน ผู้ประกาศข่าว</b>เตรียมรับมือข่าวด่วนได้เลยค่ะ!</div></div><div class="char villain"><div class="avatar">${av('villain','🌩️')}</div><div class="bubble"><b>พายุ "ซ่า"</b>ฮ่า ๆ ๆ รอดูนะว่าจะรอดไหม</div></div></div>`;
-  $('tk').textContent='🌩️ KSK Crisis Command | โรงพยาบาลเขาสุกิม | ซ้อมแผนรับมือพายุ ✦ ';return}
- $('stage').innerHTML=`<div class="rhead"><span class="badge">ROUND ${S.round}/5</span><span class="rtitle">${r.icon} ${r.t}</span></div>
- <div class="row"><div class="timer" id="tm"><svg viewBox="0 0 210 210"><circle cx="105" cy="105" r="90" fill="none" stroke="#2c4a92" stroke-width="16"/><circle id="ring" cx="105" cy="105" r="90" fill="none" stroke="#ffd23f" stroke-width="16" stroke-linecap="round" stroke-dasharray="565.5" stroke-dashoffset="0"/></svg><div class="t" id="tt">05:00</div></div>
- <div class="headline">🚨 ${r.head}</div></div>
- <ul class="tasks">${r.tasks.map(t=>`<li>${t}</li>`).join('')}</ul>
- <div class="hint">🕵️ เฉลย Facilitator: ${r.hint}</div>
- <div class="chars"><div class="char anchor"><div class="avatar">${av('anchor','📺')}</div><div class="bubble"><b>น้องฝน ข่าวด่วน</b>${r.news[0]}</div></div><div class="char villain"><div class="avatar">${av('villain','🌩️')}</div><div class="bubble"><b>พายุ "ซ่า"</b>${r.villain}</div></div></div>`;
- $('tk').textContent='🔴 ข่าวด่วน: '+r.news.join(' ✦ ')+' ✦ ทุกทีมโปรดประสานงานผ่านศูนย์บัญชาการ ✦ ';renderTimer()}
-function renderTeams(){
- $('teams').innerHTML=`<div class="amb">🚑 รถพยาบาลส่วนกลาง: ${Array.from({length:AMB_MAX},(_,i)=>`<button class="${i<S.amb?'':'gone'}" onclick="useAmb()">🚑</button>`).join('')} <small>(คลิกใช้/คืน รถพยาบาล)</small></div>`+
- S.teams.map((t,i)=>{const d=TEAMS[i],tot=t.s.speed+t.s.bcp+t.s.coord;
- return`<div class="team" style="border-color:${d.c}">
- <div class="th"><span class="av">${d.e}</span><div><b>${d.n}</b><small>${d.sub}</small></div><div class="tot" style="color:${d.c}">${tot}</div></div>
- <div class="crit">${CRIT.map(([k,l])=>`<div>${l}<br><button onclick="sc(${i},'${k}',-1)">−</button><em>${t.s[k]}</em><button onclick="sc(${i},'${k}',1)">+</button></div>`).join('')}</div>
- <div style="margin-top:6px">
-   <div style="font-size:13px;color:var(--y);margin-bottom:4px">🃏 การ์ดทรัพยากรดิจิทัล (คลิกเมื่อใช้/คืน):</div>
-   <div class="chips">${Object.entries(RES).map(([k,[ic,nm,mx]])=>`<button class="chip ${t.r[k]?'':'used'}" onclick="useRes(${i},'${k}')">${ic} ${nm}<b>${t.r[k]}/${mx}</b></button>`).join('')}</div>
- </div></div>`}).join('')}
-function renderAll(){renderPips();renderStage();renderTeams();document.body.classList.toggle('showhint',S.hint);document.body.classList.toggle('blackout',S.dark);setCloud()}
+  let html = '';
+  opts.forEach((opt, idx) => {
+    html += `<button class="option-btn" id="opt-${idx}" onclick='checkAnswer(${JSON.stringify(opt)}, ${idx})'>${opt.text}</button>`;
+  });
+  $('optionsGrid').innerHTML = html;
+}
 
-/* ===== แผนผังดิจิทัลพร้อมหมากลากย้าย ===== */
-function openMap(){const im=$('mapImg'),msg=$('mapMsg');
- msg.style.display='block';msg.textContent='กำลังโหลดแผนผัง รพ....';im.style.display='none';
- im.onload=()=>{msg.style.display='none';im.style.display='block'};
- im.src=CFG.MAP;$('mapO').classList.add('show');
- $('pal').innerHTML=PINS.map(p=>`<button onclick="addPin('${p[0]}')">${p[0]} <small>${p[1]}</small></button>`).join('')+'<small>ลากหมุดเพื่อย้าย<br>ดับเบิลคลิกเพื่อลบหมุด<br>กด Esc เพื่อปิด</small>';
- drawMap()}
-function addPin(e){(S.map=S.map||[]).push({e,x:50,y:50});A.click();drawMap();save()}
-function drawMap(){const b=$('mapBox');b.querySelectorAll('.tk').forEach(n=>n.remove());
- (S.map=S.map||[]).forEach((p,i)=>{const n=document.createElement('div');n.className='tk';n.textContent=p.e;n.style.left=p.x+'%';n.style.top=p.y+'%';
-  n.onpointerdown=ev=>{n.setPointerCapture(ev.pointerId);n.onpointermove=m=>{const r=b.getBoundingClientRect();
-   p.x=Math.min(100,Math.max(0,(m.clientX-r.left)/r.width*100));p.y=Math.min(100,Math.max(0,(m.clientY-r.top)/r.height*100));
-   n.style.left=p.x+'%';n.style.top=p.y+'%'}};
-  n.onpointerup=()=>{n.onpointermove=null;save()};
-  n.ondblclick=()=>{S.map.splice(i,1);drawMap();save()};
-  b.appendChild(n)})}
+// ตรวจสอบคำตอบ
+function checkAnswer(opt, btnIdx) {
+  const alertBox = $('feedbackAlert');
+  const btn = $(`opt-${btnIdx}`);
 
-/* ===== สรุปผล + จุดอ่อน ===== */
-function openDebrief(){pauseTimer();A.init();A.good();
- const rk=S.teams.map((t,i)=>({i,tot:t.s.speed+t.s.bcp+t.s.coord,left:Object.values(t.r).reduce((a,b)=>a+b,0)})).sort((a,b)=>b.tot-a.tot);
- const med=['🥇','🥈','🥉','🎖️'];
- $('debM').innerHTML=`<h2 style="font-size:38px">🏁 สรุปผล KSK Crisis Command</h2>
- <table><tr><th></th><th>ทีม</th><th>คะแนน</th><th>การ์ดเหลือ</th></tr>${rk.map((r,j)=>`<tr><td>${med[j]}</td><td>${TEAMS[r.i].e} ${TEAMS[r.i].n}</td><td><b>${r.tot}</b></td><td>${r.left}</td></tr>`).join('')}</table>
- <p style="margin:10px 0">🚑 รถพยาบาลส่วนกลางเหลือ: <b>${S.amb}/${AMB_MAX}</b></p>
- <h3 style="margin-top:12px">🔎 จุดอ่อนที่พบ (คลิกเพื่อนับครั้งที่ถูกพูดถึง)</h3>
- <div class="tags" id="tg"></div>
- <h3>📝 บันทึกข้อเสนอแนะ</h3><textarea id="nt" placeholder="เช่น เครื่องปั่นไฟไม่พอ, ไม่มีแผนสำรองเมื่อ HIS ล่มพร้อมไฟดับ ฯลฯ">${S.notes||''}</textarea>
- <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap"><button class="tag" style="background:#3ddc97" onclick="copySum()">📋 คัดลอกสรุปส่งผู้บริหาร</button><button class="tag" onclick="closeDeb()">ปิด</button></div>`;
- drawTags();$('debO').classList.add('show')}
-function drawTags(){$('tg').innerHTML=TAGS.map(t=>`<button class="tag" onclick="S.tags['${t}']++;A.click();drawTags();save()">${t} <b>${S.tags[t]}</b></button>`).join('')}
-function closeDeb(){S.notes=$('nt').value;save();$('debO').classList.remove('show')}
-function copySum(){S.notes=$('nt').value;const rk=S.teams.map((t,i)=>`${TEAMS[i].n}: ${t.s.speed+t.s.bcp+t.s.coord} คะแนน (การ์ดเหลือ ${Object.values(t.r).reduce((a,b)=>a+b,0)})`);
- const tg=Object.entries(S.tags).filter(e=>e[1]).sort((a,b)=>b[1]-a[1]).map(e=>`- ${e[0]} (${e[1]} ครั้ง)`);
- const txt=`สรุปการซ้อมแผนพายุ KSK Crisis Command | รพ.เขาสุกิม\nรอบ: ${SESSION}\n\nผลคะแนน\n${rk.join('\n')}\n\nรถพยาบาลส่วนกลางเหลือ ${S.amb}/${AMB_MAX}\n\nจุดอ่อนที่พบ\n${tg.join('\n')||'-'}\n\nข้อเสนอแนะ\n${S.notes||'-'}`;
- navigator.clipboard.writeText(txt).then(()=>alert('คัดลอกแล้ว นำไปวางในรายงานได้เลย'));save()}
+  if (opt.correct) {
+    // เลือกถูก
+    btn.className = 'option-btn correct';
+    disableAllOptions();
 
-/* ===== คีย์ลัด ===== */
-addEventListener('keydown',e=>{
- if(e.ctrlKey||e.metaKey||e.altKey)return;
- if(['TEXTAREA','INPUT'].includes(e.target.tagName))return;
- const c=e.code;
- if($('tutO').classList.contains('show')){
-  if(c==='Escape')closeTut();
-  else if(c==='ArrowRight'||c==='Space'){e.preventDefault();tutMove(1)}
-  else if(c==='ArrowLeft')tutMove(-1);
-  return}
- if(c==='Escape'){['mapO','wildO'].forEach(id=>$(id).classList.remove('show'));return}
- if(c==='Space'){e.preventDefault();toggleTimer()}
- else if(c==='KeyN')next();else if(c==='KeyW')wildCard();else if(c==='KeyT')thunder();else if(c==='KeyB')toggleDark();
- else if(c==='KeyM')toggleMute();else if(c==='KeyH')toggleHint();else if(c==='KeyD')openDebrief();else if(c==='KeyF')fs();
- else if(c==='KeyG')openMap();else if(c==='Slash')openTut()});
-setInterval(()=>{if(S.running&&Math.random()<.25&&!$('tutO').classList.contains('show'))thunder()},9000);
-addEventListener('click',()=>A.init(),{once:true});
-renderAll();
-try{if(!localStorage.getItem('ksk_tut_seen'))setTimeout(()=>openTut('play',true),500)}catch(e){}
+    alertBox.innerHTML = `✅ <b>ยอดเยี่ยม! ตัดสินใจถูกต้อง:</b> ${opt.exp}`;
+    alertBox.className = 'feedback-alert success';
+    alertBox.style.display = 'block';
+
+    // ถ้าผ่านครบ 3 ขั้นตอนของเหตุการณ์นี้
+    if (currentStepIdx < currentMission.steps.length - 1) {
+      $('nextBtn').style.display = 'block';
+      $('nextBtn').textContent = 'ไปยังขั้นตอนถัดไป ➔';
+    } else {
+      // จบภารกิจนี้แล้ว
+      if (!completedMissions.includes(currentMission.id)) {
+        completedMissions.push(currentMission.id);
+        localStorage.setItem('ksk_completed', JSON.stringify(completedMissions));
+      }
+      $('nextBtn').style.display = 'block';
+      $('nextBtn').textContent = '🏆 สำเร็จภารกิจ! กลับหน้าหลัก';
+      $('nextBtn').onclick = returnToHub;
+    }
+  } else {
+    // เลือกผิด
+    errorsLeft--;
+    $('triesBox').innerHTML = `❌ โอกาสผิดพลาด: ${errorsLeft}/3 ครั้ง`;
+    btn.className = 'option-btn wrong';
+    btn.disabled = true;
+
+    if (errorsLeft > 0) {
+      alertBox.innerHTML = `⚠️ <b>ยังไม่ถูกต้องครับ:</b> ${opt.exp}<br><em>กรุณาวิเคราะห์แล้วลองเลือกใหม่อีกครั้ง (เหลือโอกาสอีก ${errorsLeft} ครั้ง)</em>`;
+      alertBox.className = 'feedback-alert error';
+      alertBox.style.display = 'block';
+    } else {
+      // ผิดครบ 3 ครั้ง เฉลยคำตอบที่ถูกแล้วพาไปต่อ
+      disableAllOptions();
+      highlightCorrectOption();
+      alertBox.innerHTML = `❌ <b>โอกาสหมดลงแล้ว!</b> คุณตอบผิดครบ 3 ครั้ง<br><b>คำตอบที่ถูกต้องคือ:</b> ${getCorrectExp()}<br><em>ระบบจะพาคุณข้ามไปขั้นตอนถัดไป</em>`;
+      alertBox.className = 'feedback-alert error';
+      alertBox.style.display = 'block';
+
+      // เปิดปุ่มไปต่อ
+      setTimeout(() => {
+        if (currentStepIdx < currentMission.steps.length - 1) {
+          $('nextBtn').style.display = 'block';
+          $('nextBtn').textContent = 'ไปยังขั้นตอนถัดไป (ผ่านแบบมีเงื่อนไข) ➔';
+        } else {
+          if (!completedMissions.includes(currentMission.id)) {
+            completedMissions.push(currentMission.id);
+            localStorage.setItem('ksk_completed', JSON.stringify(completedMissions));
+          }
+          $('nextBtn').style.display = 'block';
+          $('nextBtn').textContent = '🏠 กลับหน้าหลัก';
+          $('nextBtn').onclick = returnToHub;
+        }
+      }, 1500);
+    }
+  }
+}
+
+function disableAllOptions() {
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+}
+
+function highlightCorrectOption() {
+  const step = currentMission.steps[currentStepIdx];
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach(b => {
+    step.options.forEach(opt => {
+      if (opt.correct && b.textContent.includes(opt.text.substring(0, 15))) {
+        b.className = 'option-btn correct';
+      }
+    });
+  });
+}
+
+function getCorrectExp() {
+  const step = currentMission.steps[currentStepIdx];
+  const corr = step.options.find(o => o.correct);
+  return corr ? corr.text + " (" + corr.exp + ")" : "";
+}
+
+// ไปขั้นตอนถัดไปในภารกิจเดิม
+function nextStep() {
+  if (currentStepIdx < currentMission.steps.length - 1) {
+    currentStepIdx++;
+    errorsLeft = 3;
+    loadStep();
+    // คืนค่าปุ่ม next เป็นฟังก์ชันปกติ
+    $('nextBtn').onclick = nextStep;
+  } else {
+    returnToHub();
+  }
+}
+
+function returnToHub() {
+  renderHub();
+}
+
+function openMapModal() { $('mapModal').style.display = 'grid'; }
+function closeMapModal() { $('mapModal').style.display = 'none'; }
+
+// เริ่มต้นรันระบบ
+renderHub();
 </script>
+
 </body>
 </html>
