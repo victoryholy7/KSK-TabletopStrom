@@ -3,70 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KSK Crisis Command - Hospital Simulator</title>
+<title>KSK Crisis Command - Cyber Simulator</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--y:#ffd23f;--p:#ff4d8d;--c:#26d0ff;--g:#3ddc97;--dark:#0b1630;--panel:#14264d}
-body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(circle at 20% 0%,#1d3d82,var(--dark) 65%);color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:12px}
-.container{max-width:1050px;width:100%;margin:auto}
+:root{
+  --y:#ffe600; --p:#ff2a8d; --c:#00f0ff; --g:#00ff9d; 
+  --dark:#070b19; --panel:#0e172a; --panel-border:#1e293b;
+}
+body{
+  font-family:'Kanit','Noto Sans Thai',sans-serif;
+  background: radial-gradient(circle at 50% 0%, #1a2c56, var(--dark) 70%);
+  color:#fff; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:15px;
+}
+.container{max-width:1100px;width:100%;margin:auto}
 
-/* หน้าเลือกภารกิจ 10 เหตุการณ์ */
+/* หน้าเลือกภารกิจ 10 เหตุการณ์ (Hub) */
 .hub-screen{padding:10px 0}
-.hub-header{text-align:center;margin-bottom:20px}
-.hub-header h1{font-size:32px;color:var(--y);margin-bottom:6px}
-.hub-header p{font-size:16px;opacity:.8}
-.mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:20px}
-.mission-card{background:rgba(20,38,77,.85);border:3px solid #2c4a92;border-radius:16px;padding:18px;cursor:pointer;transition:all .3s}
-.mission-card:hover{transform:translateY(-4px);border-color:var(--y);background:rgba(20,38,77,1)}
-.mission-card.completed{border-color:var(--g);background:rgba(61,220,151,.15)}
-.mission-num{background:var(--y);color:#111;font-weight:800;padding:2px 10px;border-radius:99px;font-size:12px;display:inline-block;margin-bottom:6px}
-.mission-card h3{font-size:18px;color:#fff;margin-bottom:4px}
-.mission-card p{font-size:13px;opacity:.8;line-height:1.4}
+.hub-header{text-align:center;margin-bottom:30px}
+.hub-header h1{
+  font-size:38px; font-weight:800; color:var(--y); 
+  text-shadow:0 0 20px rgba(255,230,0,0.4); margin-bottom:8px;
+  letter-spacing:1px;
+}
+.hub-header p{font-size:16px; opacity:.85; color:var(--c)}
+
+.mission-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-bottom:25px}
+.mission-card{
+  background: linear-gradient(135deg, rgba(14,23,42,0.9), rgba(20,35,65,0.9));
+  border: 2px solid var(--panel-border); border-radius:20px; padding:20px;
+  cursor:pointer; transition:all .3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; overflow:hidden;
+}
+.mission-card::before{
+  content:''; position:absolute; top:0; left:0; width:4px; height:100%; background:var(--c); opacity:.5; transition:.3s;
+}
+.mission-card:hover{
+  transform: translateY(-6px); border-color:var(--c);
+  box-shadow: 0 10px 25px rgba(0,240,255,0.2);
+}
+.mission-card:hover::before{opacity:1; background:var(--y);}
+.mission-card.completed{border-color:var(--g); background: linear-gradient(135deg, rgba(0,255,157,0.05), rgba(14,23,42,0.9));}
+.mission-card.completed::before{background:var(--g); opacity:1;}
+
+.mission-num{
+  background:rgba(255,230,0,0.15); color:var(--y); font-weight:800; 
+  padding:3px 12px; border-radius:99px; font-size:12px; display:inline-block; margin-bottom:10px;
+  border: 1px solid rgba(255,230,0,0.3);
+}
+.mission-card.completed .mission-num{background:rgba(0,255,157,0.15); color:var(--g); border-color:rgba(0,255,157,0.3);}
+.mission-card h3{font-size:20px; color:#fff; margin-bottom:6px; font-weight:700;}
+.mission-card p{font-size:13px; opacity:.75; line-height:1.5;}
 
 /* หน้าจอ Simulator หลัก */
-.sim-screen{display:none;background:rgba(20,38,77,.95);border:3px solid #2c4a92;border-radius:20px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.sim-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,.1);padding-bottom:12px;margin-bottom:16px}
-.sim-title{font-size:24px;font-weight:800;color:var(--y)}
+.sim-screen{
+  display:none; background: rgba(14,23,42,0.95);
+  border: 2px solid var(--c); border-radius:24px; padding:28px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,240,255,0.05);
+  animation: fadeIn .4s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:scale(0.98)}to{opacity:1;transform:scale(1)}}
 
-/* พื้นที่จำลองสถานการณ์และช่องใส่ไอเทม */
-.sim-body{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
-.crisis-box{background:rgba(0,0,0,.3);border-radius:14px;padding:16px;border-left:6px solid var(--p)}
-.crisis-box h3{font-size:20px;color:var(--p);margin-bottom:8px}
-.crisis-box p{font-size:16px;line-height:1.5;margin-bottom:12px}
+.sim-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(255,255,255,0.1);padding-bottom:15px;margin-bottom:20px}
+.sim-title{font-size:26px; font-weight:800; color:var(--y); text-shadow:0 0 10px rgba(255,230,0,0.3);}
 
-.slots-container{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
-.slot{background:rgba(255,255,255,.05);border:2px dashed rgba(255,255,255,.3);border-radius:12px;padding:12px;text-align:center;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s}
-.slot.filled{border-style:solid;border-color:var(--g);background:rgba(61,220,151,.15)}
-.slot span{font-size:12px;opacity:.7;display:block;margin-top:4px}
-.slot .item-placed{font-size:15px;font-weight:700;color:var(--y)}
+/* ส่วนจำลองสถานการณ์ & ช่องใส่ไอเทม */
+.sim-body{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
+.crisis-box{
+  background: rgba(7,11,25,0.6); border-radius:18px; padding:20px;
+  border-left: 6px solid var(--p); border: 1px solid rgba(255,42,141,0.2);
+}
+.crisis-box h3{font-size:20px; color:var(--p); margin-bottom:10px; display:flex; align-items:center; gap:8px;}
+.crisis-box p{font-size:16px; line-height:1.6; margin-bottom:15px; opacity:.9;}
 
-/* แผงคลังไอเทมด้านขวา (Inventory) */
-.inventory-panel{background:rgba(10,20,40,.8);border-radius:14px;padding:16px;border:2px solid #2c4a92;display:flex;flex-direction:column;max-height:480px;overflow:auto}
-.inventory-panel h4{font-size:16px;color:var(--c);margin-bottom:10px;text-align:center}
-.items-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.item-card{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.2);border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;user-select:none}
-.item-card:hover{background:rgba(38,208,255,.2);border-color:var(--c);transform:scale(1.03)}
-.item-card .icon{font-size:28px;margin-bottom:4px}
-.item-card .name{font-size:13px;font-weight:600}
+.slots-container{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:15px;}
+.slot{
+  background: rgba(255,255,255,0.03); border: 2px dashed rgba(255,255,255,0.2);
+  border-radius:14px; padding:15px; text-align:center; min-height:105px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .25s ease;
+}
+.slot:hover{border-color:var(--c); background:rgba(0,240,255,0.03);}
+.slot.filled{
+  border-style: solid; border-color: var(--g); background: rgba(0,255,157,0.08);
+  box-shadow: 0 0 15px rgba(0,255,157,0.15);
+}
+.slot span{font-size:12px; opacity:.6; margin-top:4px;}
+.slot .item-placed{font-size:16px; font-weight:700; color:var(--y); margin-top:4px;}
+
+/* คลังไอเทมขวามือ (Inventory) */
+.inventory-panel{
+  background: rgba(7,11,25,0.8); border-radius:18px; padding:18px;
+  border: 2px solid #1e3a8a; display:flex; flex-direction:column; max-height:520px; overflow:auto;
+}
+.inventory-panel h4{font-size:17px; color:var(--c); margin-bottom:4px; text-align:center; font-weight:700;}
+.inventory-panel p{font-size:12px; opacity:.6; text-align:center; margin-bottom:12px;}
+
+.items-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px;}
+.item-card{
+  background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  border: 2px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px 8px;
+  text-align:center; cursor:pointer; transition:all .2s ease; user-select:none;
+}
+.item-card:hover{
+  background: rgba(0,240,255,0.12); border-color: var(--c);
+  transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,240,255,0.2);
+}
+.item-card .icon{font-size:32px; margin-bottom:6px;}
+.item-card .name{font-size:13px; font-weight:600; color:#e2e8f0;}
 
 /* แผงควบคุมด้านล่าง */
-.sim-footer{margin-top:16px;display:flex;justify-content:space-between;align-items:center;border-top:2px solid rgba(255,255,255,.1);padding-top:14px}
-.btn{background:#fff;color:#111;border:none;padding:10px 20px;border-radius:10px;font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;transition:transform .1s}
-.btn:hover{transform:scale(1.05)}
-.btn-action{background:var(--g);color:#05301e}
-.btn-map{background:var(--c);color:#05301e}
+.sim-footer{margin-top:20px; display:flex; justify-content:space-between; align-items:center; border-top:2px solid rgba(255,255,255,0.1); padding-top:16px;}
+.btn{
+  font-family:inherit; font-weight:700; font-size:15px; border:none; padding:12px 24px;
+  border-radius:12px; cursor:pointer; transition:all .2s ease; display:inline-flex; align-items:center; gap:8px;
+}
+.btn:hover{transform:scale(1.04); filter:brightness(1.1);}
+.btn-action{background: var(--g); color: #064e3b; box-shadow: 0 4px 15px rgba(0,255,157,0.3);}
+.btn-map{background: var(--c); color: #082f49; box-shadow: 0 4px 15px rgba(0,240,255,0.3);}
+.btn-back{background: #334155; color: #f8fafc;}
 
-.alert-box{display:none;padding:12px;border-radius:10px;margin-top:12px;font-size:15px;animation:fadeIn .3s}
-.alert-box.success{background:rgba(61,220,151,.2);border:2px solid var(--g);color:#fff}
-.alert-box.error{background:rgba(255,77,141,.2);border:2px solid var(--p);color:#fff}
+.alert-box{
+  display:none; padding:14px; border-radius:12px; margin-top:15px; font-size:15px; animation: fadeIn .3s ease;
+}
+.alert-box.success{background: rgba(0,255,157,0.15); border: 2px solid var(--g); color: #d1fae5; box-shadow: 0 0 15px rgba(0,255,157,0.2);}
+.alert-box.error{background: rgba(255,42,141,0.15); border: 2px solid var(--p); color: #ffe4e6; box-shadow: 0 0 15px rgba(255,42,141,0.2);}
 
 /* Modal แผนผัง */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;place-items:center;z-index:100;padding:20px}
-.modal-content{background:#112240;border:3px solid var(--y);border-radius:20px;padding:25px;max-width:750px;width:100%;text-align:center;max-height:90vh;overflow:auto}
-.modal-content img{width:100%;border-radius:12px;margin:15px 0;border:2px solid #fff}
+.modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; place-items:center; z-index:100; padding:20px;}
+.modal-content{
+  background: #0e172a; border: 3px solid var(--y); border-radius:24px; padding:25px;
+  max-width:750px; width:100%; text-align:center; max-height:90vh; overflow:auto;
+  box-shadow: 0 0 30px rgba(255,230,0,0.3);
+}
+.modal-content img{width:100%; border-radius:14px; margin:15px 0; border:2px solid #334155;}
 
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 @media (max-width:850px){.sim-body{grid-template-columns:1fr}}
 </style>
 </head>
@@ -77,38 +147,38 @@ body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(
   <!-- หน้า Hub เลือก 10 เหตุการณ์ -->
   <div class="hub-screen" id="hubScreen">
     <div class="hub-header">
-      <h1>🏥 KSK Crisis Simulator: เลือกเหตุการณ์จำลอง</h1>
-      <p>เลือกสถานการณ์วิกฤต แล้วลาก/คลิกเลือก "ตัวละครและอุปกรณ์ไอเทม" ให้ถูกต้องเพื่อแก้ไขสถานการณ์</p>
+      <h1>⚡ KSK CRISIS SIMULATOR</h1>
+      <p>ระบบจำลองสถานการณ์ฉุกเฉินโรงพยาบาล • เลือกภารกิจแล้วจัดสรรทรัพยากรให้ถูกต้อง</p>
     </div>
     <div class="mission-grid" id="missionGrid"></div>
   </div>
 
-  <!-- หน้าจอเกม Simulator หลัก -->
+  <!-- หน้าจอ Simulator หลัก -->
   <div class="sim-screen" id="simScreen">
     <div class="sim-header">
       <div class="sim-title" id="simTitle">เหตุการณ์ที่ 1</div>
-      <button class="btn" style="background:#555;color:#fff" onclick="returnToHub()">🏠 กลับหน้าหลัก</button>
+      <button class="btn btn-back" onclick="returnToHub()">🏠 เลือกภารกิจอื่น</button>
     </div>
 
     <div class="sim-body">
       <div class="crisis-box">
         <h3>🚨 สถานการณ์วิกฤตหน้างาน</h3>
         <p id="crisisDesc">กำลังโหลดข้อมูลสถานการณ์...</p>
-        <hr style="border:0;border-top:1px solid rgba(255,255,255,.15);margin:12px 0">
-        <h4 style="font-size:15px;color:var(--y);margin-bottom:8px">🧩 ช่องใส่ไอเทมแก้ปัญหา (คลิกช่องเพื่อใส่/ถอด):</h4>
+        <hr style="border:0;border-top:1px solid rgba(255,255,255,0.1);margin:15px 0">
+        <h4 style="font-size:15px;color:var(--y);margin-bottom:6px">🧩 ช่องใส่ไอเทมแก้ปัญหา (คลิกช่องเพื่อถอดออก):</h4>
         <div class="slots-container" id="slotsContainer"></div>
         <div class="alert-box" id="alertBox"></div>
       </div>
 
       <div class="inventory-panel">
-        <h4>🎒 คลังไอเทมทั้งหมด (Inventory)</h4>
-        <p style="font-size:11px;opacity:.7;text-align:center;margin-bottom:8px">คลิกไอเทมเพื่อใส่ลงในช่องว่างซ้ายมือ</p>
+        <h4>🎒 คลังทรัพยากร (Inventory)</h4>
+        <p>คลิกไอเทมเพื่อหยิบใส่ช่องแก้ปัญหา</p>
         <div class="items-grid" id="itemsGrid"></div>
       </div>
     </div>
 
     <div class="sim-footer">
-      <button class="btn btn-map" onclick="openMapModal()">🗺️ ดูแผนผัง รพ.</button>
+      <button class="btn btn-map" onclick="openMapModal()">🗺️ เปิดแผนผัง รพ.</button>
       <button class="btn btn-action" id="verifyBtn" onclick="verifySolution()">⚡ ตรวจสอบผลลัพธ์การแก้ไข</button>
     </div>
   </div>
@@ -118,16 +188,16 @@ body{font-family:'Kanit','Noto Sans Thai',sans-serif;background:radial-gradient(
 <!-- Modal แผนผัง รพ. -->
 <div class="modal-overlay" id="mapModal" onclick="if(event.target===this)closeMapModal()">
   <div class="modal-content">
-    <h2 style="color:var(--y)">🗺️ แผนผังโรงพยาบาลเขาสุกิม</h2>
-    <p style="font-size:14px;opacity:.8">ใช้ประกอบการวางแผนจัดวางทรัพยากรหน้างาน</p>
+    <h2 style="color:var(--y)">🗺️ แผนผังโครงสร้างโรงพยาบาลเขาสุกิม</h2>
+    <p style="font-size:14px;opacity:.8">ใช้ประกอบการวางแผนจัดวางกำลังพลและอุปกรณ์หน้างานจริง</p>
     <img src="https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1200&q=80" alt="แผนผัง รพ.">
     <br>
-    <button class="btn" onclick="closeMapModal()">ปิดหน้าต่าง</button>
+    <button class="btn btn-back" onclick="closeMapModal()">ปิดหน้าต่าง</button>
   </div>
 </div>
 
 <script>
-// รายการไอเทมทั้งหมดในเกม Simulator (มีไอคอนและชื่อ)
+// รายการไอเทมทั้งหมดพร้อมไอคอนสไตล์นีออน
 const ALL_ITEMS = [
   { id: 'c1', name: 'ผู้การเมฆ (บัญชาการ)', icon: '🧑‍✈️', type: 'char' },
   { id: 'c2', name: 'หมอใจดี (ทีมแพทย์)', icon: '🩺', type: 'char' },
@@ -144,87 +214,76 @@ const ALL_ITEMS = [
   { id: 't8', name: 'ถังน้ำสำรองฉุกเฉิน', icon: '💧', type: 'tool' }
 ];
 
-// 10 เหตุการณ์จำลอง พร้อมกำหนดว่าต้องใช้ไอเทม ID อะไรบ้างถึงจะผ่าน
+// 10 เหตุการณ์จำลอง พร้อมเงื่อนไขการใช้ไอเทม
 const MISSIONS = [
   {
     id: 1, title: "1. พายุพัดเสาไฟหัก & ไฟดับทั้ง รพ.",
     desc: "ลมกรรโชกแรงจัด ต้นไม้ล้มทับสายไฟหลัก ไฟฟ้าดับสนิททั้งโรงพยาบาล อุปกรณ์การแพทย์ในห้องฉุกเฉินกำลังจะหยุดทำงาน",
-    slots: 2, // ต้องใส่ไอเทม 2 ช่อง
-    required: ['c1', 't1'], // ต้องใช้ ผู้การเมฆ + เครื่องปั่นไฟ
+    slots: 2, required: ['c1', 't1'],
     successExp: "ยอดเยี่ยม! เปิด EOC และเดินเครื่องปั่นไฟสำรองกู้ระบบจุดวิกฤตสำเร็จ"
   },
   {
     id: 2, title: "2. ฟ้าผ่าเครือข่าย HIS ล่ม",
     desc: "ระบบคอมพิวเตอร์และเครือข่ายโรงพยาบาลล่มสนิทจากฟ้าผ่า เวชระเบียนไม่สามารถบันทึกข้อมูลคนไข้ผ่านหน้าจอได้",
-    slots: 2,
-    required: ['c4', 't2'], // ทีมสื่อสาร + ฟอร์มกระดาษ
+    slots: 2, required: ['c4', 't2'],
     successExp: "ถูกต้อง! แจกจ่าย Downtime Form กระดาษและใช้ระบบ Manual บันทึกชั่วคราวได้ราบรื่น"
   },
   {
     id: 3, title: "3. ดินสไลด์ปิดเส้นทางเข้า-ออก รพ.",
     desc: "ดินโคลนและต้นไม้ใหญ่โค่นทับถนนหน้าโรงพยาบาล รถพยาบาลวิ่งรับ-ส่งต่อผู้ป่วยวิกฤตออกนอกพื้นที่ไม่ได้",
-    slots: 2,
-    required: ['c3', 't7'], // ช่างกล้า + เลื่อยยนต์/ประสาน ปภ.
+    slots: 2, required: ['c3', 't7'],
     successExp: "เยี่ยมมาก! ทีมอาคารนำเครื่องจักรเข้าเคลียร์เส้นทางและเปิดทางสำรองสำเร็จ"
   },
   {
     id: 4, title: "4. ข่าวปลอมโซเชียล & ญาติล้น ER",
     desc: "มีเพจปลอมปล่อยข่าวว่าโรงพยาบาลปิดตัวลง ญาติผู้ป่วยแห่มาออกันหน้าห้องฉุกเฉินจนเกิดความชุลมุนวุ่นวาย",
-    slots: 2,
-    required: ['c4', 'c1'], // น้องข่าวด่วน + ผู้การเมฆ
+    slots: 2, required: ['c4', 'c1'],
     successExp: "ยอดเยี่ยม! ออกแถลงการณ์ชี้แจงข้อเท็จจริงและจัดตั้งจุดประสานงานญาติได้สงบเรียบร้อย"
   },
   {
     id: 5, title: "5. น้ำประปาไม่ไหลทั้งโรงพยาบาล",
     desc: "ท่อประปาหลักเสียหายจากภัยพิบัติรอบนอก ไม่มีน้ำใช้ในระบบหอผู้ป่วยและห้องผ่าตัด",
-    slots: 2,
-    required: ['c3', 't8'], // ช่างกล้า + ถังน้ำสำรอง
+    slots: 2, required: ['c3', 't8'],
     successExp: "ถูกต้อง! เปิดใช้ระบบถังน้ำสำรองบนดาดฟ้าและประสานรถน้ำ อปท. เข้ามาเติมเสริม"
   },
   {
     id: 6, title: "6. ท่อออกซิเจนเมนหลักรั่วไหล",
     desc: "แรงกระแทกทำให้ท่อส่งออกซิเจนเหลวเกิดรอยรั่ว ผู้ป่วยในหอผู้ป่วยวิกฤตกำลังจะขาดออกซิเจน",
-    slots: 2,
-    required: ['c2', 't4'], // หมอใจดี + ถังออกซิเจนพกพา
+    slots: 2, required: ['c2', 't4'],
     successExp: "เยี่ยมมาก! สลับเปลี่ยนมาใช้ถังออกซิเจนพกพา (E-Tank) รายเตียงช่วยชีวิตผู้ป่วยทันเวลา"
   },
   {
     id: 7, title: "7. ลิฟต์ติดค้างระหว่างชั้น",
     desc: "ไฟฟ้าดับกะทันหันทำให้ลิฟต์ขนส่งผู้ป่วยค้างระหว่างชั้น 2 และชั้น 3 มีผู้ป่วยติดอยู่ข้างใน",
-    slots: 2,
-    required: ['c3', 'c2'], // ช่างกล้า + หมอใจดี
+    slots: 2, required: ['c3', 'c2'],
     successExp: "ถูกต้อง! ทีมช่างไขระบบฉุกเฉินช่วยเหลือผู้ป่วยออกมาได้อย่างปลอดภัย พร้อมทีมแพทย์ประเมินอาการ"
   },
   {
     id: 8, title: "8. ผู้ป่วยคลอดฉุกเฉินท่ามกลางความมืด",
     desc: "หญิงตั้งครรภ์เจ็บครรภ์คลอดกะทันหันในโซนตึกที่ไฟฟ้าดับสนิท ทารกกำลังจะคลอด",
-    slots: 2,
-    required: ['c2', 't6'], // หมอใจดี + ชุดทำคลอด
+    slots: 2, required: ['c2', 't6'],
     successExp: "ยอดเยี่ยม! เคลื่อนย้ายเข้าห้องคลอดสำรองและใช้ชุดอุปกรณ์ทำคลอดปลอดภัยทั้งแม่และเด็ก"
   },
   {
     id: 9, title: "9. เจ้าหน้าที่บาดเจ็บฉุกเฉินหน้างาน",
     desc: "เจ้าหน้าที่ภาคสนามถูกกิ่งไม้ปลิวมากระแทกได้รับบาดเจ็บสาหัสและหมดสติขณะปฏิบัติงาน",
-    slots: 2,
-    required: ['c2', 't5'], // หมอใจดี + รถพยาบาล
+    slots: 2, required: ['c2', 't5'],
     successExp: "ถูกต้อง! ปฐมพยาบาลเบื้องต้นและส่งทีมรถพยาบาลรับตัวเข้าห้องฉุกเฉินทันที"
   },
   {
     id: 10, title: "10. พายุสงบ & สรุปบทเรียน AAR",
     desc: "สถานการณ์พายุคลี่คลาย ทุกหน่วยงานต้องร่วมกันถอดบทเรียนความเสียหายเพื่อจัดทำรายงานเสนอผู้บริหาร",
-    slots: 2,
-    required: ['c1', 'c4'], // ผู้การเมฆ + น้องข่าวด่วน
+    slots: 2, required: ['c1', 'c4'],
     successExp: "สำเร็จภารกิจทั้งหมด! จัดประชุม AAR และสรุปรายงานแผน BCP ส่งผู้บริหารได้สมบูรณ์แบบ 🎉"
   }
 ];
 
 let currentMission = null;
-let currentSlots = []; // เก็บ item ID ที่ผู้เล่นใส่ลงในช่อง
-let completedMissions = JSON.parse(localStorage.getItem('ksk_sim_done') || '[]');
+let currentSlots = [];
+let completedMissions = JSON.parse(localStorage.getItem('ksk_sim_neon_done') || '[]');
 
 const $ = id => document.getElementById(id);
 
-// แสดงหน้าหลัก Hub
 function renderHub() {
   $('hubScreen').style.display = 'block';
   $('simScreen').style.display = 'none';
@@ -237,8 +296,8 @@ function renderHub() {
         <span class="mission-num">ภารกิจที่ ${m.id} / 10</span>
         <h3>${m.title}</h3>
         <p>${m.desc}</p>
-        <div style="margin-top:10px;font-size:13px;color:${isDone ? 'var(--g)' : 'var(--y)'};font-weight:600">
-          ${isDone ? '✔ ผ่านสถานการณ์แล้ว (เล่นซ้ำได้)' : '▶ เริ่มจำลองสถานการณ์'}
+        <div style="margin-top:12px;font-size:13px;color:${isDone ? 'var(--g)' : 'var(--y)'};font-weight:600">
+          ${isDone ? '✔ ผ่านระบบแล้ว (เล่นซ้ำได้)' : '▶ เริ่มจำลองสถานการณ์'}
         </div>
       </div>
     `;
@@ -246,7 +305,6 @@ function renderHub() {
   $('missionGrid').innerHTML = html;
 }
 
-// เริ่มเล่น Simulator ของภารกิจนั้นๆ
 function startSim(id) {
   currentMission = MISSIONS.find(m => m.id === id);
   currentSlots = new Array(currentMission.slots).fill(null);
@@ -264,7 +322,6 @@ function startSim(id) {
   renderInventory();
 }
 
-// วาดช่องใส่ไอเทม (Slots)
 function renderSlots() {
   let html = '';
   for (let i = 0; i < currentMission.slots; i++) {
@@ -273,17 +330,17 @@ function renderSlots() {
 
     if (item) {
       html += `
-        <div class="slot filled" onclick="removeItem(${i})" title="คลิกเพื่อถอดไอเทมออก">
-          <div style="font-size:24px">${item.icon}</div>
+        <div class="slot filled" onclick="removeItem(${i})" title="คลิกเพื่อถอดออก">
+          <div style="font-size:26px">${item.icon}</div>
           <div class="item-placed">${item.name}</div>
           <span>(คลิกเพื่อถอด)</span>
         </div>
       `;
     } else {
       html += `
-        <div class="slot" onclick="focusSlot(${i})">
-          <span>➕ ช่องว่างที่ ${i+1}</span>
-          <span style="font-size:11px">เลือกไอเทมจากขวามาใส่</span>
+        <div class="slot">
+          <span style="color:var(--c)">➕ ช่องว่างที่ ${i+1}</span>
+          <span style="font-size:11px">เลือกจากคลังขวามือ</span>
         </div>
       `;
     }
@@ -291,7 +348,6 @@ function renderSlots() {
   $('slotsContainer').innerHTML = html;
 }
 
-// วาดแผงคลังไอเทมขวามือ
 function renderInventory() {
   let html = '';
   ALL_ITEMS.forEach(it => {
@@ -305,70 +361,55 @@ function renderInventory() {
   $('itemsGrid').innerHTML = html;
 }
 
-// เมื่อคลิกไอเทมจากคลังขวา ให้นำไปใส่ช่องว่างช่องแรกที่ว่างอยู่
 function selectItem(itemId) {
   const emptyIdx = currentSlots.indexOf(null);
   if (emptyIdx !== -1) {
     currentSlots[emptyIdx] = itemId;
     renderSlots();
   } else {
-    // ถ้าเต็มทุกช่องแล้ว ให้แทนที่ช่องสุดท้าย
     currentSlots[currentSlots.length - 1] = itemId;
     renderSlots();
   }
 }
 
-// ถอดไอเทมออกจากช่อง
 function removeItem(index) {
   currentSlots[index] = null;
   renderSlots();
 }
 
-function focusSlot(index) {
-  // ฟังก์ชันเสริม รองรับการเลือกช่อง
-}
-
-// ตรวจสอบความถูกต้องของไอเทมที่เลือก
 function verifySolution() {
   const alertBox = $('alertBox');
   
-  // เช็คว่าผู้เล่นใส่ไอเทมครบทุกช่องหรือยัง
   if (currentSlots.includes(null)) {
-    alertBox.innerHTML = `⚠️ <b>ข้อมูลยังไม่ครบ:</b> กรุณาเลือกไอเทมตัวละครและอุปกรณ์ใส่ให้ครบทุกช่องก่อนตรวจสอบ!`;
+    alertBox.innerHTML = `⚠️ <b>ข้อมูลยังไม่ครบ:</b> กรุณาเลือกไอเทมใส่ให้ครบทุกช่องก่อนตรวจสอบ!`;
     alertBox.className = 'alert-box error';
     alertBox.style.display = 'block';
     return;
   }
 
-  // ตรวจสอบว่าไอเทมที่เลือก ตรงกับที่กำหนดไว้หรือไม่ (ไม่สนลำดับการวาง)
   const isMatch = currentMission.required.every(reqId => currentSlots.includes(reqId)) &&
                   currentSlots.length === currentMission.required.length;
 
   if (isMatch) {
-    alertBox.innerHTML = `🎉 <b>ถูกต้องสมบูรณ์แบบ!</b> ${currentMission.successExp}`;
+    alertBox.innerHTML = `🎉 <b>ยอดเยี่ยม! ถูกต้องสมบูรณ์แบบ:</b> ${currentMission.successExp}`;
     alertBox.className = 'alert-box success';
     alertBox.style.display = 'block';
 
-    // บันทึกสถานะผ่านภารกิจ
     if (!completedMissions.includes(currentMission.id)) {
       completedMissions.push(currentMission.id);
-      localStorage.setItem('ksk_sim_done', JSON.stringify(completedMissions));
+      localStorage.setItem('ksk_sim_neon_done', JSON.stringify(completedMissions));
     }
   } else {
-    alertBox.innerHTML = `❌ <b>ยังไม่ถูกต้องครับ:</b> การเลือกไอเทมชุดนี้ยังไม่สอดคล้องกับการแก้ปัญหาสถานการณ์วิกฤตนี้ ลองพิจารณาบทบาทและเครื่องมือใหม่อีกครั้ง!`;
+    alertBox.innerHTML = `❌ <b>ยังไม่ถูกต้องครับ:</b> การจัดสรรทรัพยากรชุดนี้ยังไม่สอดคล้องกับวิกฤตนี้ ลองเลือกทีมหรืออุปกรณ์ใหม่อีกครั้ง!`;
     alertBox.className = 'alert-box error';
     alertBox.style.display = 'block';
   }
 }
 
-function returnToHub() {
-  renderHub();
-}
-
+function returnToHub() { renderHub(); }
 function openMapModal() { $('mapModal').style.display = 'grid'; }
 function closeMapModal() { $('mapModal').style.display = 'none'; }
 
-// เริ่มต้นรันหน้าแรก
 renderHub();
 </script>
 
