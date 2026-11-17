@@ -746,6 +746,13 @@ button{font-family:inherit;color:inherit}
   .team-station-label{font-size:16px}
   .cs-tiles .t b{font-size:12px}
 }
+
+/* v17: การ์ด Item ของทีมแสดงในแผงด้านข้างเฉพาะทีมที่รับผิดชอบขั้นปัจจุบัน (ลบแถวทีมด้านล่างออก) */
+.console .team-h .av{width:50px;height:60px}
+.console .cs-teamcard{margin-top:9px;padding:10px}
+.console .cs-resp{color:#ffe36b;font-weight:800;font-size:12px}
+.console .cs-hintrow{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:#c9d8fb}
+.console .cs-hintrow .pl-ghost{padding:6px 10px;font-size:12px;white-space:nowrap}
 </style>
 <div class="app" id="app">
   <header class="hud">
@@ -802,7 +809,6 @@ button{font-family:inherit;color:inherit}
     <div><b><span class="step-no">3</span>แตะ Item ให้ทัน</b>มีเวลาจำกัดต่อขั้น เลือกผิดหัก 2 คะแนน หมดเวลาหัก 2 คะแนน ขอคำใบ้ได้ในราคา 1 คะแนน</div>
     <div><b><span class="step-no">4</span>ถูกก็ไปต่อ</b>เลือกถูกจะเดินไปขั้นถัดไป จบเหตุการณ์มีเฉลยและสรุป AAR ทุกขั้นตอน</div>
   </section>
-  <section class="teams" id="teams" aria-label="ทีมและการ์ดทรัพยากร"></section>
   <div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker"></div></div>
 </div>
 
@@ -1538,7 +1544,7 @@ const score=t=>t.auto+t.rate;
 const fmt=t=>{ t=Math.max(0,Math.ceil(t)); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); };
 
 
-const GAS_API_URL='https://script.google.com/macros/s/AKfycbxHUnrcRFR2nF9Zv_Pkd_pv_YGaJwAcbq7L0wfmyaT0gOPQ_nufwOP6j7SA2c_G8OVUYQ/exec';
+const GAS_API_URL='PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
 function saveSessionToSheet(stage){
   if(!GAS_API_URL || GAS_API_URL.indexOf('PASTE_')===0) return;
   const payload={stage:stage,sessionId:S.sessionId|| (S.sessionId='KSK-'+Date.now()),savedAt:new Date().toISOString(),
@@ -1810,13 +1816,18 @@ function renderConsole(){
   h+='<div class="cs-tiles">'+(st.solve
     ?'<div class="t star"><span>⭐</span><b>ใช้ Item ตรงปัญหา</b><small>ต้อง '+need+' ชิ้น</small><div class="cs-need">'+Array.from({length:need},(_,j)=>'<i class="'+(j<(inc.solveCount||0)?'f':'')+'"></i>').join('')+'</div></div><div class="t no"><span>🚫</span><b>SOP ใช้แทนไม่ได้</b><small>ต้องเป็นทรัพยากร</small></div>'
     :'<div class="t ok"><span>✅</span><b>SOP / ชุดสั่งการ</b><small>ใช้ได้ไม่จำกัด</small></div><div class="t no"><span>🚫</span><b>ทรัพยากรวิกฤต</b><small>เก็บไว้ขั้น ⭐</small></div>')+'</div>';
-  h+='<div class="cs-team">'+avatar(team.kind,team.skin)+'<div><small>ทีมที่รับผิดชอบขั้นนี้</small><b>'+esc(team.name)+'</b></div><button type="button" class="pl-ghost" data-cs-hint="1" '+(inc.hintFor===k?'disabled':'')+'>💡 คำใบ้ −1</button></div>';
   if(inc.hintFor===k) h+='<div class="cs-hint">💡 '+esc(stepHintTxt(st,def))+'</div>';
   if(inc.fb) h+='<div class="cs-fb '+(inc.fb.ok?'ok':'bad')+'">'+esc(inc.fb.text)+'</div>';
-  h+='<div class="pl-inv-label">🎒 แตะเลือก Item ของ'+esc(team.name)+'</div><div class="pl-inv">';
-  h+=avail.map(key=>{const c=CARD_DEF[key], stock=(key==='manual'||key==='proc')?Infinity:team.cards[key];
-    return '<button type="button" class="pl-card'+(stock===0?' out':'')+'" style="--item:'+c.c+'" data-cs-team="'+st.team+'" data-cs-key="'+key+'" title="'+esc(c.d)+'" '+(stock===0?'disabled':'')+'><span class="ci">'+ic(key,28)+'</span><span><b>'+esc(c.n)+'</b><small>'+(stock===Infinity?'ใช้ได้ไม่จำกัด':'เหลือ '+stock+' ชิ้น')+'</small></span></button>';}).join('');
-  h+='</div></div>';
+  /* การ์ดทีมที่รับผิดชอบขั้นนี้ ใช้รูปแบบเดียวกับการ์ดทีมด้านล่าง (ไม่มีช่อง Item ซ้ำซ้อนแล้ว) */
+  h+='<article class="team cs-teamcard" style="--tc:'+team.color+'"><div class="team-h">'+avatar(team.kind,team.skin)+
+    '<div class="nm"><small class="cs-resp">★ ทีมที่รับผิดชอบขั้นนี้</small><h3>'+esc(team.name)+'</h3><small>'+esc(team.role)+'</small></div><div class="score" aria-label="คะแนน">'+score(team)+'</div></div>'+
+    '<div class="cs-hintrow"><span>แตะ Item ของทีมนี้เพื่อทำขั้นที่ '+(k+1)+'</span><button type="button" class="pl-ghost" data-cs-hint="1" '+(inc.hintFor===k?'disabled':'')+'>💡 คำใบ้ −1</button></div>'+
+    '<div class="hand">'+avail.map(key=>{
+      const c=CARD_DEF[key], cnt=(key==='manual'||key==='proc')?Infinity:team.cards[key];
+      return '<button type="button" class="cardb'+(key==='manual'?' manual':'')+(cnt===0?' empty':'')+'" style="--cc:'+c.c+'" data-cs-team="'+st.team+'" data-cs-key="'+key+'" title="'+esc(c.d)+'" aria-label="'+esc(team.name+' การ์ด '+c.n+(cnt===Infinity?' ไม่จำกัด':' เหลือ '+cnt))+'">'+
+        '<span class="n">'+(cnt===Infinity?'∞':'×'+cnt)+'</span><span class="ico">'+ic(key,20)+'</span><span>'+esc(c.s)+'</span></button>';
+    }).join('')+'</div></article>';
+  h+='</div>';
   el.innerHTML=h;
 }
 function renderPlanner(){ renderConsole(); renderArm(); }
@@ -2037,23 +2048,8 @@ function updateFx(){
   $$('#scene .bld').forEach(b=>b.classList.remove('hit'));
   open.forEach(i=>{ const b=$('#b-'+i.def.b); if(b) b.classList.add('hit'); });
 }
-function renderTeams(){
-  const f=document.activeElement, key=f&&f.dataset&&f.dataset.card?f.dataset.team+':'+f.dataset.card:null;
-  $('#teams').innerHTML=S.teams.map(t=>{
-    const cards=CARD_ORDER.filter(k=>(TEAM_CARDS[t.kind]||[]).includes(k)).map(k=>{
-      const c=CARD_DEF[k], n=(k==='manual'||k==='proc')?Infinity:t.cards[k];
-      const armed=S.armed&&S.armed.team===t.id&&S.armed.key===k;
-      const target=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
-      const raw=target&&(target.stepItems||[])[Number.isInteger(target.planStep)?target.planStep:(target.step||0)]; const ps=Array.isArray(raw)?raw:(raw?[raw]:[]); const picked=ps.some(x=>x&&x.team===t.id&&x.key===k);
-      return '<button type="button" class="cardb'+(k==='manual'?' manual':'')+(n===0?' empty':'')+(armed?' armed':'')+(picked?' plan-picked':'')+'" style="--cc:'+c.c+'" data-team="'+t.id+'" data-card="'+k+'" aria-pressed="'+(armed?'true':'false')+'" aria-label="'+esc(t.name+' การ์ด '+c.n+(n===Infinity?' ไม่จำกัด':' เหลือ '+n))+'">'+
-        '<span class="n">'+(n===Infinity?'∞':'×'+n)+'</span><span class="ico">'+ic(k,20)+'</span><span>'+esc(c.s)+'</span></button>';
-    }).join('');
-    return '<article class="team" style="--tc:'+t.color+'"><div class="team-h">'+avatar(t.kind,t.skin)+
-      '<div class="nm"><h3>'+esc(t.name)+'</h3><small>'+esc(t.role)+'</small></div><div class="score" aria-label="คะแนน">'+score(t)+'</div></div>'+
-      '<div class="hand">'+cards+'</div></article>';
-  }).join('');
-  if(key){ const p=key.split(':'), n=$('#teams [data-team="'+p[0]+'"][data-card="'+p[1]+'"]'); if(n) n.focus({preventScroll:true}); }
-}
+/* การ์ดทีมแสดงเฉพาะในแผงปฏิบัติการ (renderConsole) เมื่อถึงขั้นของทีมนั้นเท่านั้น จึงไม่มีรายการทีมแยกอีกแล้ว */
+function renderTeams(){}
 function renderAll(){ renderHud(); renderTeams(); renderIncidents(); renderPins(); renderPlanner(); updateMeters(); updateFx(); }
 function setTicker(r){
   const facts=[ACTIVE_ROUNDS[Math.max(0,r)].head].concat(TICKER_FACTS);
@@ -2210,7 +2206,7 @@ function onIncident(id){
   if(!S.running){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return; }
   const inc=S.incidents.find(i=>i.id===id); if(!inc||inc.state!=='open') return;
   S.targetId=id; Sfx.click();
-  renderArm(); renderIncidents(); renderPins(); renderPlanner();
+  renderArm(); renderTeams(); renderIncidents(); renderPins(); renderPlanner();
   toast('เลือกจุดเกิดเหตุแล้ว · เลือกทีมและ Item ที่เหมาะสม','good');
 }
 /* ---------- playing a card ---------- */
@@ -2525,7 +2521,6 @@ function wire(){
     const fallback=()=>{ ta.hidden=false; ta.focus(); ta.select(); };
     try{ navigator.clipboard.writeText(S.reportText).then(done,fallback); }catch(e){ fallback(); }
   });
-  $('#teams').addEventListener('click',e=>{ const b=e.target.closest('.cardb'); if(b) onCard(+b.dataset.team,b.dataset.card); });
   $('#incList').addEventListener('click',e=>{
     const plan=e.target.closest('[data-resource-commit]'); if(plan){commitResourcePlan(plan.dataset.resourceCommit);return;}
     const pick=e.target.closest('[data-bcp-pick]'); if(pick){placeBcpItem(+pick.dataset.bcpPickTeam,pick.dataset.bcpPick);return;}
