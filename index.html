@@ -1538,7 +1538,7 @@ const score=t=>t.auto+t.rate;
 const fmt=t=>{ t=Math.max(0,Math.ceil(t)); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); };
 
 
-const GAS_API_URL='PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+const GAS_API_URL='https://script.google.com/macros/s/AKfycbxHUnrcRFR2nF9Zv_Pkd_pv_YGaJwAcbq7L0wfmyaT0gOPQ_nufwOP6j7SA2c_G8OVUYQ/exec';
 function saveSessionToSheet(stage){
   if(!GAS_API_URL || GAS_API_URL.indexOf('PASTE_')===0) return;
   const payload={stage:stage,sessionId:S.sessionId|| (S.sessionId='KSK-'+Date.now()),savedAt:new Date().toISOString(),
