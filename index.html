@@ -118,6 +118,9 @@
 .decision-option b{color:#fff;font-size:14px;line-height:1.4}
 .decision-option small{color:#c5d3f3;font-size:12px;line-height:1.5}
 @media(max-width:700px){.decision-option{padding:12px}.decision-option b{font-size:15px}.decision-option small{font-size:13px}}
+.msg.in{animation:msgslide .6s cubic-bezier(.2,1.4,.4,1) forwards}@keyframes msgslide{0%{opacity:0;transform:translateX(-90px) scale(.8)}100%{opacity:1;transform:none}}
+.msg.in .bubble{animation:bpop .4s .25s both}@keyframes bpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.msg.in .av{animation:bob 2.8s ease-in-out infinite,talk .45s 8 alternate}@keyframes talk{to{margin-bottom:5px}}
 </style></head><body>
 <title>KSK: STORM COMMAND</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -537,8 +540,8 @@ button{font-family:inherit;color:inherit}
       <button class="btn go" id="btnStart" type="button">เริ่มภารกิจ · เปิดเสียง</button>
     </div>
     <div class="how">
-      <div><b>1. ฟังข่าวด่วน</b><br>ผู้ดำเนินการอ่านสถานการณ์ แต่ละโต๊ะปรึกษากันตามคำถามชวนคิด</div>
-      <div><b>2. ลงการ์ด</b><br>แตะหมุดแดงบนอาคาร → 4 ทีมปรึกษากันแล้วตอบโจทย์ทีละทีม (5 ขั้น) → เลือกทีมและ Item ที่เหมาะ แล้วกดยืนยัน</div>
+      <div><b>1. ฟังข่าวด่วน</b><br>ฟังตัวละครรายงานเหตุ แล้วทุกโต๊ะปรึกษากันว่าจะใช้ Item ใด</div>
+      <div><b>2. ลงการ์ด</b><br>แตะหมุดแดงบนอาคาร แล้วใช้ Item ตามขั้น BCP: ① ICS เปิดศูนย์ฯ ② Item แก้ปัญหา ③ สื่อสาร/บันทึกเหตุ</div>
       <div><b>3. ให้คะแนน</b><br>จบรอบ ผู้ดำเนินการให้คะแนนความเร็ว ความถูกต้องตาม BCP และการประสานข้ามทีม</div>
     </div>
     <p style="margin:14px 0 0;color:var(--mute);font-size:13px">เหตุการณ์ทั้งหมดเป็นสถานการณ์สมมติเพื่อการซ้อมแผน ไม่ใช่เหตุการณ์จริง</p>
@@ -636,7 +639,7 @@ const ic=(k,sz=22)=>'<svg class="ic" width="'+sz+'" height="'+sz+'" viewBox="0 0
 /* ---------- characters ---------- */
 function avatar(kind,skin,mood){
   skin=skin||'#F6C9A0'; mood=mood||'smile';
-  const main={cmd:'#FF9F1C',med:'#FF5F7E',sup:'#2FD08C',adm:'#8B6CFF',news:'#2E7BFF',guard:'#2D4FA8',it:'#19B5D6',vil:'#2F4B8F',ems:'#FF6A2B',doc:'#F4F7FF'}[kind];
+  const main={eng:'#F97316',pharm:'#10B981',env:'#84CC16',cmd:'#FF9F1C',med:'#FF5F7E',sup:'#2FD08C',adm:'#8B6CFF',news:'#2E7BFF',guard:'#2D4FA8',it:'#19B5D6',vil:'#2F4B8F',ems:'#FF6A2B',doc:'#F4F7FF'}[kind];
   let back='',front='';
   const body='<path d="M12 120c0-26 15-40 38-40s38 14 38 40z" fill="'+main+'"/>';
   const ink='stroke="#1B2340" stroke-width="2.6" fill="none" stroke-linecap="round"';
@@ -666,6 +669,13 @@ function avatar(kind,skin,mood){
   }else if(kind==='doc'){
     back='<path d="M27 50c-2-20 10-30 23-30s25 10 23 30c-3-8-9-12-23-12S30 42 27 50z" fill="#2A2233"/>';
     front='<path d="M38 82l12 20 12-20z" fill="#5B8DEF"/><path d="M34 88c-5 18 9 24 16 15" stroke="#1B2340" stroke-width="3" fill="none"/><circle cx="50" cy="104" r="4" fill="#C9D3F0"/>';
+  }else if(kind==='eng'){
+    front='<path d="M26 47a24 24 0 0 1 48 0z" fill="#FF8A1F"/><rect x="21" y="44" width="58" height="6" rx="3" fill="#E5700B"/><rect x="40" y="96" width="20" height="9" rx="3" fill="#FFD93B"/><path d="M72 98l12-12" stroke="#C9D3F0" stroke-width="5" stroke-linecap="round"/>';
+  }else if(kind==='pharm'){
+    back='<path d="M27 50c-3-20 9-30 23-30s26 10 23 30c-3-8-8-12-23-12S30 42 27 50z" fill="#3A2A22"/>';
+    front='<path d="M38 82l12 20 12-20z" fill="#fff"/><rect x="62" y="92" width="12" height="16" rx="3" fill="#fff" stroke="#10B981" stroke-width="2.4"/><rect x="60" y="88" width="16" height="5" rx="2" fill="#10B981"/>';
+  }else if(kind==='env'){
+    front='<path d="M27 47a23 23 0 0 1 46 0z" fill="#B6E04A"/><rect x="38" y="58" width="24" height="12" rx="5" fill="#E8F5C8" stroke="#1B2340" stroke-width="2"/><rect x="40" y="96" width="20" height="9" rx="3" fill="#FFD93B"/>';
   }else if(kind==='cmd'){
     front='<path d="M34 86 44 120M66 86 56 120" stroke="#fff" stroke-width="7"/><rect x="70" y="88" width="10" height="18" rx="3" fill="#1B2340"/><rect x="73" y="82" width="2.5" height="8" fill="#1B2340"/>'+
       '<path d="M26 46a24 24 0 0 1 48 0z" fill="#FFD43B"/><rect x="21" y="43" width="58" height="7" rx="3.5" fill="#FFB020"/><path d="M50 29l2.6 5.2 5.7.8-4.1 4 1 5.7-5.2-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8z" fill="#E0701A"/>';
@@ -734,13 +744,13 @@ const TEAM_DEF=[
   {kind:'adm',name:'ทีมบริหารและสื่อสาร',role:'Administration & Public Information / Communications',color:'#8B6CFF',skin:'#F2C29B'}
 ];
 const CARD_DEF={
-  ics:{n:'ชุดบัญชาการ ICS',s:'ชุดบัญชาการ',max:1,d:'แบบฟอร์ม ICS กระดานสถานการณ์ และระบบรายงานเหตุ',c:'#FBBF24'},
+  ics:{n:'ชุดบัญชาการ ICS',s:'ชุดบัญชาการ',max:6,d:'แบบฟอร์ม ICS กระดานสถานการณ์ และระบบรายงานเหตุ',c:'#FBBF24'},
   gen:{n:'เครื่องปั่นไฟสำรอง',s:'เครื่องปั่นไฟ',max:2,d:'ใช้ได้ 2 รอบ',c:'#FFD93B'},
   amb:{n:'รถพยาบาล',s:'รถพยาบาล',max:2,d:'มี 2 คัน',c:'#FF5F7E'},
   fix:{n:'ทีมช่างซ่อมบำรุง',s:'ทีมช่าง',max:1,d:'แก้อาคาร/ไฟฟ้าได้ 1 ครั้ง',c:'#FF9F43'},
   net:{n:'อินเทอร์เน็ตสำรอง 5G',s:'เน็ต 5G',max:1,d:'กู้การเชื่อมต่อได้ 1 ครั้ง',c:'#2EC4F3'},
   itkit:{n:'ชุดอุปกรณ์ IT สำรอง',s:'IT สำรอง',max:1,d:'UPS / Router / Switch / Server Backup',c:'#0EA5E9'},
-  comms:{n:'ชุดสื่อสารและโฆษก',s:'สื่อสาร',max:2,d:'ทีมบริหารและสื่อสารใช้ประสานภายใน แจ้งญาติ/ประชาชน และประสานสื่อ',c:'#14B8A6'},
+  comms:{n:'ชุดสื่อสารและโฆษก',s:'สื่อสาร',max:6,d:'ทีมบริหารและสื่อสารใช้ประสานภายใน แจ้งญาติ/ประชาชน และประสานสื่อ',c:'#14B8A6'},
   staff:{n:'บุคลากรเสริม',s:'คนเสริม',max:1,d:'ดึงคนมาช่วยจุดวิกฤต 1 ครั้ง',c:'#8B6CFF'},
   oxy:{n:'ถังออกซิเจนสำรอง',s:'ออกซิเจน',max:1,d:'ใช้ช่วยผู้ป่วยวิกฤตเมื่อระบบก๊าซขัดข้อง',c:'#2EC4F3'},
   water:{n:'น้ำสำรอง/รถน้ำ',s:'น้ำสำรอง',max:1,d:'จัดหาน้ำให้หน่วยบริการสำคัญ',c:'#38BDF8'},
@@ -922,7 +932,7 @@ function splitRoundsToEvents(rounds,prefix){
     badge:round.badge||round.name,
     head:incident.t,
     text:incident.d+'\n\nสถานการณ์จำลองจากหัวข้อ: '+round.name+'. ประเมินความเสี่ยงและเลือกทีม/ทรัพยากรที่เหมาะสม',
-    qs:['จุดเกิดเหตุอยู่ที่ใด และมีความเสี่ยงต่อผู้ป่วยหรือบุคลากรอย่างไร?','ทีมใดควรรับผิดชอบหลัก และควรประสานทีมใดเพิ่มเติม?','ควรเลือกการ์ดหรือ Item ใด และจะตรวจสอบผลหลังดำเนินการอย่างไร?'],
+    qs:['ใครเป็นผู้บัญชาการ และเปิดศูนย์บัญชาการตามแผน BCP อย่างไร?','เหตุนี้กระทบผู้ป่วย/บริการใด และควรใช้ Item ของทีมใดแก้ปัญหา?','จะสื่อสารและบันทึกเหตุอย่างไรก่อนปิดเหตุการณ์?'],
     inc:[incident]
   })));
 }
@@ -1380,10 +1390,14 @@ function choiceOptionsFor(d,teamId,stepIdx,seedKey){
   opts[0].d += ' | ประเด็นเฉพาะเหตุการณ์: '+primary;
   return seededShuffle(opts,(seedKey||d.id)+'-'+teamId+'-'+(stepIdx||0));
 }
+function bcpTracker(i){
+  const st=i.step||0, N=['เปิดศูนย์บัญชาการ (ICS)','ใช้ Item แก้ปัญหา','สื่อสารและบันทึกเหตุ'], T=['ทีมบัญชาการ','ทีมแพทย์/สนับสนุนตามปัญหา','ทีมบริหารและสื่อสาร'];
+  return '<div class="flow-box"><b>ขั้นตอน BCP ของเหตุการณ์นี้</b>'+N.map((n,k)=>'<div style="margin:6px 0;padding:7px 9px;border-radius:9px;background:'+(k<st?'#0d3d35':k===st?'#ffd93b':'#1d2f5f')+';color:'+(k===st?'#17244d':'#fff')+';font-weight:700;font-size:13px">'+(k<st?'✓ ':k===st?'▶ ':'○ ')+(k+1)+'. '+n+'<br><small style="font-weight:500">'+T[k]+(k===st?' · เลือก Item ได้เลย':'')+'</small></div>').join('')+'</div>';
+}
 function flowMarkup(i){
   if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
   if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>นำผลการเลือกและการใช้ทรัพยากรไปทบทวนใน AAR</p></div>';
-  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่ม Tabletop ที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเริ่มโจทย์ตัดสินใจ</p></div>';
+  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่มปฏิบัติการที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคาร แล้วใช้ Item ตามขั้นตอน BCP</p></div>';
   if(!i.flowReady){
     const step=i.flowStep||0, cur=TABLETOP_STAGES[step], team=TEAM_DEF[cur.team], opts=choiceOptionsFor(i.def,cur.team,step,i.id);
     const logs=(i.decisions||[]).map(x=>'<div><b>'+esc(x.teamName)+' · '+esc(x.stage)+'</b><br>'+esc(x.note)+'</div>').join('');
@@ -1394,7 +1408,7 @@ function flowMarkup(i){
       '<button type="button" class="flow-commit" data-flow-commit="'+esc(i.id)+'">ยืนยันคำตอบของทีมและส่งต่อ</button>'+ 
       (logs?'<div class="flow-log"><b>ผลการตัดสินใจที่ผ่านมา</b>'+logs+'</div>':'')+'</div>';
   }
-  return '<div class="flow-box done"><b>✓ ผ่านขั้นตอนการบัญชาการครบทุกทีมแล้ว</b><p>ทุกทีมเลือกแนวทางปฏิบัติครบแล้ว ขั้นต่อไปให้ผู้เล่นเลือกการ์ดทรัพยากร/Item ที่เห็นว่าเหมาะสมกับเหตุการณ์นี้ การ์ดผิดประเภทหรือใช้ไม่สอดคล้องกับสถานการณ์จะเสียทรัพยากรและคะแนน</p></div>';
+  return bcpTracker(i);
 }
 function commitTabletopDecision(id){
   const inc=S.incidents.find(x=>x.id===id);
@@ -1592,7 +1606,10 @@ function onCard(tid,key){
   if(!S.running){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return; }
   const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
   if(!inc){ Sfx.soft(); toast('ขั้นแรก แตะหมุดสีแดงบนอาคารเพื่อเลือกจุดเกิดเหตุก่อน'); return; }
-  if(!inc.flowReady){ Sfx.soft(); toast('ยังใช้ Item ไม่ได้ · ให้แต่ละทีมเลือกแนวทางตามลำดับก่อน','bad'); return; }
+  const stp=inc.step||0;
+  if(stp===0&&key!=='ics'){ Sfx.soft(); toast('ขั้น BCP 1 · เปิดศูนย์บัญชาการก่อน: ใช้ Item “ชุดบัญชาการ ICS” (ทีมบัญชาการ)','bad'); return; }
+  if(stp===1&&key==='ics'){ Sfx.soft(); toast('เปิดศูนย์ฯ แล้ว · ขั้น BCP 2: เลือก Item แก้ปัญหาของเหตุการณ์นี้','bad'); return; }
+  if(stp===2&&!['comms','net','manual'].includes(key)){ Sfx.soft(); toast('ขั้น BCP 3 · สื่อสารและบันทึกเหตุ: ใช้ชุดสื่อสาร/โฆษก เน็ต 5G หรือแผน Manual (ทีมบริหารและสื่อสาร)','bad'); return; }
   const t=S.teams[tid];
   if(!(TEAM_CARDS[t.kind]||[]).includes(key)){toast('Item นี้ไม่ใช่ทรัพยากรของทีม '+t.name,'bad');return;}
   if(key!=='manual'&&t.cards[key]<=0){ Sfx.bad(); toast('การ์ด'+CARD_DEF[key].s+'ของทีมนี้หมดแล้ว ลองแผน Manual','bad'); return; }
@@ -1609,9 +1626,12 @@ function onIncident(id){
 }
 /* ---------- playing a card ---------- */
 const RANK={best:3,ok:2,manual:1,miss:0};
+function chkEnd(){ if(S.incidents.every(i=>i.state!=='open')&&!S.ending){ S.ending=true; clearTimeout(skipT); skipT=setTimeout(()=>{ S.ending=false; endRound(); },1800); } }
 function playCard(tid,key,incId){
   const inc=S.incidents.find(i=>i.id===incId); if(!inc||inc.state!=='open'){ disarm(); return; }
-  const t=S.teams[tid], def=inc.def, q=def.sol[key]||'miss';
+  const t=S.teams[tid], def=inc.def, q=def.sol[key]||'miss', stp=inc.step||0;
+  if(stp===0){ t.cards[key]--; t.used[key]=(t.used[key]||0)+1; t.auto+=4; inc.step=1; Sfx.good(); toast('✓ ขั้น BCP 1: เปิดศูนย์บัญชาการแล้ว · ต่อไปเลือก Item แก้ปัญหา','good'); S.armed=null; renderArm(); renderAll(); return; }
+  if(stp===2){ if(key!=='manual') t.cards[key]--; t.used[key]=(t.used[key]||0)+1; t.auto+=key==='comms'?6:3; inc.state='resolved'; Sfx.good(); toast('ผ่านเหตุการณ์: '+def.t+' · สื่อสารและบันทึกเหตุแล้ว','good'); S.armed=null; S.targetId=null; renderArm(); renderAll(); chkEnd(); return; }
   if(key!=='manual'){ if(t.cards[key]<=0){ disarm(); return; } t.cards[key]--; }
   t.used[key]=(t.used[key]||0)+1;
   inc.plays.push({team:tid,key:key,q:q});
@@ -1624,9 +1644,9 @@ function playCard(tid,key,incId){
   const good=inc.plays.filter(p=>p.q!=='miss');
   let msg=t.name+' ใช้ “'+CARD_DEF[key].n+'” · '+Q[q].n+(bonus?' · โบนัสเร็ว +'+bonus:''), kind=q==='miss'?'bad':'good';
   if(good.length>=def.needs){
-    inc.state='resolved';
+    inc.step=2;
     inc.grade=good.reduce((w,p)=>RANK[p.q]<RANK[w]?p.q:w,'best');
-    msg='แก้ปัญหาแล้ว: '+def.t;
+    msg='✓ ขั้น BCP 2 สำเร็จ · ต่อไปขั้น 3 สื่อสารและบันทึกเหตุ (ทีมบริหารและสื่อสาร)';
     kind='good';
   }else if(q!=='miss'&&def.needs>1){ msg+=' · ยังต้องใช้การ์ดอีก '+(def.needs-good.length)+' ใบ'; }
   if(q==='miss') Sfx.bad(); else if(key==='gen') Sfx.power(); else if(q==='best') Sfx.good(); else if(q==='ok') Sfx.soft(); else Sfx.card();
@@ -1658,8 +1678,11 @@ let chatT=[];
 function buildChat(r){
   chatT.forEach(clearTimeout); chatT=[];
   const selectedRound=ACTIVE_ROUNDS[r], one=selectedRound.inc&&selectedRound.inc[0];
-  const speaker=(one&&one.b==='it')?'it':((one&&one.m==='patients')?'doc':((one&&one.b==='gen')?'sup':'guard'));
-  const L=one?[{k:speaker,sk:'#E8B48A',m:'worry',n:'รายงานจากหน้างาน',via:'วิทยุ',c:'#4C6FE0',t:'พบเหตุ '+one.t+' · '+one.d}]:[];
+  const CAST={gen:['eng','ช่างโต้ง · ทีมซ่อมบำรุง','#F97316'],ipd:['med','พี่พยาบาล · ตึกผู้ป่วยใน','#FF5F7E'],er:['doc','หมอ ER','#9FB4FF'],it:['it','น้องไอที · ห้อง Server','#19B5D6'],pharm:['pharm','ภก.สมศรี · คลังยา','#10B981'],gate:['guard','พี่ยาม · รปภ.หน้าประตู','#4C6FE0'],clinic:['med','พี่พยาบาล · ห้องบริการ','#FF5F7E'],waste:['env','พี่เอ๋ · ENV/IC','#84CC16'],treatment:['env','พี่เอ๋ · ENV/IC','#84CC16'],cmd:['adm','ทีมบริหารและสื่อสาร','#8B6CFF']};
+  const rp=CAST[one&&one.b]||CAST.gate, sec=rp[0]==='med'?['guard','พี่ยาม · รปภ.','#4C6FE0']:['med','พี่พยาบาล · หน้างาน','#FF5F7E'];
+  const L=one?[{k:rp[0],sk:'#E8B48A',m:'shout',n:rp[1],via:'วิทยุ',c:rp[2],t:'ศูนย์ฯ ครับ! '+one.t+' ที่ '+(BLD[one.b]?BLD[one.b].n:'หน้างาน')+'!'},
+    {k:sec[0],sk:'#F2C29B',m:'worry',n:sec[1],via:'วิทยุ',c:sec[2],t:'ผลกระทบตอนนี้: '+one.d},
+    {k:'cmd',sk:'#F6C9A0',m:'smile',n:'ผู้บัญชาการเหตุการณ์ · ศูนย์ฯ',via:'วิทยุ',c:'#FFB020',t:'รับทราบ! ทำตามขั้นตอน BCP: ① เปิดศูนย์บัญชาการ (ICS) ② ใช้ Item แก้ปัญหา ③ สื่อสารและบันทึกเหตุ ทีมไหนมี Item อะไร เลือกเลย!'}]:[];
   $('#alChat').innerHTML=L.map((l,i)=>'<div class="msg" data-i="'+i+'" style="--mc:'+l.c+'">'+avatar(l.k,l.sk,l.m)+
     '<div class="bubble"><b>'+esc(l.n)+'<span class="via">'+esc(l.via)+'</span></b>'+esc(l.t)+'</div></div>').join('');
   L.forEach((l,i)=>{ chatT.push(setTimeout(()=>{
@@ -1673,7 +1696,7 @@ function beginRound(){
   chatT.forEach(clearTimeout); chatT=[]; Voice.stop();
   hideOv('ovAlert');
   S.incidents=R.inc.map(d=>({id:d.id,def:d,round:r,state:'open',plays:[],grade:null,
-    flowStep:0,flowReports:[],flowReady:false,decisions:[]}));
+    flowStep:0,flowReports:[],flowReady:true,step:0,decisions:[]}));
   S.incidents.forEach(i=>{ S.all.push(i); const m=i.def.m; S.meters[m]=clamp(S.meters[m]-i.def.imp,0,100); S.minM[m]=Math.min(S.minM[m],S.meters[m]); });
   S.phase='play'; S.running=true; lastT=performance.now();
   renderAll(); lightning(); Sfx.siren(2);
