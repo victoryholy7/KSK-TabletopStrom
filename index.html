@@ -541,7 +541,7 @@ button{font-family:inherit;color:inherit}
     </div>
     <div class="how">
       <div><b>1. ฟังข่าวด่วน</b><br>ฟังตัวละครรายงานเหตุ แล้วทุกโต๊ะปรึกษากันว่าจะใช้ Item ใด</div>
-      <div><b>2. ลงการ์ด</b><br>แตะหมุดแดง แล้วเลือก Item ตามขั้น BCP (① ICS ② แก้ปัญหา ③ สื่อสาร) เลือกผิดเหตุจะลุกลาม ระบบจะเฉลยตอนสรุป</div>
+      <div><b>2. ลงการ์ด</b><br>แตะหมุดแดง แล้วเลือก Item ตามขั้น BCP (ลำดับแต่ละเหตุไม่เหมือนกัน บางเหตุทีมสื่อสารต้องทำก่อน) เลือกผิดเหตุจะลุกลาม ระบบจะเฉลยตอนสรุป</div>
       <div><b>3. ให้คะแนน</b><br>จบรอบ ผู้ดำเนินการให้คะแนนความเร็ว ความถูกต้องตาม BCP และการประสานข้ามทีม</div>
     </div>
     <p style="margin:14px 0 0;color:var(--mute);font-size:13px">เหตุการณ์ทั้งหมดเป็นสถานการณ์สมมติเพื่อการซ้อมแผน ไม่ใช่เหตุการณ์จริง</p>
@@ -1412,8 +1412,8 @@ function choiceOptionsFor(d,teamId,stepIdx,seedKey){
   return seededShuffle(opts,(seedKey||d.id)+'-'+teamId+'-'+(stepIdx||0));
 }
 function bcpTracker(i){
-  const st=i.step||0, N=['เปิดศูนย์บัญชาการ (ICS)','ใช้ Item แก้ปัญหา','สื่อสารและบันทึกเหตุ'], T=['ทีมบัญชาการ','ทีมแพทย์/สนับสนุนตามปัญหา','ทีมบริหารและสื่อสาร'];
-  return '<div class="flow-box"><b>ขั้นตอน BCP ของเหตุการณ์นี้</b>'+N.map((n,k)=>'<div style="margin:6px 0;padding:7px 9px;border-radius:9px;background:'+(k<st?'#0d3d35':k===st?'#ffd93b':'#1d2f5f')+';color:'+(k===st?'#17244d':'#fff')+';font-weight:700;font-size:13px">'+(k<st?'✓ ':k===st?'▶ ':'○ ')+(k+1)+'. '+n+'<br><small style="font-weight:500">'+T[k]+(k===st?' · เลือก Item ได้เลย':'')+'</small></div>').join('')+'</div>';
+  const st=i.step||0, sq=seqFor(i.def);
+  return '<div class="flow-box"><b>ขั้นตอน BCP ของเหตุการณ์นี้</b>'+sq.map((ty,k)=>'<div style="margin:6px 0;padding:7px 9px;border-radius:9px;background:'+(k<st?'#0d3d35':k===st?'#ffd93b':'#1d2f5f')+';color:'+(k===st?'#17244d':'#fff')+';font-weight:700;font-size:13px">'+(k<st?'✓ ':k===st?'▶ ':'○ ')+(k+1)+'. '+STEPN[ty]+'<br><small style="font-weight:500">'+STEPT[ty]+(k===st?' · เลือก Item ได้เลย':'')+'</small></div>').join('')+'</div>';
 }
 function flowMarkup(i){
   if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
@@ -1627,10 +1627,11 @@ function onCard(tid,key){
   if(!S.running){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return; }
   const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
   if(!inc){ Sfx.soft(); toast('ขั้นแรก แตะหมุดสีแดงบนอาคารเพื่อเลือกจุดเกิดเหตุก่อน'); return; }
-  const stp=inc.step||0;
-  if(stp===0&&key!=='ics'){ Sfx.soft(); toast('ขั้น BCP 1 · เปิดศูนย์บัญชาการก่อน: ใช้ Item “ชุดบัญชาการ ICS” (ทีมบัญชาการ)','bad'); return; }
-  if(stp===1&&key==='ics'){ Sfx.soft(); toast('เปิดศูนย์ฯ แล้ว · ขั้น BCP 2: เลือก Item แก้ปัญหาของเหตุการณ์นี้','bad'); return; }
-  if(stp===2&&!['comms','net','manual','press','radio'].includes(key)){ Sfx.soft(); toast('ขั้น BCP 3 · สื่อสารและบันทึกเหตุ: ใช้ชุดสื่อสาร/โฆษก เน็ต 5G หรือแผน Manual (ทีมบริหารและสื่อสาร)','bad'); return; }
+  const ty=seqFor(inc.def)[inc.step||0];
+  if(ty==='ics'&&key!=='ics'){ Sfx.soft(); toast('ขั้น BCP 1 · เปิดศูนย์บัญชาการก่อน: ใช้ “ชุดบัญชาการ ICS” (ทีมบัญชาการ)','bad'); return; }
+  if(ty==='log'&&key!=='ics'){ Sfx.soft(); toast('ขั้นสุดท้าย · ทบทวนและบันทึกเหตุ: ใช้ “ชุดบัญชาการ ICS” (ทีมบัญชาการ)','bad'); return; }
+  if(ty==='comm'&&!['comms','net','manual','press','radio'].includes(key)){ Sfx.soft(); toast('ขั้นนี้ต้องสื่อสาร/ประสานก่อน: ใช้ Item ของทีมบริหารและสื่อสาร (ชุดสื่อสาร, เน็ต 5G, แถลงข่าว) หรือแผน Manual','bad'); return; }
+  if(ty==='solve'&&key==='ics'){ Sfx.soft(); toast('ขั้นนี้ให้เลือก Item แก้ปัญหาของเหตุการณ์','bad'); return; }
   const t=S.teams[tid];
   if(!(TEAM_CARDS[t.kind]||[]).includes(key)){toast('Item นี้ไม่ใช่ทรัพยากรของทีม '+t.name,'bad');return;}
   if(key!=='manual'&&t.cards[key]<=0){ Sfx.bad(); toast('การ์ด'+CARD_DEF[key].s+'ของทีมนี้หมดแล้ว ลองแผน Manual','bad'); return; }
@@ -1647,12 +1648,23 @@ function onIncident(id){
 }
 /* ---------- playing a card ---------- */
 const RANK={best:3,ok:2,manual:1,miss:0};
+const STEPN={ics:'เปิดศูนย์บัญชาการ (ICS)',solve:'ใช้ Item แก้ปัญหา',comm:'สื่อสาร/ประสานหน่วยงานและเครือข่าย',log:'ทบทวนและบันทึกเหตุ (ICS)'};
+const STEPT={ics:'ทีมบัญชาการ',solve:'ทีมแพทย์/สนับสนุนตามปัญหา',comm:'ทีมบริหารและสื่อสาร',log:'ทีมบัญชาการ'};
+const COMM_FIRST=['r3-road','x-supply','x-water'];
+function seqFor(d){ return d.m==='comms'?['ics','solve','log']:(COMM_FIRST.includes(d.id)?['ics','comm','solve']:['ics','solve','comm']); }
 function chkEnd(){ if(S.incidents.every(i=>i.state!=='open')&&!S.ending){ S.ending=true; clearTimeout(skipT); skipT=setTimeout(()=>{ S.ending=false; endRound(); },1800); } }
 function playCard(tid,key,incId){
   const inc=S.incidents.find(i=>i.id===incId); if(!inc||inc.state!=='open'){ disarm(); return; }
-  const t=S.teams[tid], def=inc.def, q=def.sol[key]||'miss', stp=inc.step||0;
-  if(stp===0){ t.cards[key]--; t.used[key]=(t.used[key]||0)+1; t.auto+=4; inc.step=1; Sfx.good(); toast('✓ ขั้น BCP 1: เปิดศูนย์บัญชาการแล้ว · ต่อไปเลือก Item แก้ปัญหา','good'); S.armed=null; renderArm(); renderAll(); return; }
-  if(stp===2){ if(key!=='manual') t.cards[key]--; t.used[key]=(t.used[key]||0)+1; t.auto+=key==='comms'?6:3; inc.state='resolved'; Sfx.good(); toast('ผ่านเหตุการณ์: '+def.t+' · สื่อสารและบันทึกเหตุแล้ว','good'); S.armed=null; S.targetId=null; renderArm(); renderAll(); chkEnd(); return; }
+  const t=S.teams[tid], def=inc.def, q=def.sol[key]||'miss';
+  const sq=seqFor(def), ty=sq[inc.step||0];
+  if(ty!=='solve'){
+    if(key!=='manual') t.cards[key]--;
+    t.used[key]=(t.used[key]||0)+1; t.auto+=(ty==='comm'&&key==='comms')?6:(ty==='comm'?3:4);
+    inc.step=(inc.step||0)+1;
+    if(inc.step>=3){ inc.state='resolved'; S.targetId=null; toast('ผ่านเหตุการณ์: '+def.t+' · ครบขั้นตอน BCP','good'); }
+    else toast('✓ เสร็จขั้น BCP '+inc.step+' · ต่อไป: '+STEPN[sq[inc.step]],'good');
+    Sfx.good(); S.armed=null; renderArm(); renderAll(); chkEnd(); return;
+  }
   if(key!=='manual'){ if(t.cards[key]<=0){ disarm(); return; } t.cards[key]--; }
   t.used[key]=(t.used[key]||0)+1;
   inc.plays.push({team:tid,key:key,q:q});
@@ -1666,9 +1678,8 @@ function playCard(tid,key,incId){
   const good=inc.plays.filter(p=>p.q!=='miss');
   let msg=t.name+' ใช้ “'+CARD_DEF[key].n+'” แล้ว · ติดตามสถานการณ์ต่อ', kind='good';
   if(good.length>=def.needs){
-    inc.step=2;
     inc.grade=good.reduce((w,p)=>RANK[p.q]<RANK[w]?p.q:w,'best');
-    msg='✓ ขั้น BCP 2 สำเร็จ · ต่อไปขั้น 3 สื่อสารและบันทึกเหตุ (ทีมบริหารและสื่อสาร)';
+    inc.step=(inc.step||0)+1; if(inc.step>=3){ inc.state='resolved'; msg='ผ่านเหตุการณ์: '+def.t+' · ครบขั้นตอน BCP'; } else msg='✓ เสร็จขั้น BCP '+inc.step+' · ต่อไป: '+STEPN[sq[inc.step]];
     kind='good';
   }
   Sfx.card();
@@ -1769,7 +1780,23 @@ function commitRound(){
 const SEV={good:{n:'ทำได้ดี',c:'q-best',r:0},failed:{n:'ความเสี่ยงสูง',c:'q-miss',r:3},manual:{n:'ความเสี่ยงปานกลาง',c:'q-ok',r:2},ok:{n:'ควรปรับปรุง',c:'q-man',r:1}};
 function correctGuide(d){
   const nm=q=>Object.keys(d.sol).filter(k=>d.sol[k]===q).map(k=>CARD_DEF[k].n).join(', ')||'-';
-  return '<p><b>วิธีแก้ที่ถูกต้องตามแผน BCP</b></p><ol><li>เปิดศูนย์บัญชาการ ICS (ทีมบัญชาการ)</li><li>ใช้ Item แก้ปัญหา รวม '+d.needs+' ใบ จาก: <b>'+esc(nm('best'))+'</b> (ใช้แก้ขัดได้: '+esc(nm('ok'))+')</li><li>สื่อสารและบันทึกเหตุ (ทีมบริหารและสื่อสาร)</li></ol><p><b>ขั้นตอนปฏิบัติจริง:</b></p><ol>'+stepsForIncident(d).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>';
+  return '<p><b>ลำดับ BCP ที่ถูกต้องของเหตุการณ์นี้</b></p><ol>'+seqFor(d).map(ty=>'<li>'+STEPN[ty]+' · '+STEPT[ty]+(ty==='solve'?' — ใช้ Item รวม '+d.needs+' ใบ จาก: <b>'+esc(nm('best'))+'</b> (แก้ขัดได้: '+esc(nm('ok'))+')':'')+'</li>').join('')+'</ol><p><b>ขั้นตอนปฏิบัติจริง:</b></p><ol>'+stepsForIncident(d).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>';
+}
+function goodOf(i){
+  const g=[], b=i.plays.filter(p=>p.q==='best');
+  if((i.step||0)>=1) g.push('เปิดศูนย์บัญชาการ (ICS) และเริ่มปฏิบัติตามลำดับ BCP');
+  if(b.length) g.push('เลือก Item ตรงจุดที่สุด: '+b.map(p=>CARD_DEF[p.key].s).join(', '));
+  if(i.state==='resolved') g.push('ผ่านเหตุการณ์ครบทุกขั้นตอน BCP');
+  if(i.state==='resolved'&&!i.plays.some(p=>p.q==='miss')) g.push('ไม่มีการใช้ Item ผิดจุด');
+  return g.length?g:['ยังไม่พบจุดเด่นที่ชัดเจนในเหตุการณ์นี้ ควรทบทวนร่วมกันใน AAR'];
+}
+function weakOf(i){
+  const w=[], m=i.plays.filter(p=>p.q==='miss'), st=i.step||0;
+  if(i.state==='failed') w.push('ไม่ผ่านเหตุการณ์ภายในเวลา'+(st<3?' (ค้างที่ขั้น BCP '+(st+1)+': '+STEPN[seqFor(i.def)[st]]+')':''));
+  if(m.length) w.push('ใช้ Item ผิดจุด '+m.length+' ครั้ง ('+m.map(p=>CARD_DEF[p.key].s).join(', ')+') เสียทรัพยากรและทำให้เหตุการณ์ลุกลาม');
+  if(i.grade==='manual') w.push('แก้ได้ด้วยแผน Manual เท่านั้น'); else if(i.grade==='ok') w.push('ใช้ Item แก้ขัด ไม่ใช่ตัวที่ตรงที่สุด');
+  w.push('ความเสี่ยงเชิงระบบที่ยังมี: '+i.def.vuln);
+  return w;
 }
 function buildReport(){
   const items=[];
@@ -1777,10 +1804,10 @@ function buildReport(){
     let sev=null;
     if(i.state==='failed') sev='failed'; else if(i.grade==='manual') sev='manual'; else if(i.grade==='ok'||i.plays.some(p=>p.q==='miss')) sev='ok';
     if(!sev) sev='good';
-    items.push({sev:sev,def:i.def,title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,decisions:i.decisions||[],
-      note:i.state==='failed'?'ไม่ได้รับการแก้ไขภายในเวลา':(i.grade==='manual'?'แก้ได้ด้วยระบบ Manual เท่านั้น':(i.plays.some(p=>p.q==='miss')?'มีการลงการ์ดผิดจุด เสียทรัพยากรไปเปล่า':(sev==='good'?'ใช้ Item ตรงจุดและผ่านเหตุการณ์ตามขั้นตอน BCP · ยังควรเตรียมความพร้อมเพิ่มเติมตามข้อเสนอ':'ต้องใช้วิธีแก้ขัด ไม่ใช่ทางที่ตรงที่สุด')))});
+    items.push({sev:sev,def:i.def,good:goodOf(i),weak:weakOf(i),title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,decisions:i.decisions||[],
+      note:i.state==='failed'?'ไม่ได้รับการแก้ไขภายในเวลา':(i.grade==='manual'?'แก้ได้ด้วยระบบ Manual เท่านั้น':(i.plays.some(p=>p.q==='miss')?'มีการลงการ์ดผิดจุด เสียทรัพยากรไปเปล่า':(sev==='good'?'ผ่านเหตุการณ์ด้วย Item ตรงจุดตามขั้นตอน BCP':'ต้องใช้วิธีแก้ขัด ไม่ใช่ทางที่ตรงที่สุด')))});
   });
-  items.sort((a,b)=>SEV[b.sev].r-SEV[a.sev].r||a.round-b.round);
+  items.sort((a,b)=>a.round-b.round);
   const res=[];
   CARD_ORDER.filter(k=>!['manual','ics','comms'].includes(k)).forEach(k=>{
     const own=S.teams.filter(t=>(TEAM_CARDS[t.kind]||[]).includes(k)), left=own.reduce((a,t)=>a+t.cards[k],0), total=CARD_DEF[k].max*own.length;
@@ -1809,10 +1836,12 @@ function showFinal(){
     '<div><b>การ์ดที่ใช้ไป '+S.teams.reduce((a,t)=>a+Object.keys(t.used).filter(k=>k!=='manual').reduce((x,k)=>x+t.used[k],0),0)+' ใบ</b>แผน Manual '+S.teams.reduce((a,t)=>a+(t.used.manual||0),0)+' ครั้ง</div>';
   const rp=buildReport();
   let html='';
+  { const tot=S.all.length, pass=S.all.filter(i=>i.state==='resolved').length, wrong=S.all.reduce((a,i)=>a+i.plays.filter(p=>p.q==='miss').length,0), best=rp.items.filter(x=>x.sev==='good').map(x=>x.title), risk=rp.items.filter(x=>x.sev==='failed'||x.sev==='manual').map(x=>x.title);
+    html+='<div class="it"><h4>สรุปภาพรวมสำหรับผู้บริหาร<span class="tag q-best">สรุป</span></h4><p>ผ่านเหตุการณ์ '+pass+' / '+tot+' · ใช้ Item ผิดจุด '+wrong+' ครั้ง'+(S.lost?' · ภารกิจจบก่อนกำหนดเพราะเหตุการณ์ลุกลาม':'')+'</p><p><b>✓ ทำได้ดี:</b> '+esc(best.join(', ')||'ยังไม่มีเหตุการณ์ที่ผ่านด้วย Item ตรงจุดทั้งหมด')+'</p><p><b>⚠ ต้องเร่งปรับปรุง:</b> '+esc(risk.join(', ')||'ไม่มีเหตุการณ์ที่ล้มเหลวหรือต้องพึ่งแผน Manual')+'</p></div>'; }
   rp.res.forEach(x=>{ html+='<div class="it"><h4>ทรัพยากรไม่พอ<span class="tag q-miss">ความเสี่ยงสูง</span></h4><p>'+esc(x)+'</p></div>'; });
   rp.items.forEach(x=>{
     html+='<div class="it"><h4>'+esc(x.title)+'<span class="tag '+SEV[x.sev].c+'">'+SEV[x.sev].n+'</span><span class="tag">รอบที่ '+x.round+'</span></h4>'+
-      '<p>'+esc(x.note)+'</p>'+(x.decisions&&x.decisions.length?'<p><b>ตัวเลือก Tabletop:</b></p><ol>'+x.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>':'<p><b>ตัวเลือก Tabletop:</b> ไม่มีการบันทึกครบทุกทีม</p>')+'<p><b>จุดอ่อน:</b> '+esc(x.vuln)+'</p><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p>'+correctGuide(x.def)+'</div>';
+      '<p>'+esc(x.note)+'</p><p><b>✓ จุดที่ทำได้ดี</b></p><ul>'+x.good.map(g=>'<li>'+esc(g)+'</li>').join('')+'</ul><p><b>⚠ จุดอ่อน</b></p><ul>'+x.weak.map(g=>'<li>'+esc(g)+'</li>').join('')+'</ul><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p>'+correctGuide(x.def)+'</div>';
   });
   html+='<div class="it"><h4>เฉลยการใช้ Item ทุกเหตุการณ์</h4>'+S.all.map(i=>{ const nm=q=>Object.keys(i.def.sol).filter(k=>i.def.sol[k]===q).map(k=>CARD_DEF[k].s).join(', ')||'-'; const used=i.plays.map(p=>CARD_DEF[p.key].s+' ('+Q[p.q].n+')').join(' → ')||'ไม่ได้ใช้ Item'; return '<p><b>'+esc(i.def.t)+'</b> · '+(i.state==='resolved'?'ผ่าน':'ไม่ผ่าน')+'<br>Item ที่ใช้: '+esc(used)+'<br>ตรงจุดที่สุด: '+esc(nm('best'))+' · ใช้แก้ขัดได้: '+esc(nm('ok'))+'</p>'; }).join('')+'</div>';
   const tabletopRecords=S.all.filter(i=>i.decisions&&i.decisions.length);
