@@ -61,9 +61,9 @@
 
 /* Interactive map, team stations and additional facilities */
 .pin.target{cursor:pointer;pointer-events:all}
-.pin.selected .ring{stroke:var(--volt);stroke-width:5;opacity:1}
-.pin.selected .face{fill:var(--volt)}
-.pin.selected .gl{fill:#17244d}
+.pin.selected .ring{stroke:#fff;stroke-width:5;opacity:1}
+.pin.selected .face{fill:var(--alert)}
+.pin.selected .gl{fill:#fff}
 .inc.target{cursor:pointer}
 .inc.selected{border-color:var(--volt);box-shadow:0 0 0 3px #ffd93b35}
 .lbl{font-size:12px!important}
@@ -91,6 +91,23 @@
 }
 @media(max-width:390px){.howto{grid-template-columns:1fr 1fr}.team-station-label{font-size:11px}}
 
+
+/* Tabletop exercise: staged team decisions and command log */
+.flow-box.tabletop{border:1px solid #7896d9;background:linear-gradient(145deg,#091630,#142958);padding:12px}
+.flow-box.tabletop .flow-head{align-items:center}
+.flow-box.tabletop .step-count{font:700 12px var(--f-hud);color:#ffe36b;background:#ffffff16;border-radius:99px;padding:4px 8px;white-space:nowrap}
+.flow-box.tabletop .team-task{margin:8px 0;padding:9px 10px;border-left:4px solid var(--volt);background:#ffffff0c;border-radius:8px}
+.flow-box.tabletop .team-task b{display:block;color:#fff;font-size:14px;margin-bottom:4px}
+.flow-box.tabletop .team-task p{margin:0;color:#dbe6ff;line-height:1.55}
+.flow-box.tabletop textarea{display:block;width:100%;min-height:74px;resize:vertical;margin:9px 0 8px;padding:9px 10px;border:1px solid #829bd1;border-radius:9px;background:#07132c;color:#fff;font:14px var(--f-body)}
+.flow-box.tabletop textarea::placeholder{color:#a9b9df}
+.flow-box.tabletop .flow-commit{width:100%;border:0;border-radius:10px;padding:11px;background:#ffd93b;color:#17244d;font:800 14px var(--f-display);cursor:pointer}
+.flow-box.tabletop .flow-commit:disabled{opacity:.5;cursor:not-allowed}
+.flow-log{display:grid;gap:5px;margin-top:9px}
+.flow-log div{padding:7px 9px;border-radius:8px;background:#0c463c;border:1px solid #2fd08c66;color:#d8ffed;font-size:12px;line-height:1.45}
+.flow-log b{color:#8fffc9}
+.flow-box.tabletop .resource-gate{color:#ffe7a1;font-weight:700;margin:8px 0 0}
+@media(max-width:700px){.flow-box.tabletop textarea{font-size:16px}.flow-box.tabletop .flow-commit{min-height:46px}}
 </style></head><body>
 <title>KSK: STORM COMMAND</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -350,10 +367,10 @@ button{font-family:inherit;color:inherit}
 .pin{cursor:default}
 .pin.target{cursor:pointer}
 .pin .ring{fill:none;stroke:var(--alert);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:ping 1.3s ease-out infinite}
-.pin.target .ring{stroke:var(--volt)}
+.pin.target .ring{stroke:#fff;stroke-width:4}
 .pin .face{fill:var(--alert);stroke:#fff;stroke-width:3}
-.pin.target .face{fill:var(--volt)}
-.pin.target .gl{color:#1a2250}
+.pin.target .face{fill:var(--alert)}
+.pin.target .gl{color:#fff}
 .bld.hit{animation:shake .5s linear infinite}
 .bld{transform-box:fill-box;transform-origin:50% 100%}
 .lbl{font-family:var(--f-display);font-weight:700;font-size:13px;fill:#fff;stroke:#0e1b3d;stroke-width:3.5px;paint-order:stroke;text-anchor:middle}
@@ -902,7 +919,7 @@ function splitRoundsToEvents(rounds,prefix){
 const PICKABLE_ROUNDS=splitRoundsToEvents(BASE_ROUNDS,'base').concat(splitRoundsToEvents(EXTRA_ROUNDS,'extra'));
 let ACTIVE_ROUNDS=PICKABLE_ROUNDS.slice();
 
-const TICKER_FACTS=['ซ้อมแผนเผชิญเหตุ · สถานการณ์สมมติ ไม่ใช่เหตุการณ์จริง','แตะหมุดเหตุการณ์บนอาคารก่อน แล้วเลือกทีมและ Item ที่คิดว่าเหมาะสม','ทุกทีมต้องรายงานตัวและปฏิบัติภารกิจร่วมกัน การ์ดทรัพยากรมีจำนวนจำกัด','ถ้าการ์ดหมด ใช้แผน Manual (ระบบกระดาษ) ได้ไม่จำกัด'];
+const TICKER_FACTS=['ซ้อมแผนเผชิญเหตุ · สถานการณ์สมมติ ไม่ใช่เหตุการณ์จริง','อภิปรายและบันทึกมติของทีมบัญชาการ แพทย์/พยาบาล สนับสนุน และบริหาร/สื่อสารให้ครบก่อนเลือก Item','ทุกทีมต้องรายงานตัวและปฏิบัติภารกิจร่วมกัน การ์ดทรัพยากรมีจำนวนจำกัด','ถ้าการ์ดหมด ใช้แผน Manual (ระบบกระดาษ) ได้ไม่จำกัด'];
 /* ---------- sound (Web Audio, all synthesised, starts after a click) ---------- */
 const Sfx=(function(){
   let ctx=null,master=null,noise=null,rainG=null,windG=null,muted=false,vol=.7;
@@ -1168,7 +1185,7 @@ function saveSessionToSheet(stage){
   if(!GAS_API_URL || GAS_API_URL.indexOf('PASTE_')===0) return;
   const payload={stage:stage,sessionId:S.sessionId|| (S.sessionId='KSK-'+Date.now()),savedAt:new Date().toISOString(),
     round:S.round+1,roundName:ACTIVE_ROUNDS[S.round]?.name||'',teams:S.teams.map(t=>({name:t.name,score:score(t),used:t.used,cards:t.cards})),
-    meters:S.meters,incidents:S.all.map(i=>({round:i.round+1,title:i.def.t,state:i.state,grade:i.grade,plays:i.plays})),
+    meters:S.meters,incidents:S.all.map(i=>({round:i.round+1,title:i.def.t,state:i.state,grade:i.grade,plays:i.plays,decisions:i.decisions||[]})),
     report:S.reportText||''};
   try{fetch(GAS_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),keepalive:true}).catch(()=>{});}catch(e){}
 }
@@ -1247,44 +1264,103 @@ function stepsForIncident(d){
     'ทีมบริหารและสื่อสารประสานผู้รับจ้าง/ผู้เชี่ยวชาญ แจ้งหน่วยงานที่เกี่ยวข้อง และสื่อสารผลกระทบต่อการจ่ายไฟให้หน่วยบริการทราบ',
     'จัดแหล่งจ่ายไฟสำรองให้จุดบริการจำเป็น ตรวจสอบระบบและโครงสร้างโดยผู้เชี่ยวชาญก่อนอนุญาตให้กลับมาใช้งาน',
     'บันทึกความเสียหาย ภาพถ่าย รายงานการตรวจสอบ และกำหนดผู้รับผิดชอบ/ระยะเวลาซ่อมและติดตามผล'];
+  const specificByEvent={
+    'r1-power':['ยืนยันขอบเขตไฟดับ แจ้งศูนย์บัญชาการ และประเมินความเสี่ยงต่อผู้ป่วยที่พึ่งพาไฟฟ้า','ทีมช่าง/ผู้ได้รับมอบหมายตรวจแหล่งจ่ายและเครื่องกำเนิดไฟฟ้าตาม SOP ห้ามผู้ไม่เกี่ยวข้องแตะระบบไฟ','ศูนย์บัญชาการกำหนดลำดับโหลดไฟวิกฤตและให้หน่วยบริการยืนยันจุดที่ต้องจ่ายไฟก่อน','ทีมบริหารประสานเชื้อเพลิง/หน่วยงานไฟฟ้า พร้อมกำหนดรอบรายงานสถานะและบันทึกการสลับระบบ'],
+    'r1-roof':['ทีมหน้างานแจ้งเหตุและกั้นพื้นที่ใต้จุดรั่ว ประเมินความเสี่ยงไฟฟ้าร่วมกับน้ำจากระยะปลอดภัย','ทีมแพทย์/พยาบาลประเมินผู้ป่วยบนเตียงที่ได้รับผลกระทบและจัดพื้นที่ดูแลชั่วคราว','ศูนย์บัญชาการอนุมัติการเคลื่อนย้ายตามความเสี่ยงและกำหนดเส้นทาง/ผู้รับผิดชอบ','ทีมช่างเข้าตรวจเมื่อพื้นที่ปลอดภัย ประเมินโครงสร้างและระบบไฟก่อนอนุญาตกลับเข้าใช้'],
+    'r1-comm':['ผู้พบเหตุรายงานข้อมูล เวลา สถานที่ และช่องทางที่ยังใช้ได้ต่อศูนย์บัญชาการ','Incident Commander กำหนดผู้ประสานงานหลัก ช่องทางสำรอง และรอบรายงานเดียวกันทุกทีม','ทุกทีมรายงานสถานะด้วยรูปแบบเดียวกัน ระบุข้อมูลยืนยันแล้ว/ยังไม่ยืนยัน','ทีมบริหารและสื่อสารทดสอบการรับข้อความและบันทึกคำสั่ง/การตอบรับ'],
+    'r2-his':['ยืนยันขอบเขตระบบที่ขัดข้อง แยกไฟฟ้า เครือข่าย Server และ HOSxP พร้อมแจ้งศูนย์บัญชาการ','ประกาศใช้ Downtime Procedure และแบบฟอร์มกระดาษตาม SOP หยุดการบันทึกซ้ำซ้อน','ทีม IT ตรวจระบบสำรองและกู้คืนโดยผู้รับผิดชอบ ทดสอบเป็นจุดก่อนเปิดใช้','ทีมแพทย์ยืนยันข้อมูลผู้ป่วย/คำสั่งรักษาที่จำเป็น ส่วนทีมบริหารสื่อสารสถานะและเก็บข้อมูลเพื่อบันทึกย้อนหลัง'],
+    'r2-er':['ทีมแพทย์/พยาบาลคัดแยกผู้บาดเจ็บตามความเร่งด่วนและแจ้งจำนวน/ระดับความรุนแรงต่อศูนย์บัญชาการ','ศูนย์บัญชาการจัดลำดับทรัพยากร เตียง บุคลากร และกำหนดเกณฑ์ส่งต่อ','ทีมสนับสนุนเตรียมพื้นที่ อุปกรณ์ ไฟฟ้า และเส้นทางรถพยาบาลให้ปลอดภัย','ทีมบริหารประสานโรงพยาบาลแม่ข่าย/รถส่งต่อและจัดระบบแจ้งญาติด้วยข้อมูลที่ยืนยันแล้ว'],
+    'r3-road':['ยืนยันจุดถนนขาดและกั้นไม่ให้รถ/บุคลากรเข้าพื้นที่เสี่ยง ประสานศูนย์บัญชาการ','ทีมแพทย์จัดลำดับผู้ป่วยที่ต้องส่งต่อและกำหนดความเร่งด่วน','ทีมสนับสนุนประเมินเส้นทางสำรองร่วมกับหน่วยงานที่มีอำนาจ ห้ามใช้เส้นทางที่ยังไม่ยืนยันความปลอดภัย','ทีมบริหารประสานกู้ภัย/เครือข่ายและแจ้งเส้นทางที่ยืนยันแล้วแก่หน่วยบริการ'],
+    'r3-pharm':['คลังยาตรวจนับยา/เวชภัณฑ์ที่เสี่ยงและจัดลำดับรายการวิกฤต โดยป้องกันการปนเปื้อน/เสียหาย','ทีมแพทย์ยืนยันรายการยาจำเป็นต่อการรักษาต่อเนื่องและแนวทางทดแทนตามผู้มีอำนาจ','ทีมสนับสนุนจัดพื้นที่ปลอดภัยและกำลังคนสำหรับเคลื่อนย้าย/ควบคุมอุณหภูมิตามข้อกำหนด','ทีมบริหารประสานยืม/แลกเปลี่ยนจากเครือข่ายและติดตามการขนส่ง'],
+    'r4-fuel':['ทีมสนับสนุนรายงานปริมาณเชื้อเพลิง ชั่วโมงใช้งาน และสถานะเครื่องกำเนิดไฟฟ้า','ศูนย์บัญชาการทบทวนโหลดไฟวิกฤตและอนุมัติมาตรการประหยัดพลังงานตามแผน','ทีมแพทย์แจ้งจุดบริการ/ผู้ป่วยที่ห้ามสูญเสียไฟฟ้าและเตรียมแผนสำรองการดูแล','ทีมบริหารประสานการจัดส่งเชื้อเพลิงและกำหนดผู้รับผิดชอบ/เวลารายงานกลับ'],
+    'r4-crowd':['ศูนย์บัญชาการแต่งตั้งโฆษกและจุดประสานญาติ/สื่อให้ชัดเจน','ทีมแพทย์ยืนยันข้อมูลผู้ป่วยที่เปิดเผยได้ตามหลักเกณฑ์และคุ้มครองข้อมูลส่วนบุคคล','ทีมบริหารตรวจสอบข้อเท็จจริง จัดทำข้อความกลาง และอัปเดตตามรอบเวลา','ทีมสนับสนุนจัดพื้นที่ปลอดภัย/ระบบคิวและช่องทางสื่อสารสำรอง'],
+    'r4-tired':['หัวหน้าทีมรายงานจำนวนคน เวลาปฏิบัติงาน และจุดเสี่ยงจากความอ่อนล้า','ศูนย์บัญชาการจัดลำดับตำแหน่งที่ต้องคงกำลังและอนุมัติการสับเปลี่ยนเวร','ทีมแพทย์ประเมินความพร้อมของบุคลากรที่ปฏิบัติงานในจุดวิกฤตและจัดผู้ทดแทน','ทีมบริหารเรียกบุคลากรสำรอง จัดอาหาร/ที่พัก/การเดินทาง และบันทึกเวลาพัก'],
+    'x-water':['ยืนยันจุดท่อเมนเสียหายและขอบเขตพื้นที่ที่น้ำใช้ไม่ได้ แจ้งศูนย์บัญชาการ','ทีมแพทย์จัดลำดับจุดใช้น้ำจำเป็นต่อผู้ป่วยและควบคุมการใช้น้ำตามแผน','ทีมสนับสนุนให้ผู้รับผิดชอบระบบประเมินการแยกท่อ/แหล่งน้ำสำรองและคุณภาพน้ำก่อนจ่าย','ทีมบริหารประสานรถน้ำ/หน่วยงานภายนอกและจัดรอบเติมน้ำพร้อมบันทึกปริมาณ'],
+    'x-oxygen':['ทีมแพทย์ระบุผู้ป่วยพึ่งพาออกซิเจนและเปลี่ยนไปใช้แหล่งสำรองตามแผนของหน่วยบริการ','ศูนย์บัญชาการกำหนดผู้รับผิดชอบและจัดลำดับการสนับสนุนผู้ป่วยวิกฤต','ทีมช่าง/ผู้มีคุณสมบัติประเมินและแยกระบบตาม SOP ห้ามผู้ไม่ผ่านการฝึกสัมผัสวาล์วหรือท่อ','ทีมบริหารประสานผู้จำหน่าย/ผู้เชี่ยวชาญและกำหนดเกณฑ์ยืนยันแรงดันก่อนคืนระบบ'],
+    'x-birth':['ทีมแพทย์จัดทีมดูแลมารดาและทารก ประเมินความเร่งด่วนและพื้นที่ปลอดภัย','ทีมสนับสนุนเตรียมแสงสว่างสำรองและอุปกรณ์ที่จำเป็นโดยไม่ใช้แหล่งไฟที่ไม่ปลอดภัย','ศูนย์บัญชาการจัดกำลังเสริมและกำหนดแผนส่งต่อหากเกินศักยภาพ','ทีมบริหารประสานทีมสูติกรรม/โรงพยาบาลแม่ข่ายและการเดินทางสำรอง'],
+    'x-injury':['ผู้พบเหตุแจ้งพิกัดและลักษณะการบาดเจ็บ ห้ามเข้าพื้นที่ที่ยังไม่ปลอดภัย','ทีมสนับสนุน/ผู้รับผิดชอบพื้นที่ประเมินอันตรายและกั้นเขตโดยใช้ระบบ buddy ตามแผน','ทีมแพทย์ประเมินผู้บาดเจ็บและประสานการนำส่งตามระดับความเร่งด่วน','ทีมบริหารบันทึกอุบัติการณ์ แจ้งผู้เกี่ยวข้องและจัดการดูแลบุคลากรหลังเหตุ'],
+    'x-supply':['คลังยาตรวจนับคงเหลือและคำนวณระยะเวลาที่ใช้ได้ของรายการวิกฤต','ทีมแพทย์กำหนดลำดับความจำเป็นและแนวทางใช้ทดแทนภายใต้ผู้มีอำนาจ','ทีมสนับสนุนประเมินเส้นทาง/วิธีขนส่งทางเลือกและความปลอดภัยของการรับส่ง','ทีมบริหารประสานยืมยา/เวชภัณฑ์จากเครือข่ายและติดตามการส่งมอบ'],
+    'x-waste':['ผู้รับผิดชอบ ENV/IC ประเมินปริมาณขยะและกั้นพื้นที่พักขยะติดเชื้อ','ทีมสนับสนุนจัดภาชนะปิดมิดชิด พื้นที่พักชั่วคราวและเส้นทางขนย้ายตาม SOP','ทีมบริหารประสานผู้รับกำจัดที่ได้รับอนุญาต/หน่วยงานสำรองและกำหนดรอบรับขน','ทีมบัญชาการติดตามความเสี่ยงสุขาภิบาลและบันทึกปริมาณ/ระยะเวลาคงค้าง'],
+    'x-treatment':['ทีมสนับสนุนตรวจสถานะไฟฟ้า ปั๊ม และระบบบำบัดโดยผู้รับผิดชอบ ห้ามเข้าพื้นที่เสี่ยงโดยไม่มีการประเมิน','ศูนย์บัญชาการกำหนดมาตรการควบคุมการไหล/ป้องกันน้ำเสียเอ่อล้นร่วมกับผู้เชี่ยวชาญ','ทีม ENV/IC ประเมินผลกระทบและกำหนดการเฝ้าระวัง/แจ้งเหตุสิ่งแวดล้อมตามเกณฑ์','ทีมบริหารประสานผู้เชี่ยวชาญและหน่วยงานที่เกี่ยวข้อง พร้อมติดตามผลตรวจยืนยันก่อนคืนระบบ'],
+    'x-solar':byType.solar
+  };
+  if(specificByEvent[d.id]) return specificByEvent[d.id];
   let key=d.m==='solar'?'solar':(d.m==='it'?'it':(d.m==='comms'?'comms':(d.m==='power'?'power':(d.m==='patients'?'patients':(d.m==='build'?'build':'commsGeneric')))));
   return (byType[key]||common);
 }
 
-const FLOW_STEPS=[
- {title:'พบเห็นเหตุการณ์และแจ้งเหตุ',team:2,desc:'ผู้พบเหตุแจ้งเหตุไปยังศูนย์ประสานงานทันที พร้อมระบุสถานที่ เวลา และความเสี่ยงเบื้องต้น'},
- {title:'เปิดศูนย์บัญชาการเหตุการณ์',team:0,desc:'ทีมบัญชาการประกาศเปิดศูนย์บัญชาการ กำหนด Incident Commander และช่องทางรายงานเหตุ'},
- {title:'รายงานตัวและประเมินสถานะทุกทีม',team:'all',desc:'ทุกทีมรายงานกำลังคน ความพร้อม ทรัพยากร และข้อจำกัดต่อศูนย์บัญชาการ'},
- {title:'ศูนย์บัญชาการประเมินและสั่งการ',team:0,desc:'Incident Commander จัดลำดับความสำคัญ กำหนดเป้าหมาย มอบหมายภารกิจ และกำหนดเวลารายงานกลับ'},
- {title:'ทีมแพทย์/พยาบาลดำเนินการ',team:1,desc:'ดูแลความปลอดภัยผู้ป่วย คัดแยก จัดพื้นที่รักษา เตรียมส่งต่อ และรายงานผลการปฏิบัติ'},
- {title:'ทีมสนับสนุน/อาคารสถานที่และ IT ดำเนินการ',team:2,desc:'จัดการไฟฟ้า อาคาร น้ำ ออกซิเจน สิ่งแวดล้อม และประสานระบบ IT/HOSxP ตามเหตุการณ์'},
- {title:'ทีมบริหารและสื่อสารดำเนินการ',team:3,desc:'ประสานหน่วยงานภายนอก บริหารทรัพยากร สื่อสารข้อมูลที่ยืนยันแล้วกับบุคลากร ญาติ และประชาชน'}
+const TABLETOP_STAGES=[
+ {team:0,title:'ทีมบัญชาการ · รับแจ้งและเปิดระบบบัญชาการ',role:'กำหนดผู้บัญชาการเหตุการณ์ (Incident Commander), ยืนยันข้อมูลที่ทราบ/ยังไม่ทราบ ประเมินระดับเหตุ เปิดใช้ ICS/EOC ตามแผน และกำหนดเป้าหมายความปลอดภัยลำดับแรก'},
+ {team:1,title:'ทีมแพทย์/พยาบาล · คุ้มครองผู้ป่วยและบริการรักษา',role:'ระบุผู้ป่วยกลุ่มเสี่ยง/บริการวิกฤตที่ได้รับผลกระทบ วางแผนดูแลต่อเนื่อง คัดแยก เคลื่อนย้ายหรือส่งต่อเมื่อจำเป็น และรายงานกำลังคน/อุปกรณ์ที่ขาด'},
+ {team:2,title:'ทีมสนับสนุน/อาคารสถานที่ · ควบคุมอันตรายและระบบสนับสนุน',role:'ประเมินพื้นที่และระบบสาธารณูปโภคจากจุดปลอดภัย กั้นเขตเสี่ยง มอบหมายผู้มีความชำนาญ ตรวจไฟฟ้า อาคาร น้ำ ออกซิเจน IT หรือสิ่งแวดล้อมตามเหตุ และรายงานทรัพยากรที่ต้องใช้'},
+ {team:3,title:'ทีมบริหารและสื่อสาร · ประสานทรัพยากรและข้อมูล',role:'ประสานหน่วยงานภายนอก/เครือข่าย จัดหาทรัพยากรและการสนับสนุน กำหนดผู้ให้ข้อมูลหลัก ตรวจสอบข้อเท็จจริงก่อนแจ้งบุคลากร ญาติ และประชาชน'},
+ {team:0,title:'ทีมบัญชาการ · ทบทวนสถานการณ์และสั่งการรอบถัดไป',role:'รวบรวมรายงานทุกทีม จัดลำดับความสำคัญใหม่ ตัดสินใจว่าจะยกระดับ/คงระดับ/ลดระดับเหตุ มอบหมายผู้รับผิดชอบ กำหนดเวลารายงานกลับ และบันทึกคำสั่ง'}
 ];
-function flowMarkup(i){
-  if(i.state==='resolved') return '<div class="flow-box done"><b>แก้ไขเหตุการณ์สำเร็จ</b><p>บันทึกผลการใช้ทรัพยากรแล้ว สามารถไปยังเหตุการณ์ถัดไปได้</p></div>';
-  if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>บันทึกอุปสรรคและข้อเสนอแนะเพื่อทบทวนในรายงาน AAR</p></div>';
-  if(S.targetId===i.id) return '<div class="flow-box"><b>เลือกจุดเกิดเหตุแล้ว ✓</b><p>ขั้นต่อไป: ให้ผู้เล่นพิจารณาเองว่าทีมใดเหมาะสม จากนั้นแตะ Item/การ์ดทรัพยากรของทีมนั้นเพื่อยืนยัน</p></div>';
-  return '<div class="flow-box"><b>เริ่มจากเลือกจุดเกิดเหตุ</b><p>แตะหมุดสีแดงบนอาคารนี้ก่อน แล้วจึงเลือกทีมและ Item ที่คิดว่าเหมาะสม</p></div>';
+function eventTasksForTeam(d,teamId){
+  const actions=stepsForIncident(d);
+  const rules=[
+    /แจ้งเหตุ|ศูนย์บัญชาการ|incident commander|กำหนด|จัดลำดับ|สั่งการ|รายงานสถานะ|บันทึกเหตุ/i,
+    /ผู้ป่วย|คัดแยก|ส่งต่อ|ดูแล|เตียง|ออกซิเจน|คลอด|บาดเจ็บ|ผู้รับบริการ|ญาติผู้ป่วย/i,
+    /ทีมช่าง|ไฟฟ้า|อาคาร|ระบบ|แผง|solar|น้ำเสีย|น้ำประปา|ปั๊ม|กั้นพื้นที่|ตรวจสอบ|ซ่อม|hosxp|server|ขยะ|เวชภัณฑ์|คลังยา/i,
+    /ประสาน|สื่อ|ญาติ|หน่วยงาน|ผู้รับจ้าง|สื่อสาร|จัดหา|รถน้ำ|เครือข่าย/i
+  ];
+  let matched=actions.filter(x=>rules[teamId].test(x));
+  if(teamId===0 && actions.length) matched=[actions[0],...matched.filter(x=>x!==actions[0])];
+  if(teamId===3 && actions.length>1 && !matched.length) matched=[actions[actions.length-1]];
+  if(!matched.length){
+    const fallback=[
+      'ยืนยันข้อมูลเหตุการณ์ จัดระดับเหตุ กำหนดผู้บัญชาการ เป้าหมาย และรอบรายงาน',
+      'ประเมินผู้ป่วยกลุ่มเสี่ยง จัดลำดับการดูแล และแผนบริการต่อเนื่อง/ส่งต่อ',
+      'ควบคุมพื้นที่เสี่ยง ประเมินระบบที่เกี่ยวข้อง และระบุผู้ปฏิบัติงานที่มีความชำนาญ',
+      'ประสานเครือข่าย จัดหาทรัพยากร และสื่อสารข้อมูลที่ยืนยันแล้ว'
+    ];
+    matched=[fallback[teamId]];
+  }
+  return [...new Set(matched)].slice(0,3);
 }
-function advanceFlow(id,teamId){
+function tabletopQuestion(d,teamId){
+  const where=BLD[d.b]?.n||'พื้นที่เกิดเหตุ';
+  if(teamId===0) return 'จากรายงาน “'+d.t+'” ที่ '+where+' ข้อมูลใดต้องยืนยันก่อนตัดสินใจ ใครเป็นผู้บัญชาการ และเป้าหมาย 3 ข้อแรกของโรงพยาบาลคืออะไร?';
+  if(teamId===1) return 'เหตุการณ์นี้กระทบผู้ป่วยกลุ่มใดก่อน มีผู้ป่วยพึ่งพาไฟฟ้า/ออกซิเจน/การรักษาต่อเนื่องหรือไม่ จะคุ้มครอง จัดลำดับ และรายงานผู้ป่วยอย่างไร?';
+  if(teamId===2){
+    const by={power:'จะประเมินแหล่งจ่ายไฟ โหลดวิกฤต และความปลอดภัยของระบบสำรองอย่างไร ใครมีอำนาจปฏิบัติงาน?',it:'จะตรวจแยกไฟฟ้า เครือข่าย Server และ HOSxP อย่างไร และจะใช้ Downtime Procedure เมื่อใด?',build:'จะกั้นพื้นที่ ตรวจความมั่นคงอาคาร/เส้นทาง และเคลื่อนย้ายอย่างไรโดยไม่เพิ่มความเสี่ยง?',solar:'จะกั้นเขตใต้แผง Solar PV ที่เสียหาย ใครเป็นผู้เชี่ยวชาญที่ได้รับมอบหมายให้แยกระบบ และจะคงไฟฟ้าให้จุดวิกฤตอย่างไร?',patients:'จะจัดทรัพยากรทางการแพทย์ รถพยาบาล อุปกรณ์ และกำลังสนับสนุนอย่างไร?',comms:'จะตั้งช่องทางสื่อสารสำรองและรายงานสถานะเมื่อช่องทางหลักขัดข้องอย่างไร?'};
+    return (by[d.m]||'จะควบคุมพื้นที่เสี่ยง ตรวจระบบที่เกี่ยวข้อง และจัดกำลัง/อุปกรณ์อย่างไร?')+' ระบุผู้รับผิดชอบและเงื่อนไขความปลอดภัยก่อนเริ่มงาน';
+  }
+  if(teamId===3) return 'ต้องประสานใครภายใน/ภายนอกโรงพยาบาลเพื่อให้ภารกิจเดินต่อ ใครเป็นผู้สื่อสารหลัก จะขอทรัพยากรอะไร และจะสื่อสารเฉพาะข้อมูลที่ยืนยันแล้วอย่างไร?';
+  return 'เมื่อรับรายงานครบแล้ว จะเลือกแนวทางใด ใครรับคำสั่ง กำหนดเส้นตาย/รอบรายงานอย่างไร และมีเกณฑ์ใดที่จะยกระดับหรือยุติการตอบโต้เหตุ?';
+}
+function flowMarkup(i){
+  if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>บันทึกการตัดสินใจของทุกทีมและการใช้ทรัพยากรแล้ว เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
+  if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>เก็บบันทึกการตัดสินใจที่ทำได้และประเด็นที่ยังค้าง เพื่อนำไปทบทวนใน AAR</p></div>';
+  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่ม Tabletop ที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเปิดวงอภิปรายและบันทึกมติของแต่ละทีมตามลำดับ</p></div>';
+  if(!i.flowReady){
+    const step=i.flowStep||0, cur=TABLETOP_STAGES[step], team=TEAM_DEF[cur.team];
+    const logs=(i.decisions||[]).map((x,n)=>'<div><b>'+esc(x.teamName)+' · '+esc(x.stage)+'</b><br>'+esc(x.note)+'</div>').join('');
+    return '<div class="flow-box tabletop"><div class="flow-head"><b>วงรอบการบัญชาการและตัดสินใจ</b><span class="step-count">ขั้น '+(step+1)+' / '+TABLETOP_STAGES.length+'</span></div>'+ 
+      '<div class="team-task"><b style="color:'+team.color+'">'+esc(cur.title)+'</b><p>'+esc(cur.role)+'</p><p style="margin-top:7px;color:#ffe7a1;font-weight:700">ภารกิจเฉพาะเหตุการณ์นี้</p><ul style="margin:4px 0 0;padding-left:20px;color:#dbe6ff">'+eventTasksForTeam(i.def,cur.team).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'+ 
+      '<p><b>โจทย์ตัดสินใจ:</b> '+esc(tabletopQuestion(i.def,cur.team))+'</p>'+ 
+      '<label for="decision-'+i.id+'" style="font-size:12px;color:#ffe36b;font-weight:700">บันทึกมติ/คำสั่งของทีม (ต้องอภิปรายก่อนกดบันทึก)</label>'+ 
+      '<textarea id="decision-'+i.id+'" data-decision-for="'+esc(i.id)+'" placeholder="ระบุว่าใครตัดสินใจ ทำอะไร ที่ไหน ภายในเวลาเท่าใด และจะรายงานกลับอย่างไร..."></textarea>'+ 
+      '<button type="button" class="flow-commit" data-flow-commit="'+esc(i.id)+'">บันทึกมติทีม '+esc(team.name)+' แล้วไปขั้นถัดไป</button>'+ 
+      (logs?'<div class="flow-log"><b>บันทึกการตัดสินใจที่ผ่านมา</b>'+logs+'</div>':'')+'</div>';
+  }
+  return '<div class="flow-box done"><b>✓ ผ่านขั้นตอนการบัญชาการครบทุกทีมแล้ว</b><p>ทุกทีมมีมติและรายงานต่อศูนย์บัญชาการแล้ว ขั้นต่อไปให้ผู้เล่นเลือกการ์ดทรัพยากร/Item ที่เห็นว่าเหมาะสมกับเหตุการณ์นี้ การ์ดผิดประเภทหรือใช้ไม่สอดคล้องกับมติจะเสียทรัพยากรและคะแนน</p></div>';
+}
+function commitTabletopDecision(id){
   const inc=S.incidents.find(x=>x.id===id);
   if(!inc||inc.state!=='open'||inc.flowReady) return;
-  if(S.phase!=='play'||!S.running){toast('เริ่มจับเวลาและเปิดภารกิจก่อน จึงดำเนินขั้นตอนบัญชาการได้','bad');return;}
-  const step=inc.flowStep||0, cur=FLOW_STEPS[step];
-  if(!cur) return;
-  if(cur.team==='all'){
-    if(!inc.flowReports.includes(teamId)) inc.flowReports.push(teamId);
-    if(inc.flowReports.length===4){inc.flowStep++;inc.flowReports=[];}
-  }else if(Number(cur.team)===Number(teamId)){
-    inc.flowStep++;
-    if(inc.flowStep>=FLOW_STEPS.length) inc.flowReady=true;
-  }else{
-    toast('ขั้นตอนนี้รอ '+TEAM_DEF[cur.team].name+' ดำเนินการก่อน','bad');
-    return;
-  }
-  Sfx.good();
-  renderAll();
-  if(inc.flowReady) toast('ผ่านขั้นตอนบัญชาการแล้ว ทุกทีมร่วมดำเนินการครบ','good');
+  if(S.phase!=='play'||!S.running){toast('เริ่มจับเวลาและเปิดภารกิจก่อนจึงบันทึกมติได้','bad');return;}
+  const step=inc.flowStep||0, cur=TABLETOP_STAGES[step];
+  const field=$('[data-decision-for="'+CSS.escape(id)+'"]');
+  const note=(field?.value||'').trim();
+  if(note.length<12){toast('กรุณาบันทึกมติให้ชัดเจนอย่างน้อย 12 ตัวอักษร เช่น ผู้รับผิดชอบ การดำเนินการ และเวลารายงานกลับ','bad');field?.focus();return;}
+  inc.decisions=inc.decisions||[];
+  inc.decisions.push({team:cur.team,teamName:TEAM_DEF[cur.team].name,stage:cur.title,note:note,at:new Date().toISOString()});
+  inc.flowStep++;
+  if(inc.flowStep>=TABLETOP_STAGES.length) inc.flowReady=true;
+  Sfx.good(); renderAll();
+  if(inc.flowReady) toast('ทุกทีมบันทึกมติครบแล้ว · เลือกทรัพยากรตามแผนที่ตกลง','good');
+  else toast('บันทึกมติแล้ว · ส่งต่อให้ '+TEAM_DEF[TABLETOP_STAGES[inc.flowStep].team].name,'good');
 }
 
 function renderIncidents(){
@@ -1301,7 +1377,7 @@ function renderIncidents(){
     const cls='inc '+(i.state==='open'?'open':(i.state==='resolved'?'done':'fail'))+(tg?' target':'')+(selected?' selected':'');
     return '<div class="'+cls+'" data-id="'+i.id+'"'+(tg?' role="button" tabindex="0" aria-label="เลือกเหตุการณ์ '+esc(d.t)+'"':'')+'>'+
       '<div class="bub" style="background:'+m.c+'">'+ic(m.ic,22)+'</div>'+
-      '<div><h3>'+esc(d.t)+'</h3><p>'+esc(d.d)+'</p>'+flowMarkup(i)+'<details class="incident-steps"><summary>แนวทางแก้ไขเป็นขั้นตอน</summary><ol>'+stepsForIncident(d).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></details><div class="meta">'+status+
+      '<div><h3>'+esc(d.t)+'</h3><p>'+esc(d.d)+'</p>'+flowMarkup(i)+(i.state!=='open'?'<details class="incident-steps"><summary>แนวทางทบทวนหลังเหตุการณ์ (ใช้ใน AAR)</summary><ol>'+stepsForIncident(d).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></details>':'')+'<div class="meta">'+status+
       '<span class="dots" title="ต้องใช้การ์ด '+d.needs+' ใบ">'+dots+'</span>'+(d.needs>1&&i.state==='open'?'<span class="tag">ต้องใช้ '+d.needs+' ใบ</span>':'')+'</div></div></div>';
   }).join('');
 }
@@ -1432,6 +1508,7 @@ function onCard(tid,key){
   if(!S.running){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return; }
   const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
   if(!inc){ Sfx.soft(); toast('ขั้นแรก แตะหมุดสีแดงบนอาคารเพื่อเลือกจุดเกิดเหตุก่อน'); return; }
+  if(!inc.flowReady){ Sfx.soft(); toast('ยังใช้ Item ไม่ได้ · ให้ทั้ง 4 ทีมอภิปรายและบันทึกมติตามลำดับก่อน','bad'); return; }
   const t=S.teams[tid];
   if(!(TEAM_CARDS[t.kind]||[]).includes(key)){toast('Item นี้ไม่ใช่ทรัพยากรของทีม '+t.name,'bad');return;}
   if(key!=='manual'&&t.cards[key]<=0){ Sfx.bad(); toast('การ์ด'+CARD_DEF[key].s+'ของทีมนี้หมดแล้ว ลองแผน Manual','bad'); return; }
@@ -1512,7 +1589,7 @@ function beginRound(){
   chatT.forEach(clearTimeout); chatT=[]; Voice.stop();
   hideOv('ovAlert');
   S.incidents=R.inc.map(d=>({id:d.id,def:d,round:r,state:'open',plays:[],grade:null,
-    flowStep:0,flowReports:[],flowReady:false}));
+    flowStep:0,flowReports:[],flowReady:false,decisions:[]}));
   S.incidents.forEach(i=>{ S.all.push(i); const m=i.def.m; S.meters[m]=clamp(S.meters[m]-i.def.imp,0,100); S.minM[m]=Math.min(S.minM[m],S.meters[m]); });
   S.phase='play'; S.running=true; lastT=performance.now();
   renderAll(); lightning(); Sfx.siren(2);
@@ -1564,7 +1641,7 @@ function buildReport(){
   S.all.forEach(i=>{
     let sev=null;
     if(i.state==='failed') sev='failed'; else if(i.grade==='manual') sev='manual'; else if(i.grade==='ok'||i.plays.some(p=>p.q==='miss')) sev='ok';
-    if(sev) items.push({sev:sev,title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,
+    if(sev) items.push({sev:sev,title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,decisions:i.decisions||[],
       note:i.state==='failed'?'ไม่ได้รับการแก้ไขภายในเวลา':(i.grade==='manual'?'แก้ได้ด้วยระบบ Manual เท่านั้น':(i.plays.some(p=>p.q==='miss')?'มีการลงการ์ดผิดจุด เสียทรัพยากรไปเปล่า':'ต้องใช้วิธีแก้ขัด ไม่ใช่ทางที่ตรงที่สุด'))});
   });
   items.sort((a,b)=>SEV[b.sev].r-SEV[a.sev].r||a.round-b.round);
@@ -1598,8 +1675,10 @@ function showFinal(){
   rp.res.forEach(x=>{ html+='<div class="it"><h4>ทรัพยากรไม่พอ<span class="tag q-miss">ความเสี่ยงสูง</span></h4><p>'+esc(x)+'</p></div>'; });
   rp.items.forEach(x=>{
     html+='<div class="it"><h4>'+esc(x.title)+'<span class="tag '+SEV[x.sev].c+'">'+SEV[x.sev].n+'</span><span class="tag">รอบที่ '+x.round+'</span></h4>'+
-      '<p>'+esc(x.note)+'</p><p><b>จุดอ่อน:</b> '+esc(x.vuln)+'</p><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p></div>';
+      '<p>'+esc(x.note)+'</p>'+(x.decisions&&x.decisions.length?'<p><b>บันทึกมติ Tabletop:</b></p><ol>'+x.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>':'<p><b>บันทึกมติ Tabletop:</b> ไม่มีการบันทึกครบทุกทีม</p>')+'<p><b>จุดอ่อน:</b> '+esc(x.vuln)+'</p><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p></div>';
   });
+  const tabletopRecords=S.all.filter(i=>i.decisions&&i.decisions.length);
+  if(tabletopRecords.length){ html+='<div class="it"><h4>บันทึกการตัดสินใจ Tabletop ทุกเหตุการณ์</h4>'+tabletopRecords.map(i=>'<p><b>'+esc(i.def.t)+'</b></p><ol>'+i.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>').join('')+'</div>'; }
   rp.mets.forEach(m=>{ html+='<div class="it"><h4>'+esc(m.n)+' ตกต่ำสุด '+m.v+'%<span class="tag q-ok">ตัวชี้วัด</span></h4><p><b>ข้อเสนอ:</b> '+esc(m.tip)+'</p></div>'; });
   if(!html) html='<div class="it"><h4>ไม่พบจุดอ่อนสำคัญในการซ้อมครั้งนี้<span class="tag q-best">ผ่านเกณฑ์</span></h4><p>ทุกเหตุการณ์ถูกแก้ด้วยการ์ดที่ตรงจุด แนะนำให้เพิ่มระดับความยากในการซ้อมครั้งต่อไป</p></div>';
   $('#rep').innerHTML=html;
@@ -1607,7 +1686,9 @@ function showFinal(){
   rank.forEach((t,i)=>lines.push((i+1)+'. '+t.name+' '+score(t)+' คะแนน'));
   lines.push('','แก้ได้ '+done+' / '+S.all.length+' เหตุการณ์ ความพร้อมปลายเกม '+avg+'%','','จุดอ่อนและข้อเสนอ:');
   rp.res.forEach(x=>lines.push('- '+x));
-  rp.items.forEach(x=>lines.push('- ['+SEV[x.sev].n+'] รอบ '+x.round+' '+x.title+' | จุดอ่อน: '+x.vuln+' | ข้อเสนอ: '+x.fix));
+  rp.items.forEach(x=>{lines.push('- ['+SEV[x.sev].n+'] รอบ '+x.round+' '+x.title);(x.decisions||[]).forEach(d=>lines.push('  * '+d.teamName+': '+d.note));lines.push('  จุดอ่อน: '+x.vuln+' | ข้อเสนอ: '+x.fix);});
+  lines.push('','บันทึกการตัดสินใจ Tabletop:');
+  S.all.forEach(i=>{ if(i.decisions&&i.decisions.length){ lines.push('เหตุการณ์: '+i.def.t); i.decisions.forEach(d=>lines.push('- '+d.teamName+': '+d.note)); } });
   rp.mets.forEach(m=>lines.push('- '+m.n+' ตกต่ำสุด '+m.v+'% | ข้อเสนอ: '+m.tip));
   S.reportText=lines.join('\n');
   $('#rptText').value=S.reportText; $('#rptText').hidden=true;
@@ -1689,6 +1770,8 @@ function wire(){
   });
   $('#teams').addEventListener('click',e=>{ const b=e.target.closest('.cardb'); if(b) onCard(+b.dataset.team,b.dataset.card); });
   $('#incList').addEventListener('click',e=>{
+    const commit=e.target.closest('[data-flow-commit]');
+    if(commit){ e.preventDefault(); e.stopPropagation(); commitTabletopDecision(commit.dataset.flowCommit); return; }
     const n=e.target.closest('.inc.target'); if(n) onIncident(n.dataset.id);
   });
   $('#incList').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const n=e.target.closest('.inc.target'); if(n){ e.preventDefault(); onIncident(n.dataset.id); } } });
