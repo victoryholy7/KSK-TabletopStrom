@@ -201,7 +201,7 @@ button{font-family:inherit;color:inherit}
 .flow-box.done b{color:#8fffc9}
 
 /* stage */
-.stage{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:12px;align-items:start}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:12px;align-items:stretch}
 .scene-wrap{position:relative;border-radius:24px;overflow:hidden;box-shadow:0 0 0 3px #ffffff1c,0 18px 40px #0007;aspect-ratio:1200/540;background:var(--sky-a);max-width:100%}
 #scene{display:block;width:100%;height:100%}
 #rain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
@@ -398,9 +398,9 @@ button{font-family:inherit;color:inherit}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
 @keyframes smoke{from{transform:translateY(0) scale(.6);opacity:.8}to{transform:translateY(-30px) scale(1.5);opacity:0}}
 
-@media (min-width:1101px){.side{max-height:clamp(420px,42vw,720px)}}
+@media (min-width:1101px){.side{max-height:none;contain:size;min-height:0}}
 @media (max-width:1100px){
-  .side{max-height:none;overflow:visible}
+  .side{max-height:none;overflow:visible;contain:none}
   .teams{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stage{grid-template-columns:minmax(0,1fr)}
   .side{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
@@ -523,7 +523,7 @@ button{font-family:inherit;color:inherit}
     <div class="tgrid" id="setupTeams"></div>
     <section class="scenario-picker" aria-labelledby="scenarioTitle">
       <h2 id="scenarioTitle">เลือกเหตุการณ์สำหรับการซ้อม</h2>
-      <p>แสดงเหตุการณ์ครบทุกเหตุการณ์ รวม 4 รอบพื้นฐาน เลือกหรือยกเลิกได้ทีละเหตุการณ์ และสามารถเลือกได้หลายเหตุการณ์</p>
+      <p>เลือกไว้ให้ 5 เหตุการณ์แนะนำ (ครอบคลุมไฟ/IT/ผู้ป่วย/น้ำท่วม/สื่อสาร) พอดีกับเวลา 45–60 นาที เพิ่มหรือลดเหตุการณ์ได้ตามต้องการ</p>
       <div id="scenarioChoices" class="scenario-choices"></div>
       <div class="scenario-actions">
         <button class="btn sm ghost" type="button" id="btnAllScenarios">✓ เลือกทั้งหมด</button>
@@ -532,13 +532,13 @@ button{font-family:inherit;color:inherit}
     </section>
     <div class="opts">
       <label for="roundMin">เวลาต่อ 1 รอบเหตุการณ์
-        <select id="roundMin"><option value="3">3 นาที</option><option value="5" selected>5 นาที</option><option value="7">7 นาที</option></select>
+        <select id="roundMin"><option value="5">5 นาที</option><option value="8" selected>8 นาที</option><option value="10">10 นาที</option><option value="15">15 นาที</option></select>
       </label>
       <button class="btn go" id="btnStart" type="button">เริ่มภารกิจ · เปิดเสียง</button>
     </div>
     <div class="how">
       <div><b>1. ฟังข่าวด่วน</b><br>ผู้ดำเนินการอ่านสถานการณ์ แต่ละโต๊ะปรึกษากันตามคำถามชวนคิด</div>
-      <div><b>2. ลงการ์ด</b><br>แตะหมุดบนอาคารเพื่อเลือกเหตุการณ์ จากนั้นเลือกทีมและ Item ที่คิดว่าเหมาะสม แล้วกดยืนยัน</div>
+      <div><b>2. ลงการ์ด</b><br>แตะหมุดแดงบนอาคาร → 4 ทีมปรึกษากันแล้วตอบโจทย์ทีละทีม (5 ขั้น) → เลือกทีมและ Item ที่เหมาะ แล้วกดยืนยัน</div>
       <div><b>3. ให้คะแนน</b><br>จบรอบ ผู้ดำเนินการให้คะแนนความเร็ว ความถูกต้องตาม BCP และการประสานข้ามทีม</div>
     </div>
     <p style="margin:14px 0 0;color:var(--mute);font-size:13px">เหตุการณ์ทั้งหมดเป็นสถานการณ์สมมติเพื่อการซ้อมแผน ไม่ใช่เหตุการณ์จริง</p>
@@ -824,8 +824,8 @@ const BASE_ROUNDS=[
     vuln:'เส้นทางเข้าออกหลักมีเส้นทางเดียว เมื่อถูกตัดขาดแล้วขาดทางเลือก',
     fixit:'วางแผนเส้นทางสำรอง (ทางเรือ/ทางอากาศ) และประสานกู้ภัยล่วงหน้า'},
    {id:'r3-pharm',b:'pharm',t:'น้ำเข้าคลังยาและเวชภัณฑ์',d:'ยาและเวชภัณฑ์เสี่ยงเสียหาย ต้องย้ายขึ้นที่สูงและกั้นน้ำ',m:'patients',imp:25,needs:2,
-    sol:{oxy:'best',fix:'best',staff:'ok',amb:'ok',manual:'manual'},
-    hint:'ต้องมีทั้งแรงคนและทีมช่างช่วยกั้นน้ำ ย้ายของขึ้นที่สูง',
+    sol:{stock:'best',fix:'best',staff:'ok',amb:'ok',manual:'manual'},
+    hint:'คลังยาช่วยจัดลำดับยาวิกฤตและย้ายขึ้นที่สูง ทีมช่างช่วยกั้นน้ำ',
     vuln:'คลังยาอยู่ชั้นล่าง ไม่มีแผนย้ายของขึ้นที่สูงและขาดกำลังคนเมื่อเกิดเหตุพร้อมกัน',
     fixit:'ย้ายสต็อกยาวิกฤตไปชั้นสูง เตรียมกระสอบทราย และกำหนดทีมย้ายของล่วงหน้า'},
    
@@ -1328,7 +1328,8 @@ function eventTasksForTeam(d,teamId){
   }
   return [...new Set(matched)].slice(0,3);
 }
-function tabletopQuestion(d,teamId){
+function tabletopQuestion(d,teamId,stepIdx){
+  if(stepIdx===4) return 'หลังรับรายงานครบทั้ง 4 ทีมแล้ว ศูนย์บัญชาการจะตัดสินใจอย่างไรต่อ: ยกระดับ คงระดับ หรือลดระดับเหตุ ใครรับคำสั่งใด และจะติดตามผลเมื่อไร?';
   const where=BLD[d.b]?.n||'พื้นที่เกิดเหตุ';
   if(teamId===0) return 'จากรายงาน “'+d.t+'” ที่ '+where+' ข้อมูลใดต้องยืนยันก่อนตัดสินใจ ใครเป็นผู้บัญชาการ และเป้าหมาย 3 ข้อแรกของโรงพยาบาลคืออะไร?';
   if(teamId===1) return 'เหตุการณ์นี้กระทบผู้ป่วยกลุ่มใดก่อน มีผู้ป่วยพึ่งพาไฟฟ้า/ออกซิเจน/การรักษาต่อเนื่องหรือไม่ จะคุ้มครอง จัดลำดับ และรายงานผู้ป่วยอย่างไร?';
@@ -1339,7 +1340,17 @@ function tabletopQuestion(d,teamId){
   if(teamId===3) return 'ต้องประสานใครภายใน/ภายนอกโรงพยาบาลเพื่อให้ภารกิจเดินต่อ ใครเป็นผู้สื่อสารหลัก จะขอทรัพยากรอะไร และจะสื่อสารเฉพาะข้อมูลที่ยืนยันแล้วอย่างไร?';
   return 'เมื่อรับรายงานครบแล้ว จะเลือกแนวทางใด ใครรับคำสั่ง กำหนดเส้นตาย/รอบรายงานอย่างไร และมีเกณฑ์ใดที่จะยกระดับหรือยุติการตอบโต้เหตุ?';
 }
-function choiceOptionsFor(d,teamId){
+function seededShuffle(arr,key){
+  let h=2166136261; for(const c of String(key)){ h^=c.charCodeAt(0); h=Math.imul(h,16777619); }
+  const a=arr.slice(); for(let i=a.length-1;i>0;i--){ h=Math.imul(h^(h>>>15),2246822519)>>>0; const j=h%(i+1); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function choiceOptionsFor(d,teamId,stepIdx,seedKey){
+  if(stepIdx===4){ return seededShuffle([
+    {t:'ทบทวนรายงานทุกทีม จัดลำดับใหม่ และมอบหมายผู้รับผิดชอบพร้อมเวลารายงานกลับ',d:'ตัดสินใจยกระดับ/คงระดับ/ลดระดับเหตุ และบันทึกคำสั่งไว้ใน ICS',good:true},
+    {t:'ประกาศยุติเหตุทันทีเมื่อทีมแรกรายงานว่าแก้ไขแล้ว',d:'อาจยังมีจุดเสี่ยงค้างอยู่ในทีมอื่นที่ยังไม่ได้รายงาน'},
+    {t:'คงคำสั่งเดิมไว้ทั้งหมดโดยไม่ทบทวนรายงานใหม่',d:'ไม่ปรับตามสถานการณ์ที่เปลี่ยนไป ทรัพยากรอาจไม่ตรงจุด'}
+  ],seedKey+'-5'); }
   const task=eventTasksForTeam(d,teamId);
   const primary=task[0]||'ประเมินสถานการณ์และรายงานต่อศูนย์บัญชาการ';
   const optionsByTeam=[
@@ -1367,18 +1378,18 @@ function choiceOptionsFor(d,teamId){
   const opts=(optionsByTeam[teamId]||optionsByTeam[0]).map(x=>({...x}));
   // เพิ่มโจทย์เฉพาะเหตุการณ์ไว้ในคำอธิบายของตัวเลือกที่เหมาะสม
   opts[0].d += ' | ประเด็นเฉพาะเหตุการณ์: '+primary;
-  return opts;
+  return seededShuffle(opts,(seedKey||d.id)+'-'+teamId+'-'+(stepIdx||0));
 }
 function flowMarkup(i){
   if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
   if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>นำผลการเลือกและการใช้ทรัพยากรไปทบทวนใน AAR</p></div>';
   if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่ม Tabletop ที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเริ่มโจทย์ตัดสินใจ</p></div>';
   if(!i.flowReady){
-    const step=i.flowStep||0, cur=TABLETOP_STAGES[step], team=TEAM_DEF[cur.team], opts=choiceOptionsFor(i.def,cur.team);
+    const step=i.flowStep||0, cur=TABLETOP_STAGES[step], team=TEAM_DEF[cur.team], opts=choiceOptionsFor(i.def,cur.team,step,i.id);
     const logs=(i.decisions||[]).map(x=>'<div><b>'+esc(x.teamName)+' · '+esc(x.stage)+'</b><br>'+esc(x.note)+'</div>').join('');
     return '<div class="flow-box tabletop"><div class="flow-head"><b>วงรอบการบัญชาการและตัดสินใจ</b><span class="step-count">ขั้น '+(step+1)+' / '+TABLETOP_STAGES.length+'</span></div>'+ 
       '<div class="team-task"><b style="color:'+team.color+'">'+esc(cur.title)+'</b><p>'+esc(cur.role)+'</p><p style="margin-top:7px;color:#ffe7a1;font-weight:700">ภารกิจเฉพาะเหตุการณ์นี้</p><ul style="margin:4px 0 0;padding-left:20px;color:#dbe6ff">'+eventTasksForTeam(i.def,cur.team).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'+ 
-      '<p><b>โจทย์ตัดสินใจ:</b> '+esc(tabletopQuestion(i.def,cur.team))+'</p>'+ 
+      '<p><b>โจทย์ตัดสินใจ:</b> '+esc(tabletopQuestion(i.def,cur.team,step))+'</p>'+ 
       '<fieldset class="decision-choices"><legend>เลือกแนวทางที่ทีมจะดำเนินการ (เลือก 1 ข้อ)</legend>'+opts.map((o,n)=>'<label class="decision-option"><input type="radio" name="decision-'+esc(i.id)+'" value="'+n+'"><span><b>'+String.fromCharCode(65+n)+'. '+esc(o.t)+'</b><small>'+esc(o.d)+'</small></span></label>').join('')+'</fieldset>'+ 
       '<button type="button" class="flow-commit" data-flow-commit="'+esc(i.id)+'">ยืนยันคำตอบของทีมและส่งต่อ</button>'+ 
       (logs?'<div class="flow-log"><b>ผลการตัดสินใจที่ผ่านมา</b>'+logs+'</div>':'')+'</div>';
@@ -1392,9 +1403,10 @@ function commitTabletopDecision(id){
   const step=inc.flowStep||0, cur=TABLETOP_STAGES[step];
   const picked=$('input[name="decision-'+CSS.escape(id)+'"]:checked');
   if(!picked){toast('กรุณาเลือกแนวทางของทีมก่อนยืนยัน','bad');return;}
-  const opts=choiceOptionsFor(inc.def,cur.team), selected=opts[Number(picked.value)];
+  const opts=choiceOptionsFor(inc.def,cur.team,step,inc.id), selected=opts[Number(picked.value)];
   const correct=!!selected.good;
   inc.decisions=inc.decisions||[];
+  S.teams[cur.team].auto+=correct?4:-2;
   inc.decisions.push({team:cur.team,teamName:TEAM_DEF[cur.team].name,stage:cur.title,note:selected.t+' — '+selected.d,choice:selected.t,correct:correct,at:new Date().toISOString()});
   if(correct){
     inc.choiceScore=(inc.choiceScore||0)+10;
@@ -1471,27 +1483,53 @@ function toast(msg,kind){
   clearTimeout(toastT); toastT=setTimeout(()=>{ t.className='toast'; },2800);
 }
 
+const SCENARIO_ART={
+ 'r1-power':{e:'🌳',e2:'⚡',a:'#1b2a5c',b:'#e6a82c',cap:'ต้นไม้ล้มทับสายไฟ ไฟดับทั้ง รพ.',fx:'bolt',pat:'lines',dark:.25},
+ 'r1-roof':{e:'🏥',e2:'💧',a:'#20406e',b:'#5aa7d8',cap:'หลังคารั่ว น้ำหยดลงเตียงผู้ป่วย',fx:'rain',pat:'dots'},
+ 'r1-comm':{e:'📻',e2:'📡',a:'#3a2d73',b:'#8f7bea',cap:'วิทยุขาดช่วง ไม่มีผู้ประสานงาน',fx:'',pat:'lines'},
+ 'r2-his':{e:'🖥️',e2:'⚡',a:'#0b4f6c',b:'#20c3d6',cap:'ฟ้าผ่าเครือข่าย HOSxP ล่ม',fx:'bolt',pat:'grid',dark:.15},
+ 'r2-er':{e:'🚨',e2:'🩺',a:'#7a1f3d',b:'#ff6b81',cap:'ผู้บาดเจ็บเข้า ER พร้อมกัน 5 ราย',fx:'',pat:'lines'},
+ 'r3-road':{e:'⛰️',e2:'🚧',a:'#5a4630',b:'#c79a5c',cap:'ดินสไลด์ปิดเส้นทางเข้า-ออก',fx:'rain',pat:'dots'},
+ 'r3-pharm':{e:'💊',e2:'🌊',a:'#1d5f55',b:'#54c9a3',cap:'น้ำเข้าคลังยาและเวชภัณฑ์',fx:'water',pat:'grid'},
+ 'r4-fuel':{e:'⛽',e2:'🔌',a:'#5d3a12',b:'#f2a93b',cap:'น้ำมันเครื่องปั่นไฟใกล้หมด',fx:'',pat:'dots',dark:.12},
+ 'r4-crowd':{e:'📢',e2:'📰',a:'#3b4a8f',b:'#7ea2ff',cap:'สื่อและญาติแน่นหน้า รพ.',fx:'',pat:'grid'},
+ 'r4-tired':{e:'😴',e2:'⏰',a:'#2f2f5a',b:'#8a8ac4',cap:'บุคลากรอ่อนล้า ต้องสับเปลี่ยนเวร',fx:'',pat:'lines',dark:.3},
+ 'x-water':{e:'🚰',e2:'🚫',a:'#0b5b86',b:'#35b8e8',cap:'น้ำประปาไม่ไหลทั้งโรงพยาบาล',fx:'water',pat:'waves'},
+ 'x-oxygen':{e:'🫁',e2:'🔧',a:'#214a7a',b:'#7cc4f0',cap:'ท่อออกซิเจนเมนหลักรั่ว',fx:'',pat:'lines'},
+ 'x-birth':{e:'👶',e2:'🕯️',a:'#4a2a66',b:'#d88ac0',cap:'คลอดฉุกเฉินท่ามกลางความมืด',fx:'',pat:'dots',dark:.35},
+ 'x-injury':{e:'🤕',e2:'🚑',a:'#7a2a2a',b:'#ef7c6a',cap:'เจ้าหน้าที่บาดเจ็บหน้างาน',fx:'rain',pat:'lines'},
+ 'x-supply':{e:'📦',e2:'🚚',a:'#5a4a22',b:'#d8b45c',cap:'รถขนส่งยาเข้า รพ. ไม่ได้',fx:'rain',pat:'grid'},
+ 'x-waste':{e:'🗑️',e2:'☣️',a:'#34543a',b:'#94c36a',cap:'ขยะติดเชื้อล้น รถเก็บเข้าไม่ได้',fx:'',pat:'dots'},
+ 'x-treatment':{e:'🏭',e2:'💧',a:'#1d6070',b:'#5fc3c9',cap:'ระบบบำบัดน้ำเสียหยุดทำงาน',fx:'water',pat:'waves'},
+ 'x-solar':{e:'☀️',e2:'💥',a:'#7b4a14',b:'#f4c542',cap:'แผงโซลาร์บนหลังคาเสียหาย',fx:'bolt',pat:'lines',dark:.15},
+ 'x-aar':{e:'📋',e2:'✅',a:'#2f5a8c',b:'#a6d0ee',cap:'พายุสงบ ถอดบทเรียน AAR',fx:'',pat:'grid'}
+};
 function scenarioArtwork(r,index){
-  const name=(r.name+' '+r.head+' '+(r.badge||'')).toLowerCase();
-  let emoji='⚠️',a='#263D75',b='#6489C8',caption='สถานการณ์ฉุกเฉิน';
-  if(/พายุ|ฟ้าผ่า|ลม|วิกฤตซ้อน/.test(name)){emoji='⛈️';a='#26366F';b='#7188D0';caption='พายุและสภาพอากาศรุนแรง';}
-  if(/น้ำท่วม|น้ำป่า|น้ำประปา|น้ำไม่ไหล/.test(name)){emoji='🌊';a='#075477';b='#39A9C9';caption='ระบบน้ำและอุทกภัย';}
-  if(/ออกซิเจน|oxygen/.test(name)){emoji='🫁';a='#244477';b='#69B4D9';caption='ระบบก๊าซทางการแพทย์';}
-  if(/คลอด|ทารก/.test(name)){emoji='👶';a='#713E79';b='#D78DB2';caption='ผู้ป่วยฉุกเฉิน';}
-  if(/บาดเจ็บ|ผู้ป่วย|อุบัติเหตุ/.test(name)){emoji='🚑';a='#78344D';b='#E47780';caption='การช่วยเหลือผู้บาดเจ็บ';}
-  if(/ยา|เวชภัณฑ์|คลัง/.test(name)){emoji='💊';a='#285B55';b='#68B58E';caption='ยาและเวชภัณฑ์';}
-  if(/ขยะ|น้ำเสีย|สุขาภิบาล/.test(name)){emoji='♻️';a='#315847';b='#80B17D';caption='สุขาภิบาลและสิ่งแวดล้อม';}
-  if(/โซลาร์|solar|ไฟฟ้า|ไฟดับ|สายไฟ/.test(name)){emoji='⚡';a='#8B5424';b='#E8B64F';caption='ระบบไฟฟ้าและพลังงาน';}
-  if(/aar|บทเรียน|ฟื้นฟู|ผลกระทบต่อเนื่อง/.test(name)){emoji='📋';a='#36578B';b='#91B5D8';caption='ฟื้นฟูและถอดบทเรียน';}
+  const inc=r.inc&&r.inc[0];
+  const A=SCENARIO_ART[inc&&inc.id]||{e:'⚠️',e2:'🚨',a:'#263D75',b:'#6489C8',cap:'สถานการณ์ฉุกเฉิน',fx:'',pat:'lines'};
   const uid='scenario-art-'+index;
-  return '<span class="scenario-art" style="--art-a:'+a+';--art-b:'+b+'">'+
+  const pats={
+    lines:'<path d="M0 34L34 0" stroke="#fff" stroke-opacity=".12" stroke-width="2"/>',
+    dots:'<circle cx="9" cy="9" r="3.2" fill="#fff" fill-opacity=".15"/><circle cx="26" cy="25" r="2" fill="#fff" fill-opacity=".1"/>',
+    grid:'<path d="M0 0H34V34" fill="none" stroke="#fff" stroke-opacity=".1" stroke-width="2"/>',
+    waves:'<path d="M0 17Q8.5 5 17 17T34 17" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2"/>'
+  };
+  let fx='';
+  if(A.fx==='rain'||A.fx==='bolt'){
+    for(let i=0;i<24;i++){ const x=(i*53+index*17)%620, y=(i*37+index*11)%290; fx+='<path d="M'+x+' '+y+'l-9 24" stroke="#dff1ff" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>'; }
+  }
+  if(A.fx==='bolt') fx+='<polygon points="110,0 78,112 120,112 84,232 182,80 138,80 162,0" fill="#fff6a8" opacity=".88"/>';
+  if(A.fx==='water') fx+='<path d="M0 232Q75 202 150 232T300 232T450 232T600 232V300H0Z" fill="#7fe3ff" opacity=".55"/><path d="M0 260Q75 234 150 260T300 260T450 260T600 260V300H0Z" fill="#2ec4f3" opacity=".6"/>';
+  const dark=A.dark?'<rect width="600" height="300" fill="#050b1e" opacity="'+A.dark+'"/>':'';
+  return '<span class="scenario-art">'+
     '<svg viewBox="0 0 600 300" role="img" aria-label="ภาพประกอบ'+esc(r.name)+'" xmlns="http://www.w3.org/2000/svg">'+
-      '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+a+'"/><stop offset="1" stop-color="'+b+'"/></linearGradient><pattern id="'+uid+'-p" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M0 34L34 0" stroke="#fff" stroke-opacity=".10" stroke-width="2"/></pattern></defs>'+
-      '<rect width="600" height="300" fill="url(#'+uid+')"/><rect width="600" height="300" fill="url(#'+uid+'-p)"/>'+
-      '<circle cx="490" cy="45" r="115" fill="#fff" opacity=".10"/><circle cx="90" cy="270" r="135" fill="#07152f" opacity=".13"/>'+
-      '<path d="M0 255 Q130 215 260 255 T600 250 V300 H0Z" fill="#07152f" opacity=".16"/>'+
-      '<text x="300" y="184" text-anchor="middle" font-size="132">'+emoji+'</text>'+
-      '<text x="300" y="265" text-anchor="middle" font-family="sans-serif" font-size="21" font-weight="700" fill="#fff" fill-opacity=".88">'+caption+'</text>'+
+      '<defs><linearGradient id="'+uid+'" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+A.a+'"/><stop offset="1" stop-color="'+A.b+'"/></linearGradient>'+
+      '<pattern id="'+uid+'-p" width="34" height="34" patternUnits="userSpaceOnUse">'+(pats[A.pat]||pats.lines)+'</pattern></defs>'+
+      '<rect width="600" height="300" fill="url(#'+uid+')"/><rect width="600" height="300" fill="url(#'+uid+'-p)"/>'+dark+
+      '<circle cx="500" cy="50" r="110" fill="#fff" opacity=".10"/><circle cx="80" cy="280" r="130" fill="#07152f" opacity=".13"/>'+fx+
+      '<text x="285" y="185" text-anchor="middle" font-size="124">'+A.e+'</text>'+
+      '<text x="460" y="120" text-anchor="middle" font-size="68">'+A.e2+'</text>'+
+      '<text x="300" y="274" text-anchor="middle" font-family="Kanit,sans-serif" font-size="22" font-weight="800" fill="#fff" stroke="#0b1735" stroke-width="5" paint-order="stroke" stroke-linejoin="round">'+esc(A.cap)+'</text>'+
     '</svg></span>';
 }
 function buildScenarioChoices(){
@@ -1499,9 +1537,9 @@ function buildScenarioChoices(){
   box.innerHTML=PICKABLE_ROUNDS.map((r,i)=>{
     const level=r.lvl==='แดง'?'lv-red':r.lvl==='ส้ม'?'lv-orange':'lv-yellow';
     return '<label class="scenario-choice">'+
-      '<input type="checkbox" value="'+esc(r._pickId)+'" checked aria-label="เลือกเหตุการณ์ '+esc(r.name)+'">'+
+      '<input type="checkbox" value="'+esc(r._pickId)+'"'+(['base-0-r1-power','base-1-r2-his','base-1-r2-er','base-2-r3-pharm','base-3-r4-crowd'].includes(r._pickId)?' checked':'')+' aria-label="เลือกเหตุการณ์ '+esc(r.name)+'">'+
       scenarioArtwork(r,i)+
-      '<span class="scenario-info"><b>'+esc(r.name)+'</b><small>'+esc(r.head)+'</small>'+
+      '<span class="scenario-info"><b>'+esc(r.name)+'</b><small>'+esc((r.inc&&r.inc[0]&&r.inc[0].d)||r.head)+'</small>'+
       '<span class="scenario-status"><span class="scenario-check">เลือกแล้ว</span><span class="scenario-level '+level+'">ระดับ'+esc(r.lvl)+'</span></span></span></label>';
   }).join('');
 }
@@ -1818,9 +1856,10 @@ function wire(){
   $('#incList').addEventListener('click',e=>{
     const commit=e.target.closest('[data-flow-commit]');
     if(commit){ e.preventDefault(); e.stopPropagation(); commitTabletopDecision(commit.dataset.flowCommit); return; }
-    const n=e.target.closest('.inc.target'); if(n) onIncident(n.dataset.id);
+    if(e.target.closest('.flow-box, .incident-steps, input, label, textarea, button')) return;
+    const n=e.target.closest('.inc.target'); if(n&&S.targetId!==n.dataset.id) onIncident(n.dataset.id);
   });
-  $('#incList').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ const n=e.target.closest('.inc.target'); if(n){ e.preventDefault(); onIncident(n.dataset.id); } } });
+  $('#incList').addEventListener('keydown',e=>{ if(e.target.closest('.flow-box, input, textarea, button')) return; if(e.key==='Enter'||e.key===' '){ const n=e.target.closest('.inc.target'); if(n){ e.preventDefault(); onIncident(n.dataset.id); } } });
   $('#scene').addEventListener('click',e=>{ const p=e.target.closest('.pin.target'); if(p) onIncident(p.dataset.id); });
   $('#armBar').addEventListener('click',e=>{ if(e.target.closest('#btnDisarm')) disarm(); });
   $('#rdTable').addEventListener('input',e=>{
