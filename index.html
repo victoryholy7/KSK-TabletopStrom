@@ -1275,7 +1275,7 @@ function lightning(){
     b.setAttribute('transform','translate('+Math.round(rnd(120,1000))+' 0) scale('+rnd(1,1.5).toFixed(2)+')');
     b.animate([{opacity:1},{opacity:.15},{opacity:1},{opacity:.3},{opacity:1},{opacity:0}],{duration:650});
   }
-  const bm=document.createElement('div'); bm.className='boom'; bm.textContent='⚡ เปรี้ยง!'; sw.appendChild(bm); setTimeout(()=>bm.remove(),1200);
+  const bm=document.createElement('div'); bm.className='boom'; bm.textContent='⚡⚡'; sw.appendChild(bm); setTimeout(()=>bm.remove(),1200);
   Sfx.thunder(rnd(.05,.3));
 }
 /* ฟ้าผ่าเป็นระยะระหว่างพายุ (ทุกช่วงของเหตุการณ์ ยกเว้นตอนพายุสงบ) */
