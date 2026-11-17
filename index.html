@@ -1759,18 +1759,22 @@ function commitRound(){
 
 /* ---------- final report ---------- */
 const SEV={failed:{n:'ความเสี่ยงสูง',c:'q-miss',r:3},manual:{n:'ความเสี่ยงปานกลาง',c:'q-ok',r:2},ok:{n:'ควรปรับปรุง',c:'q-man',r:1}};
+function correctGuide(d){
+  const nm=q=>Object.keys(d.sol).filter(k=>d.sol[k]===q).map(k=>CARD_DEF[k].n).join(', ')||'-';
+  return '<p><b>วิธีแก้ที่ถูกต้องตามแผน BCP</b></p><ol><li>เปิดศูนย์บัญชาการ ICS (ทีมบัญชาการ)</li><li>ใช้ Item แก้ปัญหา รวม '+d.needs+' ใบ จาก: <b>'+esc(nm('best'))+'</b> (ใช้แก้ขัดได้: '+esc(nm('ok'))+')</li><li>สื่อสารและบันทึกเหตุ (ทีมบริหารและสื่อสาร)</li></ol><p><b>ขั้นตอนปฏิบัติจริง:</b></p><ol>'+stepsForIncident(d).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>';
+}
 function buildReport(){
   const items=[];
   S.all.forEach(i=>{
     let sev=null;
     if(i.state==='failed') sev='failed'; else if(i.grade==='manual') sev='manual'; else if(i.grade==='ok'||i.plays.some(p=>p.q==='miss')) sev='ok';
-    if(sev) items.push({sev:sev,title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,decisions:i.decisions||[],
+    if(sev) items.push({sev:sev,def:i.def,title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,decisions:i.decisions||[],
       note:i.state==='failed'?'ไม่ได้รับการแก้ไขภายในเวลา':(i.grade==='manual'?'แก้ได้ด้วยระบบ Manual เท่านั้น':(i.plays.some(p=>p.q==='miss')?'มีการลงการ์ดผิดจุด เสียทรัพยากรไปเปล่า':'ต้องใช้วิธีแก้ขัด ไม่ใช่ทางที่ตรงที่สุด'))});
   });
   items.sort((a,b)=>SEV[b.sev].r-SEV[a.sev].r||a.round-b.round);
   const res=[];
-  ['ics','gen','amb','fix','net','itkit','comms','staff','oxy','water','stock','env'].forEach(k=>{
-    const left=S.teams.reduce((a,t)=>a+t.cards[k],0), total=CARD_DEF[k].max*S.teams.length;
+  CARD_ORDER.filter(k=>!['manual','ics','comms'].includes(k)).forEach(k=>{
+    const own=S.teams.filter(t=>(TEAM_CARDS[t.kind]||[]).includes(k)), left=own.reduce((a,t)=>a+t.cards[k],0), total=CARD_DEF[k].max*own.length;
     if(left===0) res.push('การ์ด “'+CARD_DEF[k].n+'” ถูกใช้หมดทุกทีม ('+total+' ใบ) แสดงว่าทรัพยากรนี้ไม่เพียงพอเมื่อเกิดเหตุซ้อนหลายรอบ');
   });
   const mets=METERS.filter(m=>S.minM[m.k]<40).map(m=>({n:m.n,v:Math.round(S.minM[m.k]),tip:m.tip}));
@@ -1799,7 +1803,7 @@ function showFinal(){
   rp.res.forEach(x=>{ html+='<div class="it"><h4>ทรัพยากรไม่พอ<span class="tag q-miss">ความเสี่ยงสูง</span></h4><p>'+esc(x)+'</p></div>'; });
   rp.items.forEach(x=>{
     html+='<div class="it"><h4>'+esc(x.title)+'<span class="tag '+SEV[x.sev].c+'">'+SEV[x.sev].n+'</span><span class="tag">รอบที่ '+x.round+'</span></h4>'+
-      '<p>'+esc(x.note)+'</p>'+(x.decisions&&x.decisions.length?'<p><b>ตัวเลือก Tabletop:</b></p><ol>'+x.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>':'<p><b>ตัวเลือก Tabletop:</b> ไม่มีการบันทึกครบทุกทีม</p>')+'<p><b>จุดอ่อน:</b> '+esc(x.vuln)+'</p><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p></div>';
+      '<p>'+esc(x.note)+'</p>'+(x.decisions&&x.decisions.length?'<p><b>ตัวเลือก Tabletop:</b></p><ol>'+x.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>':'<p><b>ตัวเลือก Tabletop:</b> ไม่มีการบันทึกครบทุกทีม</p>')+'<p><b>จุดอ่อน:</b> '+esc(x.vuln)+'</p><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p>'+correctGuide(x.def)+'</div>';
   });
   html+='<div class="it"><h4>เฉลยการใช้ Item ทุกเหตุการณ์</h4>'+S.all.map(i=>{ const nm=q=>Object.keys(i.def.sol).filter(k=>i.def.sol[k]===q).map(k=>CARD_DEF[k].s).join(', ')||'-'; const used=i.plays.map(p=>CARD_DEF[p.key].s+' ('+Q[p.q].n+')').join(' → ')||'ไม่ได้ใช้ Item'; return '<p><b>'+esc(i.def.t)+'</b> · '+(i.state==='resolved'?'ผ่าน':'ไม่ผ่าน')+'<br>Item ที่ใช้: '+esc(used)+'<br>ตรงจุดที่สุด: '+esc(nm('best'))+' · ใช้แก้ขัดได้: '+esc(nm('ok'))+'</p>'; }).join('')+'</div>';
   const tabletopRecords=S.all.filter(i=>i.decisions&&i.decisions.length);
