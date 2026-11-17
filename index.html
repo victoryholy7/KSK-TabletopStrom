@@ -121,8 +121,33 @@
 .msg.in{animation:msgslide .6s cubic-bezier(.2,1.4,.4,1) forwards}@keyframes msgslide{0%{opacity:0;transform:translateX(-90px) scale(.8)}100%{opacity:1;transform:none}}
 .msg.in .bubble{animation:bpop .4s .25s both}@keyframes bpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 .msg.in .av{animation:bob 2.8s ease-in-out infinite,talk .45s 8 alternate}@keyframes talk{to{margin-bottom:5px}}
+
+/* STORM COMMAND v10: resource planning and readable BCP timeline */
+.flow-box{line-height:1.6}
+.flow-box.bcp-timeline{padding:12px;background:linear-gradient(145deg,#091630,#172d5d);border:1px solid #6f8dce;border-radius:13px}
+.bcp-title{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;color:#fff}
+.bcp-title strong{font-size:15px}
+.bcp-title span{font-size:12px;color:#ffe36b;background:#ffffff14;padding:4px 9px;border-radius:99px}
+.bcp-step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:9px;align-items:start;padding:10px;margin:8px 0;border:1px solid #ffffff20;border-radius:11px;background:#ffffff08;color:#eaf0ff}
+.bcp-step .num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#324875;color:#fff;font-weight:900}
+.bcp-step.current{background:#fff5c8;color:#17244d;border:2px solid #ffd93b;box-shadow:0 0 0 3px #ffd93b20}
+.bcp-step.current .num{background:#d49a00;color:#17244d}
+.bcp-step.done{background:#0c463c;border-color:#2fd08c66}
+.bcp-step.done .num{background:#2fd08c;color:#06301f}
+.bcp-step b{display:block;font-size:13px;line-height:1.5}
+.bcp-step small{display:block;margin-top:4px;font-size:12px;opacity:.86}
+.resource-plan{padding:12px;border:2px solid #ffd93b;border-radius:13px;background:linear-gradient(145deg,#1c2b50,#243b70);margin:8px 0}
+.resource-plan h4{margin:0 0 5px;color:#ffe36b;font-size:16px}
+.resource-plan p{margin:0 0 8px;color:#eaf0ff;font-size:13px}
+.resource-picked{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.resource-picked span{display:inline-flex;align-items:center;padding:5px 9px;border-radius:8px;background:#0b463b;border:1px solid #2fd08c;color:#d8ffed;font-size:12px}
+.resource-plan .flow-commit{width:100%;border:0;border-radius:10px;padding:12px;background:#ffd93b;color:#17244d;font:800 15px var(--f-display);cursor:pointer}
+.resource-plan .flow-commit:disabled{opacity:.45;cursor:not-allowed}
+.cardb.plan-picked{outline:3px solid #ffd93b;outline-offset:2px;filter:brightness(1.2);transform:translateY(-3px)}
+@media(max-width:600px){.bcp-step{padding:9px}.bcp-step b{font-size:14px}.bcp-step small{font-size:12px}}
+
 </style></head><body>
-<title>KSK: STORM COMMAND</title>
+<title>KSK: STORM COMMAND v10</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -586,7 +611,7 @@ button{font-family:inherit;color:inherit}
       <div class="kicker" style="color:#fff">Tabletop Exercise · 45 นาที</div>
       <h1>KSK: STORM COMMAND</h1>
       <div class="kicker" style="color:#FFD93B;font-weight:800;letter-spacing:.04em">บัญชาการฝ่าวิกฤตพายุ</div>
-      <p>ซ้อมแผนบัญชาการเหตุการณ์พายุถล่ม โรงพยาบาลเขาสุกิม จังหวัดจันทบุรี ใช้การ์ดทรัพยากรจำกัด ตัดสินใจภายใต้เวลาและสถานการณ์บีบบังคับ แล้วดูว่าจุดที่ต้องพัฒนาอยู่ตรงไหน</p>
+      <p>ซ้อมแผนบัญชาการเหตุการณ์พายุถล่ม โรงพยาบาลเขาสุกิม จังหวัดจันทบุรี ใช้การ์ดทรัพยากรจำกัด ตัดสินใจภายใต้เวลาบีบ แล้วดูว่าจุดอ่อนอยู่ตรงไหน</p>
     </div>
     <div class="tgrid" id="setupTeams"></div>
     <section class="scenario-picker" aria-labelledby="scenarioTitle">
@@ -1320,7 +1345,7 @@ const score=t=>t.auto+t.rate;
 const fmt=t=>{ t=Math.max(0,Math.ceil(t)); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); };
 
 
-const GAS_API_URL='https://script.google.com/macros/s/AKfycbxHUnrcRFR2nF9Zv_Pkd_pv_YGaJwAcbq7L0wfmyaT0gOPQ_nufwOP6j7SA2c_G8OVUYQ/exec';
+const GAS_API_URL='PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
 function saveSessionToSheet(stage){
   if(!GAS_API_URL || GAS_API_URL.indexOf('PASTE_')===0) return;
   const payload={stage:stage,sessionId:S.sessionId|| (S.sessionId='KSK-'+Date.now()),savedAt:new Date().toISOString(),
@@ -1515,23 +1540,26 @@ function choiceOptionsFor(d,teamId,stepIdx,seedKey){
 }
 function bcpTracker(i){
   const st=i.step||0, sq=bcpFor(i.def);
-  return '<div class="flow-box"><b>ขั้นตอน BCP ของเหตุการณ์นี้ ('+sq.length+' ขั้น)</b>'+sq.map((x,k)=>'<div style="margin:6px 0;padding:7px 9px;border-radius:9px;background:'+(k<st?'#0d3d35':k===st?'#ffd93b':'#1d2f5f')+';color:'+(k===st?'#17244d':'#fff')+';font-weight:700;font-size:13px">'+(k<st?'✓ ':k===st?'▶ ':'○ ')+(k+1)+'. '+esc(x.s)+'<br><small style="font-weight:500">ผู้รับผิดชอบ: '+esc(TEAM_DEF[x.team].name)+(x.solve?' · ขั้นใช้ Item แก้ปัญหา (ต้องใช้ '+i.def.needs+' ใบ)':(k===st?' · เลือกการ์ด “ปฏิบัติตาม SOP” ของทีมนี้':''))+'</small></div>').join('')+'</div>';
+  return '<div class="flow-box bcp-timeline"><div class="bcp-title"><strong>แผนปฏิบัติการ BCP เฉพาะเหตุการณ์</strong><span>'+Math.min(st+1,sq.length)+' / '+sq.length+' ขั้นตอน</span></div>'+sq.map((x,k)=>'<div class="bcp-step '+(k<st?'done':k===st?'current':'')+'"><span class="num">'+(k<st?'✓':k+1)+'</span><div><b>'+esc(x.s)+'</b><small>ผู้รับผิดชอบ: '+esc(TEAM_DEF[x.team].name)+(x.solve?' · ใช้ทรัพยากรที่เลือกไว้ '+i.def.needs+' รายการ':(k===st?' · ปฏิบัติตาม SOP ของทีม':' · ขั้นตอนประสานงาน/ควบคุมเหตุ'))+'</small></div></div>').join('')+'</div>';
 }
 function flowMarkup(i){
   if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
   if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>นำผลการเลือกและการใช้ทรัพยากรไปทบทวนใน AAR</p></div>';
-  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่มปฏิบัติการที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคาร แล้วใช้ Item ตามขั้นตอน BCP</p></div>';
-  if(!i.flowReady){
-    const step=i.flowStep||0, cur=TABLETOP_STAGES[step], team=TEAM_DEF[cur.team], opts=choiceOptionsFor(i.def,cur.team,step,i.id);
-    const logs=(i.decisions||[]).map(x=>'<div><b>'+esc(x.teamName)+' · '+esc(x.stage)+'</b><br>'+esc(x.note)+'</div>').join('');
-    return '<div class="flow-box tabletop"><div class="flow-head"><b>วงรอบการบัญชาการและตัดสินใจ</b><span class="step-count">ขั้น '+(step+1)+' / '+TABLETOP_STAGES.length+'</span></div>'+ 
-      '<div class="team-task"><b style="color:'+team.color+'">'+esc(cur.title)+'</b><p>'+esc(cur.role)+'</p><p style="margin-top:7px;color:#ffe7a1;font-weight:700">ภารกิจเฉพาะเหตุการณ์นี้</p><ul style="margin:4px 0 0;padding-left:20px;color:#dbe6ff">'+eventTasksForTeam(i.def,cur.team).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'+ 
-      '<p><b>โจทย์ตัดสินใจ:</b> '+esc(tabletopQuestion(i.def,cur.team,step))+'</p>'+ 
-      '<fieldset class="decision-choices"><legend>เลือกแนวทางที่ทีมจะดำเนินการ (เลือก 1 ข้อ)</legend>'+opts.map((o,n)=>'<label class="decision-option"><input type="radio" name="decision-'+esc(i.id)+'" value="'+n+'"><span><b>'+String.fromCharCode(65+n)+'. '+esc(o.t)+'</b><small>'+esc(o.d)+'</small></span></label>').join('')+'</fieldset>'+ 
-      '<button type="button" class="flow-commit" data-flow-commit="'+esc(i.id)+'">ยืนยันคำตอบของทีมและส่งต่อ</button>'+ 
-      (logs?'<div class="flow-log"><b>ผลการตัดสินใจที่ผ่านมา</b>'+logs+'</div>':'')+'</div>';
+  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่มปฏิบัติการที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเข้าสู่การเลือกทรัพยากรและขั้นตอน BCP</p></div>';
+  if(!i.resourceReady){
+    const picks=i.resourcePicks||[];
+    return '<div class="resource-plan"><h4>ขั้นเตรียมทรัพยากรก่อนปฏิบัติการ</h4><p>ให้แต่ละทีมประเมินสถานการณ์และเลือก Item ที่เห็นว่าเหมาะสมเอง จำนวน '+i.def.needs+' รายการ · ไม่มีคำใบ้ · เลือกผิดจะเสียคะแนนเมื่อเริ่มใช้ในขั้น BCP</p><div class="resource-picked">'+(picks.length?picks.map(x=>'<span>'+esc(TEAM_DEF[x.team].name)+' · '+esc(CARD_DEF[x.key].s)+'</span>').join(''):'<span style="background:#4b3510;border-color:#ffd93b;color:#ffe7a1">ยังไม่ได้เลือกทรัพยากร</span>')+'</div><button type="button" class="flow-commit" data-resource-commit="'+esc(i.id)+'" '+(picks.length!==i.def.needs?'disabled':'')+'>ยืนยันแผนทรัพยากร ('+picks.length+'/'+i.def.needs+')</button></div>';
   }
   return bcpTracker(i);
+}
+function commitResourcePlan(id){
+  const inc=S.incidents.find(x=>x.id===id);
+  if(!inc||inc.state!=='open'||inc.resourceReady) return;
+  if(S.phase!=='play'||!S.running){toast('เริ่มจับเวลาและเปิดภารกิจก่อนจึงยืนยันแผนทรัพยากรได้','bad');return;}
+  if((inc.resourcePicks||[]).length!==inc.def.needs){toast('เลือกทรัพยากรให้ครบ '+inc.def.needs+' รายการก่อนยืนยัน','bad');return;}
+  inc.resourceReady=true; inc.resourceLockedAt=new Date().toISOString();
+  toast('ยืนยันแผนทรัพยากรแล้ว · เริ่มปฏิบัติตาม BCP ทีละขั้น','good');
+  Sfx.good(); renderAll(); sayStep(inc,'เริ่มแผนปฏิบัติการ: ');
 }
 function commitTabletopDecision(id){
   const inc=S.incidents.find(x=>x.id===id);
@@ -1600,7 +1628,9 @@ function renderTeams(){
     const cards=CARD_ORDER.filter(k=>(TEAM_CARDS[t.kind]||[]).includes(k)).map(k=>{
       const c=CARD_DEF[k], n=(k==='manual'||k==='proc')?Infinity:t.cards[k];
       const armed=S.armed&&S.armed.team===t.id&&S.armed.key===k;
-      return '<button type="button" class="cardb'+(k==='manual'?' manual':'')+(n===0?' empty':'')+(armed?' armed':'')+'" style="--cc:'+c.c+'" data-team="'+t.id+'" data-card="'+k+'" aria-pressed="'+(armed?'true':'false')+'" aria-label="'+esc(t.name+' การ์ด '+c.n+(n===Infinity?' ไม่จำกัด':' เหลือ '+n))+'">'+
+      const target=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
+      const picked=!!(target&&!target.resourceReady&&(target.resourcePicks||[]).some(x=>x.team===t.id&&x.key===k));
+      return '<button type="button" class="cardb'+(k==='manual'?' manual':'')+(n===0?' empty':'')+(armed?' armed':'')+(picked?' plan-picked':'')+'" style="--cc:'+c.c+'" data-team="'+t.id+'" data-card="'+k+'" aria-pressed="'+(armed?'true':'false')+'" aria-label="'+esc(t.name+' การ์ด '+c.n+(n===Infinity?' ไม่จำกัด':' เหลือ '+n))+'">'+
         '<span class="n">'+(n===Infinity?'∞':'×'+n)+'</span><span class="ico">'+ic(k,20)+'</span><span>'+esc(c.s)+'</span></button>';
     }).join('');
     return '<article class="team" style="--tc:'+t.color+'"><div class="team-h">'+avatar(t.kind,t.skin)+
@@ -1746,7 +1776,7 @@ function renderArm(){
   const inc=S.incidents.find(i=>i.id===S.targetId);
   if(!inc||inc.state!=='open'){ bar.hidden=true; return; }
   bar.hidden=false;
-  bar.innerHTML='<span>เลือกจุดเกิดเหตุ: “'+esc(inc.def.t)+'” แล้ว · ขั้นต่อไปเลือกทีมและ Item ที่คิดว่าเหมาะสม</span><button type="button" class="btn sm" id="btnDisarm">ยกเลิกจุด</button>';
+  bar.innerHTML='<span>เลือกเหตุการณ์: “'+esc(inc.def.t)+'” · '+(inc.resourceReady?'กำลังดำเนินการตามขั้นตอน BCP':'เลือก Item จากการ์ดของแต่ละทีมให้ครบ '+inc.def.needs+' รายการก่อนเริ่ม BCP')+'</span><button type="button" class="btn sm" id="btnDisarm">ยกเลิกจุด</button>';
 }
 function disarm(){ S.targetId=null; S.armed=null; renderArm(); renderTeams(); renderIncidents(); renderPins(); }
 function onCard(tid,key){
@@ -1756,9 +1786,29 @@ function onCard(tid,key){
   if(!inc){ Sfx.soft(); toast('ขั้นแรก แตะหมุดสีแดงบนอาคารเพื่อเลือกจุดเกิดเหตุก่อน'); return; }
   const t=S.teams[tid];
   if(!(TEAM_CARDS[t.kind]||[]).includes(key)){toast('Item นี้ไม่ใช่ทรัพยากรของทีม '+t.name,'bad');return;}
+  if(!inc.resourceReady){
+    if(key==='proc'||key==='ics'||key==='manual'){toast('กรุณาเลือกทรัพยากรที่ทีมประเมินว่าเหมาะกับเหตุการณ์ ไม่เลือกการ์ดขั้นตอนหรือ Manual ในช่วงเตรียมแผน','bad');return;}
+    if(t.cards[key]<=0){toast('ทรัพยากรนี้หมดแล้ว กรุณาเลือก Item อื่น','bad');return;}
+    inc.resourcePicks=inc.resourcePicks||[];
+    const at=inc.resourcePicks.findIndex(x=>x.team===tid&&x.key===key);
+    if(at>=0){inc.resourcePicks.splice(at,1);toast('นำ '+CARD_DEF[key].s+' ออกจากแผนทรัพยากร');}
+    else if(inc.resourcePicks.length>=inc.def.needs){toast('เลือกครบ '+inc.def.needs+' รายการแล้ว หากต้องการเปลี่ยนให้กด Item ที่เลือกไว้เพื่อเอาออกก่อน');return;}
+    else {inc.resourcePicks.push({team:tid,key:key});toast('เพิ่ม '+CARD_DEF[key].s+' ในแผนทรัพยากร · '+inc.resourcePicks.length+'/'+inc.def.needs,'good');}
+    Sfx.click(); renderAll(); return;
+  }
   const steps=bcpFor(inc.def), si=inc.step||0, st=steps[si];
   if(st.solve){
-    if(key==='proc'||key==='ics'){ Sfx.soft(); toast('ขั้น '+(si+1)+'/'+steps.length+' เป็นขั้นแก้ปัญหา: เลือก Item ทรัพยากรที่ตรงกับเหตุการณ์ (หรือแผน Manual)','bad'); return; }
+    if(key==='proc'||key==='ics'){ Sfx.soft(); toast('ขั้นนี้ต้องใช้ทรัพยากรจากแผนที่ทีมเลือกไว้ก่อนเริ่ม BCP','bad'); return; }
+    const planned=(inc.resourcePicks||[]).some(x=>x.team===tid&&x.key===key);
+    const alreadyUsed=(inc.plays||[]).some(x=>x.team===tid&&x.key===key);
+    if(alreadyUsed){toast('Item นี้ถูกใช้ไปแล้วในเหตุการณ์นี้','bad');return;}
+    if(!planned){
+      const allPlannedAttempted=(inc.resourcePicks||[]).every(x=>(inc.plays||[]).some(p=>p.team===x.team&&p.key===x.key));
+      if(!allPlannedAttempted){Sfx.bad();toast('ให้ทดลองใช้ Item ที่วางแผนไว้ก่อน หากยังแก้ปัญหาไม่ได้จึงเลือกทรัพยากรเพิ่มเติมได้','bad');return;}
+      if(t.cards[key]<=0){toast('ทรัพยากรนี้หมดแล้ว กรุณาเลือก Item อื่น','bad');return;}
+      inc.resourcePicks.push({team:tid,key:key,additional:true});
+      toast('เพิ่มทรัพยากรสำรองเข้าปฏิบัติการ · มีการเลือกเพิ่มเติมหลังแผนเดิมไม่เพียงพอ','bad');
+    }
   }else{
     if(tid!==st.team){
       Sfx.bad(); t.auto-=1; inc.log=inc.log||[]; inc.log.push({n:si,exp:st.team,team:tid,key:key,q:'wrong',solve:false});
@@ -1799,6 +1849,7 @@ function bcpFor(d){
   const steps=texts.map((x,k)=>({s:x,team:meta.t[k],solve:k===meta.s}));
   if(steps[0].team!==0) steps.unshift({s:'ประกาศเหตุ “'+d.t+'” เปิดศูนย์บัญชาการ (ICS) แต่งตั้งผู้บัญชาการเหตุการณ์ ยืนยันข้อมูลที่ทราบ/ยังไม่ทราบ และกำหนดเป้าหมายความปลอดภัยลำดับแรก',team:0});
   steps.push({s:'ทบทวนผลและบันทึกเหตุการณ์ใน ICS ยืนยันว่าความเสี่ยงหลักถูกควบคุมแล้วก่อนปิดเหตุ และจดข้อเสนอปรับปรุง: '+d.fixit,team:0,log:true});
+  while(steps.length<5) steps.splice(steps.length-1,0,{s:'ตรวจสอบผลการดำเนินงานกับหน่วยบริการ ยืนยันความปลอดภัยและบันทึกสถานะต่อศูนย์บัญชาการ',team:0,solve:false});
   d._bcp=steps; return steps;
 }
 function chkEnd(){ if(S.incidents.every(i=>i.state!=='open')&&!S.ending){ S.ending=true; clearTimeout(skipT); skipT=setTimeout(()=>{ S.ending=false; endRound(); },1800); } }
@@ -1884,12 +1935,12 @@ function beginRound(){
   chatT.forEach(clearTimeout); chatT=[]; Voice.stop();
   hideOv('ovAlert');
   S.incidents=R.inc.map(d=>({id:d.id,def:d,round:r,state:'open',plays:[],grade:null,
-    flowStep:0,flowReports:[],flowReady:true,step:0,decisions:[],log:[]}));
+    flowStep:0,flowReports:[],flowReady:true,resourcePicks:[],resourceReady:false,step:0,decisions:[],log:[]}));
   S.incidents.forEach(i=>{ S.all.push(i); const m=i.def.m; S.meters[m]=clamp(S.meters[m]-i.def.imp,0,100); S.minM[m]=Math.min(S.minM[m],S.meters[m]); });
   S.phase='play'; S.running=true; lastT=performance.now();
   renderAll(); lightning(); Sfx.siren(2);
   setTimeout(()=>sayStep(S.incidents[0],'รับทราบเหตุ “'+S.incidents[0].def.t+'”! เริ่ม '),900);
-  toast('เหตุการณ์เกิดขึ้น! เวลาเริ่มเดินแล้ว','bad');
+  toast('เหตุการณ์เกิดขึ้น! เลือกหมุดสีแดง แล้ววางแผนเลือกทรัพยากรก่อนเริ่ม BCP','bad');
 }
 function endRound(){
   if(S.phase!=='play') return;
@@ -2124,6 +2175,7 @@ function wire(){
   });
   $('#teams').addEventListener('click',e=>{ const b=e.target.closest('.cardb'); if(b) onCard(+b.dataset.team,b.dataset.card); });
   $('#incList').addEventListener('click',e=>{
+    const plan=e.target.closest('[data-resource-commit]'); if(plan){commitResourcePlan(plan.dataset.resourceCommit);return;}
     const commit=e.target.closest('[data-flow-commit]');
     if(commit){ e.preventDefault(); e.stopPropagation(); commitTabletopDecision(commit.dataset.flowCommit); return; }
     if(e.target.closest('.flow-box, .incident-steps, input, label, textarea, button')) return;
