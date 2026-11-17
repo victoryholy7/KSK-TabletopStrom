@@ -229,7 +229,7 @@ button{font-family:inherit;color:inherit}
 .flow-box.done b{color:#8fffc9}
 
 /* stage */
-.stage{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:12px;align-items:stretch}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:12px;align-items:stretch}
 .scene-wrap{position:relative;border-radius:24px;overflow:hidden;box-shadow:0 0 0 3px #ffffff1c,0 18px 40px #0007;aspect-ratio:1200/540;background:var(--sky-a);max-width:100%}
 #scene{display:block;width:100%;height:100%}
 #rain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:4}
@@ -691,6 +691,39 @@ button{font-family:inherit;color:inherit}
   .pl-card{flex:0 0 156px}
   .pl-nav{margin-bottom:6px}
 }
+
+/* ===== v15: step-by-step live console on the side + step markers on the map ===== */
+.console{border:2px solid #6e8fd2;background:linear-gradient(160deg,#10224f,#0b1735)}
+.cs-idle{text-align:center;padding:18px 8px;color:#fff}.cs-idle b{font:800 18px var(--f-display);color:#ffe36b}.cs-idle p{margin:6px 0 0;color:#c9d8fb;font-size:14px}
+.cs-head{display:flex;align-items:center;gap:10px;padding:9px;border-radius:14px;background:color-mix(in srgb,var(--sc) 26%,#14244b);border:2px solid var(--sc)}
+.cs-num{min-width:58px;height:58px;border-radius:16px;background:var(--sc);color:#14224a;display:grid;place-items:center;align-content:center;line-height:1}
+.cs-num b{font:900 28px var(--f-hud)}.cs-num small{font:700 12px var(--f-hud);margin-top:-2px}
+.cs-ttl{min-width:0}.cs-ttl small{display:block;color:#c9d8fb;font-size:12px;line-height:1.35}.cs-ttl b{display:block;color:#fff;font:800 17px var(--f-display);line-height:1.3}
+.cs-track{display:flex;gap:5px;margin:9px 0}.cs-track i{flex:1;height:10px;border-radius:99px;background:#ffffff22}
+.cs-track i.done{background:#36e5a2}.cs-track i.cur{background:var(--sc);box-shadow:0 0 10px var(--sc)}
+.cs-timer{display:flex;align-items:center;gap:9px}.cs-tbar{flex:1;height:13px;border-radius:99px;background:#ffffff22;overflow:hidden}
+.cs-tbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2fd08c,#ffd93b);transition:width .2s linear}
+.cs-tbar i.warn{background:#ff4d4f;animation:blink .5s steps(2) infinite}
+#csSec{font:700 24px var(--f-hud);color:var(--volt);min-width:34px;text-align:right}
+.cs-box{margin:9px 0;padding:9px 11px;border-radius:12px;background:#ffffff10;border-left:5px solid var(--sc)}
+.cs-box small{display:block;color:#8ddcff;font-weight:800;font-size:12px;margin-bottom:3px}.cs-box p{margin:0;color:#fff;font-size:14px;line-height:1.55}
+.cs-box.pick{border-left-color:#ffd93b;display:block}
+.cs-cancel{display:flex;justify-content:flex-end;margin:6px 0 0}.cs-cancel .pl-ghost{padding:4px 12px;font-size:12px;background:transparent;border-color:#ffffff55}
+.armbar{font-size:15px;line-height:1.55;padding:9px 14px}.armbar span{font-weight:600}.armbar span b{font-weight:800}
+.cs-need{display:flex;align-items:center;gap:6px;margin-top:7px}.cs-need i{width:18px;height:18px;border-radius:50%;background:#ffffff2a;border:2px solid #ffd93b}.cs-need i.f{background:#36e5a2;border-color:#36e5a2}.cs-need span{font-size:12px;color:#ffe36b;font-weight:800}
+.cs-team{display:flex;align-items:center;gap:9px;color:#fff}.cs-team .av{width:38px;height:46px;animation:none;background:color-mix(in srgb,var(--tc) 30%,transparent);border-radius:11px;flex:none}
+.cs-team div{flex:1;min-width:0}.cs-team small{display:block;color:#c9d8fb;font-size:11px}.cs-team b{font:800 15px var(--f-display);color:var(--tc);filter:brightness(1.25)}
+.cs-hint{margin:8px 0;padding:8px 10px;border-radius:10px;background:#3b3208;border:1px solid #ffd93b;color:#fff3b0;font-size:13px;line-height:1.5}
+.cs-fb{margin:8px 0;padding:8px 10px;border-radius:10px;font-size:13px;line-height:1.5;font-weight:700}
+.cs-fb.ok{background:#0d4a3d;border:1px solid #36e5a2;color:#c8ffe6}.cs-fb.bad{background:#4a2233;border:1px solid #ff7a7c;color:#ffd6d6;animation:shake .4s linear}
+.console .pl-inv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;gap:8px;margin-bottom:2px}
+.console .pl-card{flex:none}
+.stp-ring{fill:none;stroke:#fff;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:ping 1.3s ease-out infinite}
+#runner{pointer-events:none}#runner circle{filter:drop-shadow(0 3px 6px #0009)}
+.score-pop{position:absolute;z-index:8;transform:translate(-50%,-50%);font:900 32px var(--f-display);pointer-events:none;-webkit-text-stroke:2px #102044;paint-order:stroke fill;animation:scorePop 1.2s ease-out forwards}
+.score-pop.good{color:#6dffb8}.score-pop.bad{color:#ff7a7c}
+@keyframes scorePop{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}20%{opacity:1;transform:translate(-50%,-60%) scale(1.25)}100%{opacity:0;transform:translate(-50%,-170%) scale(1)}}
+@media(max-width:700px){.cs-ttl b{font-size:15px}.cs-num{min-width:50px;height:50px}.score-pop{font-size:24px}}
 </style>
 <div class="app" id="app">
   <header class="hud">
@@ -729,6 +762,7 @@ button{font-family:inherit;color:inherit}
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </section>
     <aside class="side">
+      <section class="panel console" id="console" aria-live="polite" hidden></section>
       <section class="panel">
         <h2>เหตุการณ์ที่ต้องจัดการ</h2>
         <div class="inc-list" id="incList"></div>
@@ -741,12 +775,11 @@ button{font-family:inherit;color:inherit}
     </aside>
   </main>
 
-  <section class="planner" id="planner" aria-label="แผงวางแผนภารกิจ BCP" hidden></section>
   <section class="howto" aria-label="วิธีเล่นแบบทีละขั้นตอน">
-    <div><b><span class="step-no">1</span>แตะจุดมาร์ค</b>แตะหมุดสีแดงบนอาคารที่เกิดเหตุ เพื่อเลือกปัญหาที่จะจัดการ</div>
-    <div><b><span class="step-no">2</span>คิดเลือกทีม</b>พิจารณาว่าทีมใดควรรับผิดชอบ ไม่จำเป็นต้องเลือกทีมเดิมทุกเหตุการณ์</div>
-    <div><b><span class="step-no">3</span>แตะขั้นตอน → ใส่ Item</b>แตะการ์ดขั้นตอนสีต่าง ๆ แล้วแตะอุปกรณ์ในคลัง อุปกรณ์จะลงช่องของขั้นนั้นทันที</div>
-    <div><b><span class="step-no">4</span>ยืนยันและติดตาม</b>ยืนยันการใช้ Item ดูผลคะแนน/ความพร้อม และใช้การ์ดเพิ่มหากเหตุการณ์ยังไม่จบ</div>
+    <div><b><span class="step-no">1</span>ตามจุดบนแผนที่</b>วงกลมเลขสีจะปรากฏทีละจุดตามขั้นตอนของเหตุการณ์ พร้อมตัวละครวิ่งไปยังจุดนั้น</div>
+    <div><b><span class="step-no">2</span>อ่านแผงด้านข้าง</b>แผงจะอธิบายว่าขั้นนี้คืออะไร ต้องทำอะไร และทีมใดรับผิดชอบ</div>
+    <div><b><span class="step-no">3</span>แตะ Item ให้ทัน</b>มีเวลาจำกัดต่อขั้น เลือกผิดหัก 2 คะแนน หมดเวลาหัก 2 คะแนน ขอคำใบ้ได้ในราคา 1 คะแนน</div>
+    <div><b><span class="step-no">4</span>ถูกก็ไปต่อ</b>เลือกถูกจะเดินไปขั้นถัดไป จบเหตุการณ์มีเฉลยและสรุป AAR ทุกขั้นตอน</div>
   </section>
   <section class="teams" id="teams" aria-label="ทีมและการ์ดทรัพยากร"></section>
   <div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker"></div></div>
@@ -1406,6 +1439,7 @@ function buildScene(){
   Object.keys(BLD).forEach(k=>{ const b=BLD[k]; s+='<text class="lbl" x="'+(k==='gate'?500:b.x)+'" y="528">'+esc(b.n)+'</text>'; });
   s+='<polygon id="bolt" points="14,0 -14,140 6,140 -26,300 40,110 14,110 44,0" fill="#FFFBD0" stroke="#fff" stroke-width="3" opacity="0" style="filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 22px #bfe0ff)"/>';
   s+='<g id="pins"></g>';
+  s+='<g id="runner" style="opacity:0;transform:translate(0px,0px);transition:transform 1.1s ease-in-out,opacity .3s"><circle r="21" fill="#fff" stroke="#FFD93B" stroke-width="4"/><text id="runnerIc" text-anchor="middle" y="9" font-size="26">🎖️</text></g>';
   return s;
 }
 
@@ -1689,60 +1723,89 @@ function choiceOptionsFor(d,teamId,stepIdx,seedKey){
 const STEP_COLORS=['#FF6B6B','#FFA94D','#FFD43B','#69DB7C','#38D9A9','#4DABF7','#9775FA'];
 const TEAM_EMO=['🎖️','🩺','🛠️','📢'];
 function picksOf(i,k){const p=(i.stepItems||[])[k];return Array.isArray(p)?p:(p?[p]:[]);}
-function bcpTracker(i){
-  const st=i.step||0, sq=bcpFor(i.def), sel=Number.isInteger(i.planStep)?Math.max(st,Math.min(i.planStep,sq.length-1)):st;
-  const filled=sq.filter((x,k)=>picksOf(i,k).length>0).length, ready=!!i.resourceReady;
-  let h='<div class="pl" data-inc="'+esc(i.id)+'">';
-  h+='<div class="pl-top"><div><h2>🎮 ภารกิจ: '+esc(i.def.t)+'</h2><small>'+(ready?'ด่านที่ 2 · ลงมือปฏิบัติทีละขั้น (แก้แผนได้อีก '+((i.revisionsLeft??2))+' ครั้ง)':'ด่านที่ 1 · จัดแผน: แตะขั้นตอน แล้วแตะอุปกรณ์ลงช่อง ('+filled+'/'+sq.length+' ขั้นพร้อม)')+'</small></div><div class="pl-bar">'+
-    sq.map((x,k)=>'<i style="--sc:'+STEP_COLORS[k%7]+'" class="'+(k<st?'done':picksOf(i,k).length?'ready':'')+'"></i>').join('')+'</div></div>';
-  h+='<div class="pl-grid"><div class="pl-steps">';
-  sq.forEach((x,k)=>{
-    const done=k<st, team=TEAM_DEF[x.team], col=STEP_COLORS[k%7], picks=picksOf(i,k), active=(k===sel&&!done);
-    h+='<div class="pl-step'+(done?' done':'')+(active?' active':'')+'" style="--sc:'+col+';--tc:'+team.color+'" data-pl-step="'+k+'" role="button" tabindex="0" aria-label="ขั้นที่ '+(k+1)+'">'+
-      '<div class="pl-num">'+(done?'✓':(k+1))+'</div><div class="pl-body"><div class="pl-title">'+esc(x.s)+'</div>'+
-      '<div class="pl-team"><span>'+TEAM_EMO[x.team]+' '+esc(team.name)+'</span>'+(x.solve?'<span class="pl-key">⭐ ขั้นแก้ปัญหา ต้องใช้ Item ที่ตรงปัญหา</span>':'')+'</div>'+
-      '<div class="pl-slots">'+(picks.length?picks.map(p=>{const c=CARD_DEF[p.key];return '<button type="button" class="pl-chip'+(i.lastAdd===k+':'+p.key?' pop':'')+'" style="--item:'+c.c+'" '+(done?'disabled':'data-bcp-remove="'+k+'" data-bcp-key="'+p.key+'" title="แตะเพื่อนำออก"')+'>'+ic(p.key,20)+'<span>'+esc(c.s)+'</span>'+(done?'':'<em>✕</em>')+'</button>';}).join(''):'<span class="pl-empty">'+(active?'👇 แตะอุปกรณ์ในคลังเพื่อลงช่องนี้':(done?'—':'ยังไม่มี Item · แตะการ์ดนี้เพื่อจัด'))+'</span>')+'</div></div></div>';
-  });
-  h+='</div>';
-  const cur=sq[sel], team=TEAM_DEF[cur.team], col=STEP_COLORS[sel%7];
-  h+='<aside class="pl-tray" style="--tc:'+team.color+';--sc:'+col+'">';
-  if(i.animating){
-    h+='<div class="pl-live"><div class="pl-live-ic">⚡</div><b>กำลังปฏิบัติภารกิจ!</b><p>'+esc(TEAM_DEF[sq[st].team].name)+' กำลังนำอุปกรณ์ไปใช้งาน</p><div class="bcp-live-track"><i></i></div></div>';
-  }else{
-    const avail=CARD_ORDER.filter(key=>(TEAM_CARDS[S.teams[cur.team].kind]||[]).includes(key));
-    const chosen=picksOf(i,sel);
-    h+='<div class="pl-tray-h"><div class="pl-av">'+avatar(S.teams[cur.team].kind,S.teams[cur.team].skin)+'</div><div><small>ขั้นที่ '+(sel+1)+' · '+TEAM_EMO[cur.team]+' ทีมที่รับผิดชอบ</small><b>'+esc(team.name)+'</b></div></div>';
-    h+='<details class="pl-know"><summary>💡 รู้ไหม? หน้าที่ของทีมนี้</summary><p>'+esc(TABLETOP_STAGES[cur.team].role)+'</p></details>';
-    h+='<div class="pl-inv-label">🎒 คลังอุปกรณ์ · แตะเพื่อลงขั้นที่ '+(sel+1)+'</div><div class="pl-inv">';
-    h+=avail.map(key=>{const c=CARD_DEF[key], stock=(key==='manual'||key==='proc')?Infinity:S.teams[cur.team].cards[key], on=chosen.some(p=>p.key===key&&p.team===cur.team);
-      return '<button type="button" class="pl-card'+(on?' on':'')+(stock===0?' out':'')+'" style="--item:'+c.c+'" data-bcp-pick-team="'+cur.team+'" data-bcp-pick="'+key+'" '+(stock===0?'disabled':'')+'><span class="ci">'+ic(key,28)+'</span><span><b>'+esc(c.n)+'</b><small>'+(on?'✓ ลงช่องแล้ว':(stock===Infinity?'ใช้ได้ไม่จำกัด':'เหลือ '+stock+' ชิ้น'))+'</small><small>'+esc(c.d)+'</small></span></button>';}).join('');
-    h+='</div><div class="pl-nav"><button type="button" class="pl-ghost" data-pl-nav="-1" '+(sel<=st?'disabled':'')+'>◀ ขั้นก่อน</button><button type="button" class="pl-ghost" data-pl-nav="1" '+(sel>=sq.length-1?'disabled':'')+'>ขั้นถัดไป ▶</button></div>';
-    if(!ready){
-      h+='<button type="button" class="pl-go" data-resource-commit="'+esc(i.id)+'" '+(filled!==sq.length?'disabled':'')+'>🚨 ยืนยันแผน ('+filled+'/'+sq.length+') และเริ่มภารกิจ</button><div class="pl-hint">ต้องใส่ Item อย่างน้อย 1 ชิ้นให้ครบทุกขั้น</div>';
-    }else{
-      h+='<button type="button" class="pl-go" data-bcp-run="'+esc(i.id)+'" '+(!picksOf(i,st).length?'disabled':'')+'>▶ ลงมือทำขั้นที่ '+(st+1)+' จาก '+sq.length+'</button><div class="pl-hint">'+(sel!==st?'ขั้นนี้ยังไม่ถึงคิว · แก้ไขแผนล่วงหน้าได้':'ตรวจ Item ในช่องให้ดีก่อนลงมือ')+'</div>';
-    }
+const STEP_SECS=30;
+function stepName(st,k){
+  if(st.log) return '📝 ทบทวนและปิดเหตุ';
+  if(k===0&&st.team===0) return '📣 ประกาศเหตุ เปิดศูนย์บัญชาการ';
+  if(st.solve) return '🔧 แก้ปัญหาหลัก (ใช้ Item!)';
+  return ['🎖️ สั่งการและประเมินสถานการณ์','🩺 ดูแลผู้ป่วยและบริการ','🛠️ ควบคุมอันตรายและระบบ','📢 ประสานงานและสื่อสาร'][st.team];
+}
+function stepRule(st,def){
+  return st.solve?'นี่คือ “จุดแก้ปัญหา” เลือก Item ทรัพยากรที่ตรงกับปัญหาของเหตุการณ์ ต้องใช้ '+Math.max(1,def.needs)+' ชิ้น เลือกผิดจะเสียคะแนนและความพร้อมลด'
+    :'ขั้นตอนทั่วไป ไม่ควรสิ้นเปลืองทรัพยากรวิกฤต ให้เลือกการ์ด “ปฏิบัติตามขั้นตอน (SOP)” หรือชุดสั่งการ/สื่อสารของทีม';
+}
+function stepHintTxt(st,def){
+  return st.solve?def.hint:'ใช้ SOP (ไม่จำกัด) หรือชุดสั่งการ/สื่อสารของทีม แล้วเก็บ Item ทรัพยากรไว้ใช้ในขั้นแก้ปัญหา';
+}
+function stepLoc(def,st){
+  const med=['ipd','er','clinic','pharm'];
+  if(st.team===0) return BLD.cmd;
+  if(st.team===1) return med.includes(def.b)?BLD[def.b]:BLD.er;
+  if(st.team===2) return BLD[def.b];
+  return BLD.gate;
+}
+function stepPoints(inc){
+  const sq=bcpFor(inc.def), locs=sq.map(x=>stepLoc(inc.def,x)), cnt={}, idx=[];
+  locs.forEach((l,k)=>{const key=l.x+','+l.y; idx[k]=cnt[key]||0; cnt[key]=(cnt[key]||0)+1;});
+  return locs.map((l,k)=>{const key=l.x+','+l.y; return {x:l.x+(idx[k]-(cnt[key]-1)/2)*34,y:l.y-58};});
+}
+function scorePop(x,y,txt,good){
+  const w=$('#sceneWrap'); if(!w) return;
+  const d=document.createElement('div'); d.className='score-pop '+(good?'good':'bad'); d.textContent=txt;
+  d.style.left=(x/12)+'%'; d.style.top=(y/5.4)+'%'; w.appendChild(d); setTimeout(()=>d.remove(),1300);
+}
+function renderConsole(){
+  const el=$('#console'); if(!el) return;
+  if(S.phase!=='play'){ el.hidden=true; el.innerHTML=''; return; }
+  el.hidden=false;
+  const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
+  if(!inc){
+    const open=S.incidents.some(i=>i.state==='open');
+    el.innerHTML=open?'<div class="cs-idle"><b>👆 แตะหมุดสีแดงบนแผนที่</b><p>เพื่อเริ่มปฏิบัติการ ระบบจะพาไปทีละขั้นตอนและอธิบายว่าต้องทำอะไร</p></div>':'<div class="cs-idle"><b>✅ จัดการเหตุการณ์ครบแล้ว</b></div>';
+    return;
   }
-  h+='</aside></div></div>'; return h;
+  const sq=bcpFor(inc.def), n=sq.length, k=Math.min(inc.step||0,n-1), st=sq[k], def=inc.def, col=STEP_COLORS[k%7], team=S.teams[st.team];
+  const need=st.solve?Math.max(1,def.needs):1;
+  const avail=CARD_ORDER.filter(key=>(TEAM_CARDS[team.kind]||[]).includes(key));
+  let h='<div class="cs" style="--sc:'+col+';--tc:'+team.color+'">';
+  h+='<div class="cs-head"><div class="cs-num"><b>'+(k+1)+'</b><small>/ '+n+'</small></div><div class="cs-ttl"><small>🚨 '+esc(def.t)+'</small><b>'+esc(stepName(st,k))+'</b></div></div>';
+  h+='<div class="cs-track">'+sq.map((x,j)=>'<i class="'+(j<k?'done':j===k?'cur':'')+'" style="--sc:'+STEP_COLORS[j%7]+'"></i>').join('')+'</div>';
+  h+='<div class="cs-timer"><div class="cs-tbar"><i id="csBar" class="'+(inc.stepLeft<=8?'warn':'')+'" style="width:'+Math.max(0,inc.stepLeft/STEP_SECS*100)+'%"></i></div><span id="csSec">'+Math.ceil(Math.max(0,inc.stepLeft))+'</span></div>';
+  h+='<div class="cs-cancel"><button type="button" class="pl-ghost" data-cs-cancel="1">✕ ยกเลิกจุด</button></div>';
+  h+='<div class="cs-box pick"><small>🎯 เลือก Item ยังไง</small><p>'+esc(stepRule(st,def))+'</p>'+(st.solve?'<div class="cs-need">'+Array.from({length:need},(_,j)=>'<i class="'+(j<(inc.solveCount||0)?'f':'')+'"></i>').join('')+'<span>ใส่แล้ว '+(inc.solveCount||0)+' / '+need+'</span></div>':'')+'</div>';
+  h+='<div class="cs-team">'+avatar(team.kind,team.skin)+'<div><small>ทีมที่รับผิดชอบขั้นนี้</small><b>'+esc(team.name)+'</b></div><button type="button" class="pl-ghost" data-cs-hint="1" '+(inc.hintFor===k?'disabled':'')+'>💡 คำใบ้ −1</button></div>';
+  if(inc.hintFor===k) h+='<div class="cs-hint">💡 '+esc(stepHintTxt(st,def))+'</div>';
+  if(inc.fb) h+='<div class="cs-fb '+(inc.fb.ok?'ok':'bad')+'">'+esc(inc.fb.text)+'</div>';
+  h+='<div class="pl-inv-label">🎒 แตะเลือก Item ของ'+esc(team.name)+'</div><div class="pl-inv">';
+  h+=avail.map(key=>{const c=CARD_DEF[key], stock=(key==='manual'||key==='proc')?Infinity:team.cards[key];
+    return '<button type="button" class="pl-card'+(stock===0?' out':'')+'" style="--item:'+c.c+'" data-cs-team="'+st.team+'" data-cs-key="'+key+'" '+(stock===0?'disabled':'')+'><span class="ci">'+ic(key,28)+'</span><span><b>'+esc(c.n)+'</b><small>'+(stock===Infinity?'ใช้ได้ไม่จำกัด':'เหลือ '+stock+' ชิ้น')+'</small><small>'+esc(c.d)+'</small></span></button>';}).join('');
+  h+='</div></div>';
+  el.innerHTML=h;
 }
-function renderPlanner(){
-  const el=$('#planner'); if(!el) return;
-  const inc=S.incidents.find(x=>x.id===S.targetId&&x.state==='open');
-  if(!inc||S.phase!=='play'){ el.hidden=true; el.innerHTML=''; return; }
-  const inv=$('.pl-inv',el), sx=inv?inv.scrollLeft:0, wasHidden=el.hidden;
-  el.hidden=false; el.innerHTML=bcpTracker(inc); inc.lastAdd=null;
-  const inv2=$('.pl-inv',el); if(inv2) inv2.scrollLeft=sx;
+function renderPlanner(){ renderConsole(); renderArm(); }
+function updateStepTimerDom(inc){
+  const bar=$('#csBar'), sec=$('#csSec');
+  if(bar){ bar.style.width=Math.max(0,inc.stepLeft/STEP_SECS*100)+'%'; bar.classList.toggle('warn',inc.stepLeft<=8); }
+  if(sec) sec.textContent=Math.ceil(Math.max(0,inc.stepLeft));
 }
-function navStep(id,dir){
-  const inc=S.incidents.find(x=>x.id===id&&x.state==='open'); if(!inc) return;
-  const sq=bcpFor(inc.def), st=inc.step||0, cur=Number.isInteger(inc.planStep)?inc.planStep:st;
-  selectBcpStep(id,Math.max(st,Math.min(sq.length-1,cur+dir)));
+function stepTimeout(inc){
+  const sq=bcpFor(inc.def), k=inc.step||0, st=sq[k], pt=stepPoints(inc)[k];
+  S.teams[st.team].auto-=2; inc.timeouts=(inc.timeouts||0)+1; inc.stepLeft=STEP_SECS;
+  inc.fb={ok:false,text:'⏰ หมดเวลาตัดสินใจ! หัก 2 คะแนน · เวลาเริ่มนับใหม่ รีบเลือกเลย'};
+  scorePop(pt.x,pt.y,'−2',false); Sfx.bad(); say(st.team,'ช้าไปแล้ว! ต้องตัดสินใจเร็วกว่านี้','bad',3500); renderAll();
+}
+function useHint(){
+  const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
+  if(!inc||S.phase!=='play'||!S.running) return;
+  const k=inc.step||0; if(inc.hintFor===k) return;
+  const st=bcpFor(inc.def)[k]; inc.hintFor=k; inc.hints=(inc.hints||0)+1; S.teams[st.team].auto-=1;
+  const pt=stepPoints(inc)[k]; scorePop(pt.x,pt.y,'−1',false); Sfx.soft(); renderAll();
 }
 function flowMarkup(i){
   if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>ดำเนินการครบทุกขั้นตอนแล้ว · ดูคะแนนและ Item ที่ถูก/ผิดได้ในสรุป AAR</p></div>';
   if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>นำผลการเลือก Item และคะแนนที่ถูกหักไปทบทวนใน AAR</p></div>';
   if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่มปฏิบัติการที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเข้าสู่การวาง Item ในแต่ละขั้นตอน BCP</p></div>';
-  return '<div class="flow-box"><b>🎯 กำลังปฏิบัติการ</b><p>วางแผนและใส่ Item ที่แผงภารกิจสีสันด้านล่างหน้าจอ ↓</p></div>';
+  return '<div class="flow-box"><b>🎯 กำลังปฏิบัติการ</b><p>ดูคำอธิบายขั้นตอนและแตะเลือก Item ที่แผงด้านบนก่อนหมดเวลา</p></div>';
 }
 function commitResourcePlan(id){
   const inc=S.incidents.find(x=>x.id===id);
@@ -1768,18 +1831,53 @@ function removeBcpItem(id,k,key){
 }
 function placeBcpItem(tid,key){
   const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
-  if(!inc||inc.animating) return false;
-  const steps=bcpFor(inc.def), k=Number.isInteger(inc.planStep)?inc.planStep:(inc.step||0), st=steps[k];
-  if(!st||k<(inc.step||0)){toast('เลือกขั้นตอน BCP ที่ยังไม่ดำเนินการก่อน','bad');return true;}
-  if(tid!==st.team){toast('ขั้นนี้เป็นหน้าที่ของ '+TEAM_DEF[st.team].name+' กรุณาเลือก Item จากทีมที่รับผิดชอบ','bad');Sfx.bad();return true;}
-  const t=S.teams[tid];
-  if(key!=='proc'&&key!=='manual'&&t.cards[key]<=0){toast('Item นี้หมดแล้ว กรุณาเลือกทรัพยากรอื่น','bad');return true;}
-  const arr=Array.isArray(inc.stepItems[k])?inc.stepItems[k]:(inc.stepItems[k]?[inc.stepItems[k]]:[]);
-  const idx=arr.findIndex(x=>x.key===key&&x.team===tid);
-  if(inc.resourceReady){ if((inc.revisionsLeft??2)<=0){toast('ใช้สิทธิ์แก้ไขแผนครบ 2 ครั้งแล้ว','bad');return true;} inc.revisionsLeft--; }
-  if(idx>=0){arr.splice(idx,1);toast('นำ '+CARD_DEF[key].s+' ออกจากขั้นที่ '+(k+1)+' แล้ว'+(inc.resourceReady?' · ใช้สิทธิ์แก้ไข 1 ครั้ง':''),'good');}
-  else {arr.push({team:tid,key:key});toast('เพิ่ม '+CARD_DEF[key].s+' ในขั้นที่ '+(k+1)+' แล้ว'+(inc.resourceReady?' · ใช้สิทธิ์แก้ไข 1 ครั้ง':''),'good');}
-  inc.stepItems[k]=arr; inc.lastAdd=(idx>=0)?null:(k+':'+key); Sfx.click(); renderAll(); return true;
+  if(!inc) return true;
+  if(S.phase!=='play'||!S.running||S.hold){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return true; }
+  if(inc.lock) return true;
+  const sq=bcpFor(inc.def), k=inc.step||0, st=sq[k], def=inc.def, t=S.teams[tid], pt=stepPoints(inc)[k];
+  if(!(TEAM_CARDS[t.kind]||[]).includes(key)) return true;
+  if(tid!==st.team){
+    t.auto-=1; inc.log.push({n:k,exp:st.team,team:tid,key:key,q:'wrong',solve:!!st.solve});
+    inc.fb={ok:false,text:'✗ ขั้นนี้เป็นหน้าที่ของ '+S.teams[st.team].name+' ไม่ใช่ '+t.name+' · หัก 1 คะแนน'};
+    scorePop(pt.x,pt.y,'−1',false); Sfx.bad(); say(tid,'ขั้นนี้ไม่ใช่หน้าที่ของเรา!','bad',3000); renderAll(); return true;
+  }
+  const free=(key==='manual'||key==='proc');
+  if(!free&&t.cards[key]<=0){ toast('Item นี้หมดแล้ว เลือกอย่างอื่น','bad'); return true; }
+  let q;
+  if(key==='manual') q='manual';
+  else if(st.solve) q=def.sol[key]||'miss';
+  else q=FREE_PROC.includes(key)?'best':'miss';
+  if(!free) t.cards[key]--;
+  t.used[key]=(t.used[key]||0)+1;
+  const frac=Math.max(0,inc.stepLeft)/STEP_SECS, bonus=q==='miss'?0:(frac>.66?3:(frac>.33?1:0));
+  t.auto+=Q[q].pt+bonus;
+  inc.plays.push({team:tid,key:key,q:q,step:k});
+  inc.log.push({n:k,exp:st.team,team:tid,key:key,q:q,solve:!!st.solve});
+  if(q==='miss'){
+    S.meters[def.m]=clamp(S.meters[def.m]-6,0,100); S.minM[def.m]=Math.min(S.minM[def.m],S.meters[def.m]); if(S.meters[def.m]<=0) S.lost=true;
+    inc.fb={ok:false,text:'✗ '+CARD_DEF[key].n+' ไม่ตรงกับขั้นนี้ · หัก '+Math.abs(Q.miss.pt)+' คะแนน'+(free?'':' และเสีย Item 1 ใบ')+' · '+(st.solve?'อ่านปัญหาอีกครั้ง หรือกดขอคำใบ้':'ขั้นทั่วไปให้ใช้ SOP หรือชุดสั่งการ/สื่อสาร')};
+    scorePop(pt.x,pt.y,String(Q.miss.pt),false); Sfx.bad(); say(tid,CARD_DEF[key].n+' ไม่ตรงขั้นตอน!','bad',3500);
+    renderAll();
+    if(S.lost){ toast('เหตุการณ์ลุกลามเกินควบคุม!','bad'); setTimeout(endRound,900); }
+    return true;
+  }
+  if(q!=='manual'&&st.solve){ S.meters[def.m]=clamp(S.meters[def.m]+def.imp/Math.max(1,def.needs)*Q[q].f,0,100); }
+  inc.solveCount=(inc.solveCount||0)+1;
+  const need=st.solve?Math.max(1,def.needs):1;
+  scorePop(pt.x,pt.y,'+'+(Q[q].pt+bonus),true); say(tid,CARD_DEF[key].n+' ✓ ดำเนินการแล้ว','ok',3500);
+  if(inc.solveCount<need){
+    inc.fb={ok:true,text:'✓ '+CARD_DEF[key].n+' ถูกต้อง · ใส่แล้ว '+inc.solveCount+'/'+need+' เลือกเพิ่มอีก '+(need-inc.solveCount)+' ชิ้น'};
+    Sfx.good(); renderAll(); return true;
+  }
+  inc.lock=true; setTimeout(()=>{ inc.lock=false; },700);
+  inc.step=k+1; inc.solveCount=0; inc.stepLeft=STEP_SECS;
+  inc.fb={ok:true,text:'✓ ขั้นที่ '+(k+1)+' สำเร็จ! '+(q==='best'?'ตรงจุดที่สุด':q==='ok'?'ใช้แก้ขัดได้':'ใช้ระบบ Manual คะแนนน้อย')};
+  if(inc.step>=sq.length){
+    inc.state='resolved'; inc.grade=inc.plays.reduce((w,p)=>RANK[p.q]<RANK[w]?p.q:w,'best'); S.targetId=null;
+    toast('ผ่านเหตุการณ์ครบทุกขั้นตอน BCP!','good');
+  }else toast('✓ ขั้นที่ '+(k+1)+'/'+sq.length+' เสร็จแล้ว · ไปยังจุดถัดไป','good');
+  Sfx.good(); afterStep(inc); renderArm(); renderAll(); chkEnd();
+  return true;
 }
 function runBcpStep(id){
   const inc=S.incidents.find(x=>x.id===id&&x.state==='open');
@@ -1863,7 +1961,20 @@ function renderIncidents(){
   }).join('');
 }
 function renderPins(){
-  const g=$('#pins'); let s='';
+  const g=$('#pins'), run=$('#runner'); let s='';
+  const tgt=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
+  let cur=null,curTeam=0;
+  if(tgt){
+    const sq=bcpFor(tgt.def), st=Math.min(tgt.step||0,sq.length-1), pts=stepPoints(tgt), shown=pts.slice(0,st+1);
+    if(shown.length>1) s+='<polyline points="'+shown.map(p=>p.x+','+p.y).join(' ')+'" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round" opacity=".85" style="pointer-events:none"/>';
+    shown.forEach((p,k)=>{
+      const done=k<st, col=STEP_COLORS[k%7];
+      s+='<g transform="translate('+p.x+' '+p.y+')" style="pointer-events:none">'+(done?'':'<circle class="stp-ring" r="20"/>')+
+        '<circle r="'+(done?13:17)+'" fill="'+(done?'#36e5a2':col)+'" stroke="#fff" stroke-width="3"/>'+
+        '<text y="6" text-anchor="middle" font-family="Kanit,sans-serif" font-weight="800" font-size="'+(done?15:18)+'" fill="#14224a">'+(done?'✓':(k+1))+'</text></g>';
+    });
+    cur=pts[st]; curTeam=sq[st].team;
+  }
   S.incidents.forEach(i=>{
     if(i.state!=='open') return;
     const p=BLD[i.def.b], selected=S.targetId===i.id;
@@ -1872,6 +1983,14 @@ function renderPins(){
       '<text class="gl" y="7" text-anchor="middle" font-family="Kanit,sans-serif" font-weight="800" font-size="22" fill="#fff">!</text></g>';
   });
   g.innerHTML=s;
+  if(run){
+    if(cur){
+      const tr='translate('+cur.x+'px,'+(cur.y-38)+'px)';
+      if(run.style.opacity!=='1'){ run.style.transition='none'; run.style.transform=tr; void run.getBoundingClientRect(); run.style.transition=''; run.style.opacity='1'; }
+      else run.style.transform=tr;
+      const ri=$('#runnerIc'); if(ri) ri.textContent=TEAM_EMO[curTeam];
+    }else run.style.opacity='0';
+  }
 }
 function updateFx(){
   const sc=$('#scene'), open=S.incidents.filter(i=>i.state==='open');
@@ -2034,7 +2153,7 @@ function renderArm(){
   const inc=S.incidents.find(i=>i.id===S.targetId);
   if(!inc||inc.state!=='open'){ bar.hidden=true; return; }
   bar.hidden=false;
-  bar.innerHTML='<span>เลือกเหตุการณ์: “'+esc(inc.def.t)+'” · '+(inc.resourceReady?'ดำเนิน BCP ทีละขั้น · แก้แผนได้อีก '+(inc.revisionsLeft??2)+' ครั้ง':'วาง Item ลงในแต่ละขั้นตอน BCP ก่อนเริ่ม')+'</span><button type="button" class="btn sm" id="btnDisarm">ยกเลิกจุด</button>';
+  const _sq=bcpFor(inc.def), _k=Math.min(inc.step||0,_sq.length-1); bar.innerHTML='<span><b>📋 ขั้นที่ '+(_k+1)+'/'+_sq.length+' · '+esc(stepName(_sq[_k],_k))+'</b> — ต้องทำ: '+esc(_sq[_k].s)+'</span>';
 }
 function disarm(){ S.targetId=null; S.armed=null; renderArm(); renderTeams(); renderIncidents(); renderPins(); renderPlanner(); }
 function onCard(tid,key){
@@ -2052,7 +2171,6 @@ function onIncident(id){
   const inc=S.incidents.find(i=>i.id===id); if(!inc||inc.state!=='open') return;
   S.targetId=id; Sfx.click();
   renderArm(); renderIncidents(); renderPins(); renderPlanner();
-  setTimeout(()=>{ const pl=$('#planner'); if(pl&&!pl.hidden) pl.scrollIntoView({behavior:'smooth',block:'start'}); },80);
   toast('เลือกจุดเกิดเหตุแล้ว · เลือกทีมและ Item ที่เหมาะสม','good');
 }
 /* ---------- playing a card ---------- */
@@ -2128,12 +2246,13 @@ function beginRound(){
   chatT.forEach(clearTimeout); chatT=[]; Voice.stop();
   hideOv('ovAlert');
   S.incidents=R.inc.map(d=>({id:d.id,def:d,round:r,state:'open',plays:[],grade:null,
-    flowStep:0,flowReports:[],flowReady:true,resourcePicks:[],resourceReady:false,step:0,planStep:0,stepItems:bcpFor(d).map(()=>[]),revisionsLeft:2,animating:false,decisions:[],log:[]}));
+    flowStep:0,flowReports:[],flowReady:true,resourcePicks:[],resourceReady:false,step:0,planStep:0,stepItems:bcpFor(d).map(()=>[]),revisionsLeft:2,animating:false,decisions:[],log:[],stepLeft:STEP_SECS,solveCount:0,hintFor:-1,fb:null,timeouts:0,hints:0,lock:false}));
   S.incidents.forEach(i=>{ S.all.push(i); const m=i.def.m; S.meters[m]=clamp(S.meters[m]-i.def.imp,0,100); S.minM[m]=Math.min(S.minM[m],S.meters[m]); });
   S.phase='play'; S.running=true; lastT=performance.now();
-  renderAll(); lightning(); Sfx.siren(2);
+  if(S.incidents.length===1) S.targetId=S.incidents[0].id;
+  renderArm(); renderAll(); lightning(); Sfx.siren(2);
   setTimeout(()=>sayStep(S.incidents[0],'รับทราบเหตุ “'+S.incidents[0].def.t+'”! เริ่ม '),900);
-  toast('เหตุการณ์เกิดขึ้น! เลือกหมุดสีแดง แล้ววางแผนเลือกทรัพยากรก่อนเริ่ม BCP','bad');
+  toast('เหตุการณ์เกิดขึ้น! อ่านขั้นตอนแล้วแตะ Item ที่แผงด้านข้างให้ทันเวลา','bad');
 }
 function endRound(){
   if(S.phase!=='play') return;
@@ -2215,9 +2334,9 @@ function afterActionHtml(i){
   const d=i.def, steps=bcpFor(d), log=i.log||[], st=i.step||0, done=i.state==='resolved';
   const nm=q=>Object.keys(d.sol).filter(k=>d.sol[k]===q).map(k=>CARD_DEF[k].n).join(', ')||'-';
   const wrongN=log.filter(x=>x.q==='wrong'||x.q==='miss').length;
-  const itemWrong=log.filter(x=>x.q==='miss').length, teamWrong=log.filter(x=>x.q==='wrong').length, deduction=itemWrong*Math.abs(Q.miss.pt)+teamWrong;
+  const itemWrong=log.filter(x=>x.q==='miss').length, teamWrong=log.filter(x=>x.q==='wrong').length, tmo=i.timeouts||0, hn=i.hints||0, deduction=itemWrong*Math.abs(Q.miss.pt)+teamWrong+tmo*2+hn;
   let h='<div class="aa"><div class="aa-head '+(done?'ok':'bad')+'"><b>'+(done?'✓ ผ่านเหตุการณ์':'✗ ไม่ผ่านเหตุการณ์ภายในเวลา')+' · '+esc(d.t)+'</b><span>ผ่านขั้นตอน BCP '+Math.min(st,steps.length)+' / '+steps.length+' ขั้น · เลือกผิด '+wrongN+' ครั้ง</span></div>';
-  h+='<div class="aa-penalty"><b>สรุปคะแนนที่ถูกหักจากการเลือก Item/ทีมผิด</b><span>Item ไม่ตรง '+itemWrong+' ครั้ง × '+Math.abs(Q.miss.pt)+' คะแนน = <strong>−'+(itemWrong*Math.abs(Q.miss.pt))+'</strong> คะแนน</span><span>เลือกทีมผิด '+teamWrong+' ครั้ง × 1 คะแนน = <strong>−'+teamWrong+'</strong> คะแนน</span><span class="aa-total">รวมถูกหัก <strong>−'+deduction+' คะแนน</strong></span></div>';
+  h+='<div class="aa-penalty"><b>สรุปคะแนนที่ถูกหักจากการเลือก Item/ทีมผิด</b><span>Item ไม่ตรง '+itemWrong+' ครั้ง × '+Math.abs(Q.miss.pt)+' คะแนน = <strong>−'+(itemWrong*Math.abs(Q.miss.pt))+'</strong> คะแนน</span><span>เลือกทีมผิด '+teamWrong+' ครั้ง × 1 คะแนน = <strong>−'+teamWrong+'</strong> คะแนน</span><span>หมดเวลาตัดสินใจ '+tmo+' ครั้ง × 2 คะแนน = <strong>−'+(tmo*2)+'</strong> คะแนน</span><span>ขอคำใบ้ '+hn+' ครั้ง × 1 คะแนน = <strong>−'+hn+'</strong> คะแนน</span><span class="aa-total">รวมถูกหัก <strong>−'+deduction+' คะแนน</strong></span></div>';
   h+='<div class="aa-cols"><div><h4>✓ จุดแข็ง</h4><ul>'+goodOf(i).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div><div><h4>⚠ จุดอ่อน</h4><ul>'+weakOf(i).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div></div>';
   h+='<h4>ขั้นตอน BCP ที่ถูกต้องของเหตุการณ์นี้ เทียบกับที่ทีมเลือก</h4>';
   steps.forEach((s,k)=>{
@@ -2299,6 +2418,8 @@ setInterval(()=>{
   const now=performance.now(), dt=Math.min(.5,(now-lastT)/1000); lastT=now;
   if(S.phase!=='play'||!S.running||S.hold) return;
   S.timeLeft=Math.max(0,S.timeLeft-dt);
+  const ti=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
+  if(ti&&!ti.lock){ ti.stepLeft-=dt; if(ti.stepLeft<=0) stepTimeout(ti); else updateStepTimerDom(ti); }
   const sec=Math.ceil(S.timeLeft);
   if(sec<=10&&sec>0&&sec!==S.urgent){ S.urgent=sec; Sfx.tick(true); }
   S.boltT-=dt;
@@ -2383,17 +2504,11 @@ function wire(){
   });
   $('#incList').addEventListener('keydown',e=>{ if(e.target.closest('.flow-box, input, textarea, button')) return; if(e.key==='Enter'||e.key===' '){ const n=e.target.closest('.inc.target'); if(n){ e.preventDefault(); onIncident(n.dataset.id); } } });
   $('#scene').addEventListener('click',e=>{ const p=e.target.closest('.pin.target'); if(p) onIncident(p.dataset.id); });
-  $('#planner').addEventListener('click',e=>{
-    const root=e.target.closest('.pl'); if(!root) return; const id=root.dataset.inc;
-    let b;
-    if((b=e.target.closest('[data-resource-commit]'))){ commitResourcePlan(id); return; }
-    if((b=e.target.closest('[data-bcp-run]'))){ runBcpStep(id); return; }
-    if((b=e.target.closest('[data-bcp-pick]'))){ placeBcpItem(+b.dataset.bcpPickTeam,b.dataset.bcpPick); return; }
-    if((b=e.target.closest('[data-bcp-remove]'))){ removeBcpItem(id,+b.dataset.bcpRemove,b.dataset.bcpKey); return; }
-    if((b=e.target.closest('[data-pl-nav]'))){ navStep(id,+b.dataset.plNav); return; }
-    if((b=e.target.closest('[data-pl-step]'))){ selectBcpStep(id,+b.dataset.plStep); }
+  $('#console').addEventListener('click',e=>{
+    const b=e.target.closest('[data-cs-key]'); if(b){ placeBcpItem(+b.dataset.csTeam,b.dataset.csKey); return; }
+    if(e.target.closest('[data-cs-hint]')) useHint();
+    if(e.target.closest('[data-cs-cancel]')) disarm();
   });
-  $('#planner').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('.pl-step')){ e.preventDefault(); const root=e.target.closest('.pl'); selectBcpStep(root.dataset.inc,+e.target.dataset.plStep); } });
   $('#armBar').addEventListener('click',e=>{ if(e.target.closest('#btnDisarm')) disarm(); });
   $('#rdTable').addEventListener('input',e=>{
     const el=e.target; if(!el.dataset||el.dataset.i===undefined) return;
