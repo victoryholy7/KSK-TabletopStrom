@@ -949,6 +949,14 @@ function splitRoundsToEvents(rounds,prefix){
 const EXTRA_SOL={'r1-power':{fuel:'ok',light:'ok'},'r1-roof':{tent:'ok'},'r1-comm':{radio:'best'},'r2-his':{radio:'ok'},'r2-er':{tent:'ok',ppe:'ok'},'r3-road':{sandbag:'ok',pump:'ok'},'r3-pharm':{sandbag:'ok',pump:'ok'},'r4-fuel':{fuel:'best'},'r4-crowd':{press:'best',radio:'ok'},'x-water':{pump:'ok'},'x-oxygen':{tent:'ok'},'x-birth':{light:'best',tent:'ok'},'x-injury':{ppe:'ok'},'x-supply':{budget:'ok'},'x-waste':{ppe:'best'},'x-treatment':{pump:'best'},'x-solar':{light:'ok'}};
 [...BASE_ROUNDS,...EXTRA_ROUNDS].forEach(r=>r.inc.forEach(i=>Object.assign(i.sol,EXTRA_SOL[i.id]||{})));
 const PICKABLE_ROUNDS=splitRoundsToEvents(BASE_ROUNDS,'base').concat(splitRoundsToEvents(EXTRA_ROUNDS,'extra'));
+const TL=[['ช่วงที่ 1 · พายุขึ้นฝั่ง',['r1-power','r1-roof','r1-comm','x-solar','x-injury']],
+ ['ช่วงที่ 2 · ฟ้าผ่าและวิกฤตซ้อน',['r2-his','r2-er','x-oxygen','x-birth']],
+ ['ช่วงที่ 3 · น้ำท่วมเฉียบพลัน',['r3-road','r3-pharm','x-water','x-supply']],
+ ['ช่วงที่ 4 · ผลกระทบต่อเนื่อง',['x-waste','x-treatment','r4-fuel','r4-tired','r4-crowd']],
+ ['ช่วงที่ 5 · ฟื้นฟูและถอดบทเรียน',['x-aar']]];
+const TL_ORDER=[]; TL.forEach(p=>p[1].forEach(id=>TL_ORDER.push([id,p[0]])));
+PICKABLE_ROUNDS.forEach(r=>{ const k=TL_ORDER.findIndex(x=>x[0]===r.inc[0].id); r._ord=k<0?99:k; r.phase=k<0?r.badge:TL_ORDER[k][1]; r.badge=r.phase; });
+PICKABLE_ROUNDS.sort((a,b)=>a._ord-b._ord);
 let ACTIVE_ROUNDS=PICKABLE_ROUNDS.slice();
 
 const TICKER_FACTS=['ซ้อมแผนเผชิญเหตุ · สถานการณ์สมมติ ไม่ใช่เหตุการณ์จริง','อภิปรายและบันทึกมติของทีมบัญชาการ แพทย์/พยาบาล สนับสนุน และบริหาร/สื่อสารให้ครบก่อนเลือก Item','ทุกทีมต้องรายงานตัวและปฏิบัติภารกิจร่วมกัน การ์ดทรัพยากรมีจำนวนจำกัด','ถ้าการ์ดหมด ใช้แผน Manual (ระบบกระดาษ) ได้ไม่จำกัด'];
@@ -1566,7 +1574,7 @@ function buildScenarioChoices(){
     return '<label class="scenario-choice">'+
       '<input type="checkbox" value="'+esc(r._pickId)+'"'+(['base-0-r1-power','base-1-r2-his','base-1-r2-er','base-2-r3-pharm','base-3-r4-crowd'].includes(r._pickId)?' checked':'')+' aria-label="เลือกเหตุการณ์ '+esc(r.name)+'">'+
       scenarioArtwork(r,i)+
-      '<span class="scenario-info"><b>'+esc(r.name)+'</b><small>'+esc((r.inc&&r.inc[0]&&r.inc[0].d)||r.head)+'</small>'+
+      '<span class="scenario-info"><small style="color:#ffd93b;font-weight:700">'+esc(r.phase)+'</small><b>'+esc(r.name)+'</b><small>'+esc((r.inc&&r.inc[0]&&r.inc[0].d)||r.head)+'</small>'+
       '<span class="scenario-status"><span class="scenario-check">เลือกแล้ว</span><span class="scenario-level '+level+'">ระดับ'+esc(r.lvl)+'</span></span></span></label>';
   }).join('');
 }
@@ -1758,7 +1766,7 @@ function commitRound(){
 }
 
 /* ---------- final report ---------- */
-const SEV={failed:{n:'ความเสี่ยงสูง',c:'q-miss',r:3},manual:{n:'ความเสี่ยงปานกลาง',c:'q-ok',r:2},ok:{n:'ควรปรับปรุง',c:'q-man',r:1}};
+const SEV={good:{n:'ทำได้ดี',c:'q-best',r:0},failed:{n:'ความเสี่ยงสูง',c:'q-miss',r:3},manual:{n:'ความเสี่ยงปานกลาง',c:'q-ok',r:2},ok:{n:'ควรปรับปรุง',c:'q-man',r:1}};
 function correctGuide(d){
   const nm=q=>Object.keys(d.sol).filter(k=>d.sol[k]===q).map(k=>CARD_DEF[k].n).join(', ')||'-';
   return '<p><b>วิธีแก้ที่ถูกต้องตามแผน BCP</b></p><ol><li>เปิดศูนย์บัญชาการ ICS (ทีมบัญชาการ)</li><li>ใช้ Item แก้ปัญหา รวม '+d.needs+' ใบ จาก: <b>'+esc(nm('best'))+'</b> (ใช้แก้ขัดได้: '+esc(nm('ok'))+')</li><li>สื่อสารและบันทึกเหตุ (ทีมบริหารและสื่อสาร)</li></ol><p><b>ขั้นตอนปฏิบัติจริง:</b></p><ol>'+stepsForIncident(d).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol>';
@@ -1768,8 +1776,9 @@ function buildReport(){
   S.all.forEach(i=>{
     let sev=null;
     if(i.state==='failed') sev='failed'; else if(i.grade==='manual') sev='manual'; else if(i.grade==='ok'||i.plays.some(p=>p.q==='miss')) sev='ok';
-    if(sev) items.push({sev:sev,def:i.def,title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,decisions:i.decisions||[],
-      note:i.state==='failed'?'ไม่ได้รับการแก้ไขภายในเวลา':(i.grade==='manual'?'แก้ได้ด้วยระบบ Manual เท่านั้น':(i.plays.some(p=>p.q==='miss')?'มีการลงการ์ดผิดจุด เสียทรัพยากรไปเปล่า':'ต้องใช้วิธีแก้ขัด ไม่ใช่ทางที่ตรงที่สุด'))});
+    if(!sev) sev='good';
+    items.push({sev:sev,def:i.def,title:i.def.t,round:i.round+1,vuln:i.def.vuln,fix:i.def.fixit,decisions:i.decisions||[],
+      note:i.state==='failed'?'ไม่ได้รับการแก้ไขภายในเวลา':(i.grade==='manual'?'แก้ได้ด้วยระบบ Manual เท่านั้น':(i.plays.some(p=>p.q==='miss')?'มีการลงการ์ดผิดจุด เสียทรัพยากรไปเปล่า':(sev==='good'?'ใช้ Item ตรงจุดและผ่านเหตุการณ์ตามขั้นตอน BCP · ยังควรเตรียมความพร้อมเพิ่มเติมตามข้อเสนอ':'ต้องใช้วิธีแก้ขัด ไม่ใช่ทางที่ตรงที่สุด')))});
   });
   items.sort((a,b)=>SEV[b.sev].r-SEV[a.sev].r||a.round-b.round);
   const res=[];
