@@ -761,7 +761,6 @@ button{font-family:inherit;color:inherit}
     <div class="ctrl">
       <button class="ib" id="btnHome" type="button" aria-label="กลับหน้าหลัก" title="กลับหน้าหลัก">⌂</button>\n      <button class="ib" id="btnPlay" type="button" aria-label="หยุดหรือเริ่มเวลา (Space)"></button>
       <button class="ib" id="btnSkip" type="button" aria-label="จบรอบนี้ทันที"></button>
-      <button class="ib" id="btnVoice" type="button" aria-label="เปิดหรือปิดเสียงพากย์ภาษาไทย" aria-pressed="false" title="เสียงพากย์ตัวละคร"></button>
       <button class="ib" id="btnMute" type="button" aria-label="เปิดหรือปิดเสียง"></button>
       <input id="vol" type="range" min="0" max="100" value="70" aria-label="ระดับเสียง">
       <button class="ib" id="btnFs" type="button" aria-label="เต็มจอ"></button>
@@ -1351,17 +1350,7 @@ const Sfx=(function(){
   };
 })();
 /* optional Thai voice-over (browser speech synthesis; only works where a Thai voice is installed) */
-const Voice=(function(){
-  const has='speechSynthesis' in window; let v=null;
-  function load(){ if(!has) return; try{ v=speechSynthesis.getVoices().find(x=>/^th/i.test(x.lang))||null; }catch(e){ v=null; } }
-  load(); if(has){ try{ speechSynthesis.onvoiceschanged=load; }catch(e){} }
-  return {
-    on:false,
-    get ok(){ return has; },
-    speak(t,pitch,flush){ if(!this.on||!has) return; const go=()=>{ try{ const u=new SpeechSynthesisUtterance(t); if(v) u.voice=v; u.lang='th-TH'; u.rate=1; u.pitch=pitch||1; speechSynthesis.speak(u); }catch(e){} }; if(flush){ try{ speechSynthesis.cancel(); }catch(e){} setTimeout(go,60); } else go(); },
-    stop(){ if(has){ try{ speechSynthesis.cancel(); }catch(e){} } }
-  };
-})();
+const Voice={on:false,ok:false,speak(){},stop(){}}; /* เสียงพูดถูกนำออก */
 /* ---------- hospital scene ---------- */
 function win(x,y,w,h){ return '<rect class="win" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="3"/>'; }
 function winGrid(x,y,cols,rows,w,h,gx,gy){
@@ -1504,7 +1493,7 @@ function lightning(){
     b.setAttribute('transform','translate('+Math.round(rnd(120,1000))+' 0) scale('+rnd(1,1.5).toFixed(2)+')');
     b.animate([{opacity:1},{opacity:.15},{opacity:1},{opacity:.3},{opacity:1},{opacity:0}],{duration:650});
   }
-  const bm=document.createElement('div'); bm.className='boom'; bm.textContent='⚡⚡ '; sw.appendChild(bm); setTimeout(()=>bm.remove(),1200);
+  const bm=document.createElement('div'); bm.className='boom'; bm.textContent='⚡⚡'; sw.appendChild(bm); setTimeout(()=>bm.remove(),1200);
   Sfx.thunder(rnd(.05,.3));
 }
 /* ฟ้าผ่าเป็นระยะระหว่างพายุ (ทุกช่วงของเหตุการณ์ ยกเว้นตอนพายุสงบ) */
@@ -1549,7 +1538,7 @@ const score=t=>t.auto+t.rate;
 const fmt=t=>{ t=Math.max(0,Math.ceil(t)); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); };
 
 
-const GAS_API_URL='https://script.google.com/macros/s/AKfycbxHUnrcRFR2nF9Zv_Pkd_pv_YGaJwAcbq7L0wfmyaT0gOPQ_nufwOP6j7SA2c_G8OVUYQ/exec';
+const GAS_API_URL='PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
 function saveSessionToSheet(stage){
   if(!GAS_API_URL || GAS_API_URL.indexOf('PASTE_')===0) return;
   const payload={stage:stage,sessionId:S.sessionId|| (S.sessionId='KSK-'+Date.now()),savedAt:new Date().toISOString(),
@@ -1816,7 +1805,7 @@ function renderConsole(){
   h+='<div class="cs-head"><div class="cs-num"><b>'+(k+1)+'</b><small>/ '+n+'</small></div><div class="cs-ttl"><small>🚨 '+esc(def.t)+'</small><b>'+esc(stepName(st,k))+'</b></div></div>';
   h+='<div class="cs-track">'+sq.map((x,j)=>'<i class="'+(j<k?'done':j===k?'cur':'')+'" style="--sc:'+STEP_COLORS[j%7]+'"></i>').join('')+'</div>';
   h+='<div class="cs-timer"><div class="cs-tbar"><i id="csBar" class="'+(inc.stepLeft<=8?'warn':'')+'" style="width:'+Math.max(0,inc.stepLeft/STEP_SECS*100)+'%"></i></div><span id="csSec">'+Math.ceil(Math.max(0,inc.stepLeft))+'</span></div>';
-  h+='<div class="cs-cancel"><button type="button" class="pl-ghost" data-cs-voice="1">🔊 ฟังอีกครั้ง</button><button type="button" class="pl-ghost" data-cs-cancel="1">✕ ยกเลิกจุด</button></div>';
+  h+='<div class="cs-cancel"><button type="button" class="pl-ghost" data-cs-cancel="1">✕ ยกเลิกจุด</button></div>';
   h+='<div class="cs-act"><b>'+esc(shortAction(st.s))+'</b><div class="cs-chips">'+stepChips(st).map(c=>'<span><i>'+c[1]+'</i>'+c[2]+'</span>').join('')+'</div></div>';
   h+='<div class="cs-tiles">'+(st.solve
     ?'<div class="t star"><span>⭐</span><b>ใช้ Item ตรงปัญหา</b><small>ต้อง '+need+' ชิ้น</small><div class="cs-need">'+Array.from({length:need},(_,j)=>'<i class="'+(j<(inc.solveCount||0)?'f':'')+'"></i>').join('')+'</div></div><div class="t no"><span>🚫</span><b>SOP ใช้แทนไม่ได้</b><small>ต้องเป็นทรัพยากร</small></div>'
@@ -2495,7 +2484,6 @@ function toggleFs(){
 function syncMute(){ $('#btnMute').innerHTML=ic(Sfx.isMuted()?'mute':'vol'); $('#btnMute').classList.toggle('warn',Sfx.isMuted()); }
 function startGame(){
   Sfx.init();
-  if(Voice.ok){ Voice.on=true; const bv=$('#btnVoice'); bv.classList.add('on'); bv.setAttribute('aria-pressed','true'); }
   const names=TEAM_DEF.map((t,i)=>{ const v=($('#tn'+i).value||'').trim(); return v||t.name; });
   S.roundLen=parseInt($('#roundMin').value,10)*60;
   if(!selectedRounds()){
@@ -2528,11 +2516,6 @@ function wire(){
     ask('จบรอบนี้ทันที?','เหตุการณ์ที่ยังไม่ได้แก้จะถือว่าแก้ไม่ทัน และถูกหักความพร้อมของโรงพยาบาล','จบรอบ',()=>{ closeAsk(); endRound(); });
   });
   $('#btnMute').addEventListener('click',()=>{ Sfx.init(); Sfx.setMuted(!Sfx.isMuted()); syncMute(); });
-  $('#btnVoice').addEventListener('click',()=>{
-    if(!Voice.ok){ toast('เครื่องนี้ยังไม่มีเสียงภาษาไทยสำหรับอ่านออกเสียง (ใช้เสียงเอฟเฟกต์และข้อความแทนได้)'); return; }
-    Voice.on=!Voice.on; $('#btnVoice').classList.toggle('on',Voice.on); $('#btnVoice').setAttribute('aria-pressed',Voice.on?'true':'false');
-    if(Voice.on) Voice.speak('เปิดเสียงพากย์แล้ว'); else Voice.stop();
-  });
   $('#vol').addEventListener('input',e=>{ Sfx.setVolume(e.target.value/100); });
   $('#btnFs').addEventListener('click',toggleFs);
   $('#cfNo').addEventListener('click',closeAsk);
@@ -2560,7 +2543,6 @@ function wire(){
     const b=e.target.closest('[data-cs-key]'); if(b){ placeBcpItem(+b.dataset.csTeam,b.dataset.csKey); return; }
     if(e.target.closest('[data-cs-hint]')) useHint();
     if(e.target.closest('[data-cs-cancel]')) disarm();
-    if(e.target.closest('[data-cs-voice]')){ const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open'); if(inc&&Voice.ok){ Voice.on=true; $('#btnVoice').classList.add('on'); narrateStep(inc); } }
   });
   $('#armBar').addEventListener('toggle',e=>{ if(e.target.tagName==='DETAILS') S.armOpen=e.target.open; },true);
   $('#armBar').addEventListener('click',e=>{ if(e.target.closest('#btnDisarm')) disarm(); });
@@ -2576,7 +2558,7 @@ function wire(){
     else if(e.key==='m'||e.key==='M'){ Sfx.init(); Sfx.setMuted(!Sfx.isMuted()); syncMute(); }
     else if(e.key==='f'||e.key==='F'){ toggleFs(); }
   });
-  $('#btnSkip').innerHTML=ic('skip'); $('#btnFs').innerHTML=ic('full'); $('#btnVoice').innerHTML=ic('mega'); syncMute();
+  $('#btnSkip').innerHTML=ic('skip'); $('#btnFs').innerHTML=ic('full'); syncMute();
   $('#heroArt').innerHTML=mascot()+stormChar();
 }
 
