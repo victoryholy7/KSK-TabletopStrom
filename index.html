@@ -122,7 +122,7 @@
 .msg.in .bubble{animation:bpop .4s .25s both}@keyframes bpop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 .msg.in .av{animation:bob 2.8s ease-in-out infinite,talk .45s 8 alternate}@keyframes talk{to{margin-bottom:5px}}
 
-/* STORM COMMAND v10: resource planning and readable BCP timeline */
+/* STORM COMMAND v11: item placement per BCP step, two edit chances and action animation */
 .flow-box{line-height:1.6}
 .flow-box.bcp-timeline{padding:12px;background:linear-gradient(145deg,#091630,#172d5d);border:1px solid #6f8dce;border-radius:13px}
 .bcp-title{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;color:#fff}
@@ -147,7 +147,7 @@
 @media(max-width:600px){.bcp-step{padding:9px}.bcp-step b{font-size:14px}.bcp-step small{font-size:12px}}
 
 </style></head><body>
-<title>KSK: STORM COMMAND v10</title>
+<title>KSK: STORM COMMAND v13</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -544,6 +544,153 @@ button{font-family:inherit;color:inherit}
 @media(max-width:700px){.aa-cols{grid-template-columns:1fr}}
 /* STORM COMMAND: keep scene animations active during the simulation,
    even when the device has Reduce Motion enabled. */
+
+/* STORM COMMAND v13 · visual item tiles and multi-item BCP stages */
+.bcp-help{padding:9px 11px;border-radius:10px;background:#0b1b3a;color:#d8e5ff;font-size:12px;line-height:1.55;margin:8px 0 10px}
+.bcp-step-list{display:grid;gap:7px}
+.bcp-step{width:100%;text-align:left;cursor:pointer;position:relative;transition:transform .18s,box-shadow .18s;}
+.bcp-step:disabled{cursor:default;opacity:.78}
+.bcp-step.plan-selected{outline:3px solid #38c7ff;outline-offset:1px;transform:translateX(2px)}
+.bcp-step-copy{min-width:0;display:block}
+.bcp-step .step-state{font-size:10px;font-weight:900;white-space:nowrap;align-self:center;padding:4px 7px;border-radius:99px;background:#ffffff18;color:inherit}
+.bcp-dropzone{display:grid;gap:9px;margin:12px 0;padding:12px;border:2px dashed #5c8bd7;border-radius:13px;background:#07152f;color:#fff}
+.bcp-dropzone.has-item{border-style:solid;border-color:#2fd08c;background:#0b302f}
+.bcp-dropzone>div:first-child b,.bcp-dropzone>div:first-child small{display:block}
+.bcp-dropzone>div:first-child small{color:#bfd0f5;font-size:12px;margin-top:3px}
+.drop-item{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.drop-item>span{font-weight:800;color:#9fffd3}
+.drop-item .empty-slot{font-size:12px;color:#ffe7a1;font-weight:600}
+.drop-item button{border:1px solid #ff9b9b;background:#5b202a;color:#fff;border-radius:8px;padding:7px 10px;font-weight:800;cursor:pointer}
+.drop-item button:disabled{opacity:.4}
+.bcp-runbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;color:#dce8ff;font-size:12px}
+.bcp-runbar .flow-commit{flex:1;min-width:180px}
+.bcp-action-running{margin:12px 0;padding:16px;text-align:center;border:2px solid #ffd93b;border-radius:13px;background:linear-gradient(120deg,#352b08,#172e5a);color:#fff;animation:actionGlow .7s ease-in-out infinite alternate}
+.bcp-action-running b,.bcp-action-running small{display:block}
+.bcp-action-running small{color:#dbe7ff;margin-top:5px}
+.action-pulse{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#ffd93b;color:#17244d;font-size:24px;margin-bottom:7px;animation:actionPulse .55s ease-in-out infinite alternate}
+@keyframes actionGlow{to{box-shadow:0 0 24px #ffd93b55}}
+@keyframes actionPulse{to{transform:scale(1.2) rotate(12deg)}}
+.bcp-step.done{animation:stepDone .45s ease-out}
+@keyframes stepDone{0%{transform:scale(.97);opacity:.7}100%{transform:scale(1);opacity:1}}
+.aa-penalty{display:grid;gap:5px;margin:12px 0;padding:12px;border:1px solid #ff7777;border-radius:12px;background:#401d2a;color:#ffe8e8;font-size:13px}
+.aa-penalty>b{font-size:14px;color:#fff}
+.aa-penalty span{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.aa-penalty strong{color:#ff9d9d}
+.aa-penalty .aa-total{padding-top:7px;border-top:1px solid #ffffff35;font-weight:900;color:#fff}
+@media(max-width:600px){.bcp-step{grid-template-columns:30px minmax(0,1fr)}.bcp-step .step-state{grid-column:2;justify-self:start}.bcp-runbar{display:grid}.bcp-runbar .flow-commit{width:100%}}
+
+/* v12 visual item rack */
+.bcp-dropzone{grid-template-columns:minmax(0,1fr);}
+.bcp-item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px;margin-top:4px}
+.bcp-item-tile{position:relative;min-height:112px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px 7px;border-radius:14px;border:2px solid var(--tile,#6d8ec8);background:linear-gradient(150deg,#203d70,#0b1b39);color:#fff;text-align:center;box-shadow:inset 0 1px #ffffff24,0 5px 12px #0004;animation:tileIn .24s ease-out}
+.bcp-item-tile .tile-icon{width:48px;height:44px;display:grid;place-items:center;border-radius:12px;background:color-mix(in srgb,var(--tile) 26%,#101d3a);color:#fff;font-size:29px}
+.bcp-item-tile b{font-size:11px;line-height:1.35}
+.bcp-item-tile small{font-size:10px;color:#c9d9ff}
+.bcp-item-tile button{position:absolute;right:4px;top:4px;width:23px;height:23px;border:0;border-radius:50%;background:#a92c42;color:#fff;font-weight:900;cursor:pointer}
+.bcp-item-tile.used{border-color:#2fd08c;background:linear-gradient(150deg,#155746,#092e2b)}
+.bcp-item-tile.used .tile-icon{background:#0c7956}
+.bcp-empty{padding:16px;border:1px dashed #7796d2;border-radius:12px;color:#ffe7a1;text-align:center;font-size:12px}
+.bcp-item-count{color:#9fffd3;font-size:12px;font-weight:800}
+.cardb.plan-picked{outline:3px solid #2fd08c;outline-offset:2px;background:#d7fff0}
+@keyframes tileIn{from{opacity:0;transform:translateY(8px) scale(.94)}to{opacity:1;transform:none}}
+@media(max-width:600px){.bcp-item-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bcp-item-tile{min-height:104px}}
+
+
+/* v13: mission-card game layout, visually distinct step cards and instant inventory-to-mission assignment */
+.bcp-game{padding:14px!important;background:linear-gradient(145deg,#101e42,#172f65)!important;border:1px solid #6e8fd2!important;border-radius:18px!important;box-shadow:0 12px 28px #07132d55}
+.bcp-game-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px;color:#fff}
+.bcp-game-head>div:first-child{display:grid;gap:3px}.bcp-kicker{font:800 10px var(--f-hud);letter-spacing:1.2px;color:#72dfff}.bcp-game-head strong{font:800 21px var(--f-display);line-height:1.25}.bcp-game-head small{color:#c5d5f7;font-size:12px}
+.bcp-progress{display:flex;align-items:baseline;gap:3px;padding:8px 12px;border-radius:13px;background:#ffd93b;color:#16244c;white-space:nowrap}.bcp-progress b{font:800 25px var(--f-hud)}.bcp-progress span{font-size:12px;font-weight:800}
+.bcp-game-guide{display:flex;gap:10px;align-items:center;padding:10px 12px;margin-bottom:13px;border-radius:12px;background:#123d62;border:1px solid #3bb9e9;color:#fff}.bcp-game-guide>span{font-size:25px}.bcp-game-guide div{display:grid;gap:2px}.bcp-game-guide small{font-size:12px;line-height:1.45;color:#d5edff}
+.bcp-game-layout{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:13px;align-items:start}.bcp-missions,.bcp-workspace{min-width:0}.bcp-section-label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:3px 0 8px;color:#fff;font-weight:900;font-size:13px}.bcp-section-label span{font-size:10px;color:#c9d8fb;font-weight:700}
+.bcp-mission{width:100%;display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:9px;align-items:center;text-align:left;padding:11px 9px;margin:0 0 5px;border:1px solid #ffffff25;border-left:5px solid var(--mission);border-radius:12px;background:linear-gradient(110deg,color-mix(in srgb,var(--mission) 18%,#14264d),#1b315e);color:#fff;cursor:pointer;transition:.18s;min-height:67px}
+.bcp-mission.is-active{background:linear-gradient(110deg,color-mix(in srgb,var(--mission) 48%,#17264a),#294987);border:2px solid var(--mission);box-shadow:0 0 0 3px color-mix(in srgb,var(--mission) 22%,transparent),0 7px 16px #050d20aa;transform:translateX(3px)}
+.bcp-mission.is-done{background:linear-gradient(110deg,#0c5947,#164d58);border-left-color:#36e5a2}.bcp-mission:disabled{cursor:default;opacity:.82}
+.bcp-mission-no{display:grid;place-items:center;width:35px;height:35px;border-radius:11px;background:var(--mission);color:#102044;font:900 15px var(--f-hud)}.bcp-mission.is-done .bcp-mission-no{background:#36e5a2}
+.bcp-mission-main{display:grid;gap:5px;min-width:0}.bcp-mission-main>b,.bcp-mission-main b{font-size:12px;line-height:1.45}.bcp-mission-main small{font-size:10px;color:#d2def8}.bcp-mission-main small i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mission);margin-right:4px}
+.bcp-mission-state{font-size:9px;font-weight:900;padding:4px 6px;border-radius:99px;background:#ffffff19;color:#fff;white-space:nowrap}.bcp-mission.is-active .bcp-mission-state{background:#fff;color:#17244d}
+.bcp-assigned-mini{display:flex;flex-wrap:wrap;gap:5px;padding:0 4px 7px 48px;min-height:8px}.bcp-mini-item{display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:8px;background:color-mix(in srgb,var(--item) 25%,#0c1b39);border:1px solid var(--item);color:#fff;font-size:10px}.bcp-mini-empty{font-size:10px;color:#91a7d5}
+.bcp-workspace{padding:12px;border-radius:15px;background:#091832;border:1px solid #5475b7;box-shadow:inset 0 1px #ffffff12}.bcp-workspace-head{display:flex;gap:10px;align-items:center;padding-bottom:10px;border-bottom:1px solid #ffffff20}.bcp-workspace-icon{width:46px;height:46px;display:grid;place-items:center;border-radius:13px;background:color-mix(in srgb,var(--mission) 28%,#16264a);border:1px solid var(--mission);flex:0 0 46px}.bcp-workspace-head>div:last-child{min-width:0}.bcp-workspace-head span{font-size:10px;color:#8ddcff;font-weight:800}.bcp-workspace-head h3{margin:2px 0;color:#fff;font-size:16px;line-height:1.3}.bcp-workspace-head small{font-size:11px;color:#b8c9ec}
+.bcp-selected-zone{margin:11px 0 13px;padding:10px;border-radius:12px;background:#132b4e;border:1px dashed #8eb8ed}.bcp-zone-title{display:flex;justify-content:space-between;gap:8px;color:#fff;font-size:12px}.bcp-zone-title span{padding:2px 8px;border-radius:99px;background:#2fd08c;color:#063b2b;font-weight:900}.bcp-selected-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:7px;margin-top:9px}.bcp-selected-item{position:relative;display:grid;justify-items:center;gap:4px;min-width:0;padding:9px 5px 7px;border:1px solid var(--item);border-radius:10px;background:linear-gradient(145deg,color-mix(in srgb,var(--item) 26%,#1a2c4e),#0c1b37);color:#fff;cursor:pointer}.bcp-selected-icon{display:grid;place-items:center;width:40px;height:38px;border-radius:10px;background:color-mix(in srgb,var(--item) 32%,#102044)}.bcp-selected-item b{font-size:10px;line-height:1.3;text-align:center}.bcp-selected-item small{font-size:9px;color:#c5d5f7}.bcp-selected-item em{position:absolute;right:4px;top:3px;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;background:#e34c59;color:#fff;font-style:normal;font-weight:900}.bcp-drop-empty{display:grid;justify-items:center;gap:3px;padding:14px 6px;color:#c9d8f6}.bcp-drop-empty span{font-size:26px}.bcp-drop-empty b{font-size:12px}.bcp-drop-empty small{font-size:10px;text-align:center}
+.bcp-inventory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.bcp-inventory-card{display:grid;justify-items:center;align-content:start;gap:5px;min-width:0;min-height:112px;padding:8px 5px;border:1px solid color-mix(in srgb,var(--item) 70%,#60739b);border-radius:11px;background:linear-gradient(150deg,color-mix(in srgb,var(--item) 24%,#18294b),#0c1932);color:#fff;cursor:pointer;transition:transform .16s,box-shadow .16s,filter .16s}.bcp-inventory-card:active{transform:scale(.96)}.bcp-inventory-card.is-picked{border:2px solid #42e6a2;background:linear-gradient(150deg,#155b4d,#102f3a);box-shadow:0 0 0 2px #42e6a233}.bcp-inventory-card.is-empty{opacity:.35;cursor:not-allowed}.bcp-inventory-icon{display:grid;place-items:center;width:45px;height:42px;border-radius:11px;background:color-mix(in srgb,var(--item) 30%,#0b1b37)}.bcp-inventory-card b{font-size:10px;line-height:1.3;text-align:center}.bcp-inventory-card small{font-size:9px;color:#d0ddf6;text-align:center}.bcp-inventory-card em{font-size:9px;font-style:normal;font-weight:900;color:#8fffc8}.bcp-edit-note{margin-top:9px;padding:7px 9px;border-radius:9px;background:#ffffff0c;color:#d6e5ff;font-size:11px;text-align:center}.bcp-edit-note b{color:#ffe36b}
+.bcp-launch{display:grid;gap:9px;margin-top:12px;padding:11px;border-radius:12px;background:linear-gradient(110deg,#253c68,#17294c);border:1px solid #6888c5}.bcp-launch>div{display:grid;gap:2px;color:#fff}.bcp-launch>div b{font-size:13px}.bcp-launch>div small{font-size:10px;color:#c9d8f5}.bcp-launch .flow-commit{width:100%;min-height:47px;border:0;border-radius:10px;background:linear-gradient(100deg,#ffe34d,#ffae36);color:#17244d;font:900 15px var(--f-display);box-shadow:0 4px 0 #a76b1d;cursor:pointer}.bcp-launch .flow-commit:disabled{filter:grayscale(.7);opacity:.48;box-shadow:none;cursor:not-allowed}
+.bcp-live-action{padding:30px 12px;text-align:center;color:#fff}.bcp-live-icon{font-size:44px;animation:actionGlow .45s infinite alternate}.bcp-live-action b{display:block;font-size:20px;color:#ffe36b}.bcp-live-action p{font-size:12px;color:#d5e3ff}.bcp-live-track{height:9px;border-radius:99px;background:#ffffff20;overflow:hidden}.bcp-live-track i{display:block;width:40%;height:100%;border-radius:99px;background:linear-gradient(90deg,#2ec4f3,#ffe34d);animation:bcpRun 1s ease-in-out infinite alternate}@keyframes bcpRun{to{width:100%}}
+@media(max-width:760px){.bcp-game-layout{grid-template-columns:1fr}.bcp-mission{grid-template-columns:36px minmax(0,1fr) auto}.bcp-workspace{padding:11px}.bcp-inventory{grid-template-columns:repeat(3,minmax(0,1fr))}.bcp-game-head strong{font-size:19px}}
+@media(max-width:390px){.bcp-mission{grid-template-columns:32px minmax(0,1fr);gap:7px}.bcp-mission-no{width:30px;height:30px}.bcp-mission-state{grid-column:2;justify-self:start}.bcp-inventory{grid-template-columns:repeat(2,minmax(0,1fr))}.bcp-progress{padding:6px 9px}}
+
+
+/* ===== v14: planner game panel (full width, colourful steps, items drop into step) ===== */
+.inc{border-left:8px solid var(--ic,transparent)}
+.inc h3{font-size:17px}
+.inc p{font-size:13px}
+.inc.selected{background:color-mix(in srgb,var(--ic) 22%,var(--panel-hi));border-color:var(--ic);box-shadow:0 0 0 3px color-mix(in srgb,var(--ic) 35%,transparent)}
+.planner{background:linear-gradient(145deg,#0c1a3d,#162d63);border:2px solid #6e8fd2;border-radius:22px;padding:14px;box-shadow:0 14px 34px #0008;scroll-margin-top:8px}
+.pl-top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.pl-top h2{margin:0;font:800 20px var(--f-display);color:#fff;letter-spacing:0;text-transform:none}
+.pl-top small{display:block;color:#ffe36b;font-size:13px;margin-top:3px;font-weight:700}
+.pl-bar{display:flex;gap:5px;flex:1;min-width:200px;max-width:420px}
+.pl-bar i{flex:1;height:14px;border-radius:99px;background:#ffffff22}
+.pl-bar i.ready{background:color-mix(in srgb,var(--sc) 50%,#243459)}
+.pl-bar i.done{background:var(--sc);box-shadow:0 0 8px var(--sc)}
+.pl-grid{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;align-items:start}
+.pl-steps{display:grid;gap:10px;min-width:0}
+.pl-step{display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--sc) 14%,#16264d);border:2px solid color-mix(in srgb,var(--sc) 40%,transparent);cursor:pointer;transition:.18s;color:#fff}
+.pl-step:hover{background:color-mix(in srgb,var(--sc) 22%,#16264d)}
+.pl-step.active{background:color-mix(in srgb,var(--sc) 30%,#1a2b55);border-color:var(--sc);box-shadow:0 0 0 4px color-mix(in srgb,var(--sc) 28%,transparent),0 8px 20px #0006;transform:translateX(5px)}
+.pl-step.done{background:#0d4a3d;border-color:#36e5a2;cursor:default}
+.pl-num{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;background:var(--sc);color:#14224a;font:900 26px var(--f-hud)}
+.pl-step.done .pl-num{background:#36e5a2}
+.pl-title{font-size:15px;line-height:1.55;font-weight:700}
+.pl-team{display:flex;flex-wrap:wrap;gap:6px;margin:7px 0}
+.pl-team span{font-size:12px;font-weight:800;padding:3px 10px;border-radius:99px;background:color-mix(in srgb,var(--tc) 35%,#0b1735);border:1px solid var(--tc)}
+.pl-team .pl-key{background:#ffd93b;color:#17244d;border-color:#ffd93b}
+.pl-slots{display:flex;flex-wrap:wrap;gap:7px;min-height:54px;padding:8px;border-radius:12px;background:#07122b99;border:2px dashed color-mix(in srgb,var(--sc) 55%,#ffffff30);align-items:center}
+.pl-step.active .pl-slots{border-color:var(--sc);background:#07122bdd}
+.pl-empty{color:#c9d8fb;font-size:13px}
+.pl-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:12px;background:color-mix(in srgb,var(--item) 35%,#10204a);border:2px solid var(--item);color:#fff;font:700 13px var(--f-body);cursor:pointer}
+.pl-chip em{font-style:normal;opacity:.75}
+.pl-chip:disabled{cursor:default;opacity:.9}
+.pl-chip.pop{animation:plPop .55s cubic-bezier(.2,1.6,.4,1)}
+@keyframes plPop{0%{transform:translate(90px,40px) scale(.3);opacity:0}100%{transform:none;opacity:1}}
+.pl-tray{position:sticky;top:10px;padding:12px;border-radius:18px;background:linear-gradient(160deg,color-mix(in srgb,var(--tc) 22%,#14264f),#0b1735);border:2px solid var(--tc);box-shadow:0 10px 24px #0007;min-width:0}
+.pl-tray-h{display:flex;align-items:center;gap:10px;color:#fff}
+.pl-tray-h small{display:block;color:#ffe36b;font-size:12px;font-weight:700}
+.pl-tray-h b{font:800 17px var(--f-display)}
+.pl-av .av{width:48px;height:58px;animation:none;background:color-mix(in srgb,var(--tc) 30%,transparent);border-radius:12px}
+.pl-know{margin:9px 0 2px;padding:7px 10px;border-radius:10px;background:#ffffff10;color:#e5eeff;font-size:12px}
+.pl-know summary{cursor:pointer;font-weight:800;color:#8ddcff}
+.pl-know p{margin:6px 0 0;line-height:1.55}
+.pl-inv-label{margin:10px 0 6px;color:#fff;font-weight:800;font-size:13px}
+.pl-inv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.pl-card{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:center;text-align:left;padding:8px;border-radius:12px;border:2px solid color-mix(in srgb,var(--item) 70%,#5c6f9b);background:color-mix(in srgb,var(--item) 18%,#14244a);color:#fff;cursor:pointer;min-height:66px;transition:transform .12s}
+.pl-card:active{transform:scale(.95)}
+.pl-card.on{border-color:#42e6a2;background:#145b4d}
+.pl-card.out{opacity:.35;cursor:not-allowed}
+.pl-card .ci{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:color-mix(in srgb,var(--item) 35%,#0b1b37)}
+.pl-card b{display:block;font-size:12px;line-height:1.3}
+.pl-card small{display:block;font-size:10.5px;color:#cfe0ff;line-height:1.3}
+.pl-nav{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.pl-ghost{padding:9px;border-radius:10px;border:1px solid #8fa9e8;background:#1d3978;color:#fff;font:700 13px var(--f-body);cursor:pointer}
+.pl-ghost:disabled{opacity:.35;cursor:default}
+.pl-go{width:100%;min-height:52px;border:0;border-radius:12px;background:linear-gradient(100deg,#ffe34d,#ffae36);color:#17244d;font:900 16px var(--f-display);box-shadow:0 4px 0 #a76b1d;cursor:pointer}
+.pl-go:disabled{filter:grayscale(.7);opacity:.5;box-shadow:none;cursor:not-allowed}
+.pl-hint{margin-top:6px;text-align:center;color:#c9d8fb;font-size:12px}
+.pl-live{padding:28px 10px;text-align:center;color:#fff}
+.pl-live-ic{font-size:46px;animation:actionPulse .5s ease-in-out infinite alternate}
+.pl-live b{display:block;font-size:20px;color:#ffe36b;margin:6px 0}
+@media(max-width:1100px){.pl-grid{grid-template-columns:minmax(0,1fr) 340px}}
+@media(max-width:820px){
+  .planner{padding:10px;border-radius:16px}
+  .pl-grid{grid-template-columns:1fr}
+  .pl-step{grid-template-columns:42px minmax(0,1fr);gap:9px;padding:10px}
+  .pl-num{width:42px;height:42px;font-size:21px;border-radius:12px}
+  .pl-step.active{transform:none}
+  .pl-tray{position:sticky;top:auto;bottom:0;z-index:8;padding:10px}
+  .pl-know{display:none}
+  .pl-inv{display:flex;overflow-x:auto;gap:8px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .pl-card{flex:0 0 156px}
+  .pl-nav{margin-bottom:6px}
+}
 </style>
 <div class="app" id="app">
   <header class="hud">
@@ -594,10 +741,11 @@ button{font-family:inherit;color:inherit}
     </aside>
   </main>
 
+  <section class="planner" id="planner" aria-label="แผงวางแผนภารกิจ BCP" hidden></section>
   <section class="howto" aria-label="วิธีเล่นแบบทีละขั้นตอน">
     <div><b><span class="step-no">1</span>แตะจุดมาร์ค</b>แตะหมุดสีแดงบนอาคารที่เกิดเหตุ เพื่อเลือกปัญหาที่จะจัดการ</div>
     <div><b><span class="step-no">2</span>คิดเลือกทีม</b>พิจารณาว่าทีมใดควรรับผิดชอบ ไม่จำเป็นต้องเลือกทีมเดิมทุกเหตุการณ์</div>
-    <div><b><span class="step-no">3</span>เลือก Item</b>แตะการ์ดทรัพยากรของทีมนั้น แล้วอ่านรายละเอียดการ์ดก่อนยืนยัน</div>
+    <div><b><span class="step-no">3</span>แตะขั้นตอน → ใส่ Item</b>แตะการ์ดขั้นตอนสีต่าง ๆ แล้วแตะอุปกรณ์ในคลัง อุปกรณ์จะลงช่องของขั้นนั้นทันที</div>
     <div><b><span class="step-no">4</span>ยืนยันและติดตาม</b>ยืนยันการใช้ Item ดูผลคะแนน/ความพร้อม และใช้การ์ดเพิ่มหากเหตุการณ์ยังไม่จบ</div>
   </section>
   <section class="teams" id="teams" aria-label="ทีมและการ์ดทรัพยากร"></section>
@@ -1345,7 +1493,7 @@ const score=t=>t.auto+t.rate;
 const fmt=t=>{ t=Math.max(0,Math.ceil(t)); return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); };
 
 
-const GAS_API_URL='PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+const GAS_API_URL='https://script.google.com/macros/s/AKfycbxHUnrcRFR2nF9Zv_Pkd_pv_YGaJwAcbq7L0wfmyaT0gOPQ_nufwOP6j7SA2c_G8OVUYQ/exec';
 function saveSessionToSheet(stage){
   if(!GAS_API_URL || GAS_API_URL.indexOf('PASTE_')===0) return;
   const payload={stage:stage,sessionId:S.sessionId|| (S.sessionId='KSK-'+Date.now()),savedAt:new Date().toISOString(),
@@ -1538,29 +1686,139 @@ function choiceOptionsFor(d,teamId,stepIdx,seedKey){
   opts[0].d += ' | ประเด็นเฉพาะเหตุการณ์: '+primary;
   return seededShuffle(opts,(seedKey||d.id)+'-'+teamId+'-'+(stepIdx||0));
 }
+const STEP_COLORS=['#FF6B6B','#FFA94D','#FFD43B','#69DB7C','#38D9A9','#4DABF7','#9775FA'];
+const TEAM_EMO=['🎖️','🩺','🛠️','📢'];
+function picksOf(i,k){const p=(i.stepItems||[])[k];return Array.isArray(p)?p:(p?[p]:[]);}
 function bcpTracker(i){
-  const st=i.step||0, sq=bcpFor(i.def);
-  return '<div class="flow-box bcp-timeline"><div class="bcp-title"><strong>แผนปฏิบัติการ BCP เฉพาะเหตุการณ์</strong><span>'+Math.min(st+1,sq.length)+' / '+sq.length+' ขั้นตอน</span></div>'+sq.map((x,k)=>'<div class="bcp-step '+(k<st?'done':k===st?'current':'')+'"><span class="num">'+(k<st?'✓':k+1)+'</span><div><b>'+esc(x.s)+'</b><small>ผู้รับผิดชอบ: '+esc(TEAM_DEF[x.team].name)+(x.solve?' · ใช้ทรัพยากรที่เลือกไว้ '+i.def.needs+' รายการ':(k===st?' · ปฏิบัติตาม SOP ของทีม':' · ขั้นตอนประสานงาน/ควบคุมเหตุ'))+'</small></div></div>').join('')+'</div>';
+  const st=i.step||0, sq=bcpFor(i.def), sel=Number.isInteger(i.planStep)?Math.max(st,Math.min(i.planStep,sq.length-1)):st;
+  const filled=sq.filter((x,k)=>picksOf(i,k).length>0).length, ready=!!i.resourceReady;
+  let h='<div class="pl" data-inc="'+esc(i.id)+'">';
+  h+='<div class="pl-top"><div><h2>🎮 ภารกิจ: '+esc(i.def.t)+'</h2><small>'+(ready?'ด่านที่ 2 · ลงมือปฏิบัติทีละขั้น (แก้แผนได้อีก '+((i.revisionsLeft??2))+' ครั้ง)':'ด่านที่ 1 · จัดแผน: แตะขั้นตอน แล้วแตะอุปกรณ์ลงช่อง ('+filled+'/'+sq.length+' ขั้นพร้อม)')+'</small></div><div class="pl-bar">'+
+    sq.map((x,k)=>'<i style="--sc:'+STEP_COLORS[k%7]+'" class="'+(k<st?'done':picksOf(i,k).length?'ready':'')+'"></i>').join('')+'</div></div>';
+  h+='<div class="pl-grid"><div class="pl-steps">';
+  sq.forEach((x,k)=>{
+    const done=k<st, team=TEAM_DEF[x.team], col=STEP_COLORS[k%7], picks=picksOf(i,k), active=(k===sel&&!done);
+    h+='<div class="pl-step'+(done?' done':'')+(active?' active':'')+'" style="--sc:'+col+';--tc:'+team.color+'" data-pl-step="'+k+'" role="button" tabindex="0" aria-label="ขั้นที่ '+(k+1)+'">'+
+      '<div class="pl-num">'+(done?'✓':(k+1))+'</div><div class="pl-body"><div class="pl-title">'+esc(x.s)+'</div>'+
+      '<div class="pl-team"><span>'+TEAM_EMO[x.team]+' '+esc(team.name)+'</span>'+(x.solve?'<span class="pl-key">⭐ ขั้นแก้ปัญหา ต้องใช้ Item ที่ตรงปัญหา</span>':'')+'</div>'+
+      '<div class="pl-slots">'+(picks.length?picks.map(p=>{const c=CARD_DEF[p.key];return '<button type="button" class="pl-chip'+(i.lastAdd===k+':'+p.key?' pop':'')+'" style="--item:'+c.c+'" '+(done?'disabled':'data-bcp-remove="'+k+'" data-bcp-key="'+p.key+'" title="แตะเพื่อนำออก"')+'>'+ic(p.key,20)+'<span>'+esc(c.s)+'</span>'+(done?'':'<em>✕</em>')+'</button>';}).join(''):'<span class="pl-empty">'+(active?'👇 แตะอุปกรณ์ในคลังเพื่อลงช่องนี้':(done?'—':'ยังไม่มี Item · แตะการ์ดนี้เพื่อจัด'))+'</span>')+'</div></div></div>';
+  });
+  h+='</div>';
+  const cur=sq[sel], team=TEAM_DEF[cur.team], col=STEP_COLORS[sel%7];
+  h+='<aside class="pl-tray" style="--tc:'+team.color+';--sc:'+col+'">';
+  if(i.animating){
+    h+='<div class="pl-live"><div class="pl-live-ic">⚡</div><b>กำลังปฏิบัติภารกิจ!</b><p>'+esc(TEAM_DEF[sq[st].team].name)+' กำลังนำอุปกรณ์ไปใช้งาน</p><div class="bcp-live-track"><i></i></div></div>';
+  }else{
+    const avail=CARD_ORDER.filter(key=>(TEAM_CARDS[S.teams[cur.team].kind]||[]).includes(key));
+    const chosen=picksOf(i,sel);
+    h+='<div class="pl-tray-h"><div class="pl-av">'+avatar(S.teams[cur.team].kind,S.teams[cur.team].skin)+'</div><div><small>ขั้นที่ '+(sel+1)+' · '+TEAM_EMO[cur.team]+' ทีมที่รับผิดชอบ</small><b>'+esc(team.name)+'</b></div></div>';
+    h+='<details class="pl-know"><summary>💡 รู้ไหม? หน้าที่ของทีมนี้</summary><p>'+esc(TABLETOP_STAGES[cur.team].role)+'</p></details>';
+    h+='<div class="pl-inv-label">🎒 คลังอุปกรณ์ · แตะเพื่อลงขั้นที่ '+(sel+1)+'</div><div class="pl-inv">';
+    h+=avail.map(key=>{const c=CARD_DEF[key], stock=(key==='manual'||key==='proc')?Infinity:S.teams[cur.team].cards[key], on=chosen.some(p=>p.key===key&&p.team===cur.team);
+      return '<button type="button" class="pl-card'+(on?' on':'')+(stock===0?' out':'')+'" style="--item:'+c.c+'" data-bcp-pick-team="'+cur.team+'" data-bcp-pick="'+key+'" '+(stock===0?'disabled':'')+'><span class="ci">'+ic(key,28)+'</span><span><b>'+esc(c.n)+'</b><small>'+(on?'✓ ลงช่องแล้ว':(stock===Infinity?'ใช้ได้ไม่จำกัด':'เหลือ '+stock+' ชิ้น'))+'</small><small>'+esc(c.d)+'</small></span></button>';}).join('');
+    h+='</div><div class="pl-nav"><button type="button" class="pl-ghost" data-pl-nav="-1" '+(sel<=st?'disabled':'')+'>◀ ขั้นก่อน</button><button type="button" class="pl-ghost" data-pl-nav="1" '+(sel>=sq.length-1?'disabled':'')+'>ขั้นถัดไป ▶</button></div>';
+    if(!ready){
+      h+='<button type="button" class="pl-go" data-resource-commit="'+esc(i.id)+'" '+(filled!==sq.length?'disabled':'')+'>🚨 ยืนยันแผน ('+filled+'/'+sq.length+') และเริ่มภารกิจ</button><div class="pl-hint">ต้องใส่ Item อย่างน้อย 1 ชิ้นให้ครบทุกขั้น</div>';
+    }else{
+      h+='<button type="button" class="pl-go" data-bcp-run="'+esc(i.id)+'" '+(!picksOf(i,st).length?'disabled':'')+'>▶ ลงมือทำขั้นที่ '+(st+1)+' จาก '+sq.length+'</button><div class="pl-hint">'+(sel!==st?'ขั้นนี้ยังไม่ถึงคิว · แก้ไขแผนล่วงหน้าได้':'ตรวจ Item ในช่องให้ดีก่อนลงมือ')+'</div>';
+    }
+  }
+  h+='</aside></div></div>'; return h;
+}
+function renderPlanner(){
+  const el=$('#planner'); if(!el) return;
+  const inc=S.incidents.find(x=>x.id===S.targetId&&x.state==='open');
+  if(!inc||S.phase!=='play'){ el.hidden=true; el.innerHTML=''; return; }
+  const inv=$('.pl-inv',el), sx=inv?inv.scrollLeft:0, wasHidden=el.hidden;
+  el.hidden=false; el.innerHTML=bcpTracker(inc); inc.lastAdd=null;
+  const inv2=$('.pl-inv',el); if(inv2) inv2.scrollLeft=sx;
+}
+function navStep(id,dir){
+  const inc=S.incidents.find(x=>x.id===id&&x.state==='open'); if(!inc) return;
+  const sq=bcpFor(inc.def), st=inc.step||0, cur=Number.isInteger(inc.planStep)?inc.planStep:st;
+  selectBcpStep(id,Math.max(st,Math.min(sq.length-1,cur+dir)));
 }
 function flowMarkup(i){
-  if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
-  if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>นำผลการเลือกและการใช้ทรัพยากรไปทบทวนใน AAR</p></div>';
-  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่มปฏิบัติการที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเข้าสู่การเลือกทรัพยากรและขั้นตอน BCP</p></div>';
-  if(!i.resourceReady){
-    const picks=i.resourcePicks||[];
-    return '<div class="resource-plan"><h4>ขั้นเตรียมทรัพยากรก่อนปฏิบัติการ</h4><p>ให้แต่ละทีมประเมินสถานการณ์และเลือก Item ที่เห็นว่าเหมาะสมเอง จำนวน '+i.def.needs+' รายการ · ไม่มีคำใบ้ · เลือกผิดจะเสียคะแนนเมื่อเริ่มใช้ในขั้น BCP</p><div class="resource-picked">'+(picks.length?picks.map(x=>'<span>'+esc(TEAM_DEF[x.team].name)+' · '+esc(CARD_DEF[x.key].s)+'</span>').join(''):'<span style="background:#4b3510;border-color:#ffd93b;color:#ffe7a1">ยังไม่ได้เลือกทรัพยากร</span>')+'</div><button type="button" class="flow-commit" data-resource-commit="'+esc(i.id)+'" '+(picks.length!==i.def.needs?'disabled':'')+'>ยืนยันแผนทรัพยากร ('+picks.length+'/'+i.def.needs+')</button></div>';
-  }
-  return bcpTracker(i);
+  if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>ดำเนินการครบทุกขั้นตอนแล้ว · ดูคะแนนและ Item ที่ถูก/ผิดได้ในสรุป AAR</p></div>';
+  if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>นำผลการเลือก Item และคะแนนที่ถูกหักไปทบทวนใน AAR</p></div>';
+  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่มปฏิบัติการที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเข้าสู่การวาง Item ในแต่ละขั้นตอน BCP</p></div>';
+  return '<div class="flow-box"><b>🎯 กำลังปฏิบัติการ</b><p>วางแผนและใส่ Item ที่แผงภารกิจสีสันด้านล่างหน้าจอ ↓</p></div>';
 }
 function commitResourcePlan(id){
   const inc=S.incidents.find(x=>x.id===id);
   if(!inc||inc.state!=='open'||inc.resourceReady) return;
-  if(S.phase!=='play'||!S.running){toast('เริ่มจับเวลาและเปิดภารกิจก่อนจึงยืนยันแผนทรัพยากรได้','bad');return;}
-  if((inc.resourcePicks||[]).length!==inc.def.needs){toast('เลือกทรัพยากรให้ครบ '+inc.def.needs+' รายการก่อนยืนยัน','bad');return;}
-  inc.resourceReady=true; inc.resourceLockedAt=new Date().toISOString();
-  toast('ยืนยันแผนทรัพยากรแล้ว · เริ่มปฏิบัติตาม BCP ทีละขั้น','good');
+  if(S.phase!=='play'||!S.running){toast('เริ่มจับเวลาและเปิดภารกิจก่อนจึงยืนยันแผนได้','bad');return;}
+  const steps=bcpFor(inc.def), plans=inc.stepItems||[];
+  if(plans.filter(x=>Array.isArray(x)?x.length>0:!!x).length!==steps.length){toast('กรุณาวาง Item อย่างน้อย 1 ชิ้นให้ครบทุกขั้นตอน BCP ก่อนยืนยัน','bad');return;}
+  inc.resourceReady=true; inc.resourceLockedAt=new Date().toISOString(); inc.planStep=inc.step||0;
+  toast('ล็อกแผน Item แล้ว · เริ่มปฏิบัติการตามลำดับ BCP','good');
   Sfx.good(); renderAll(); sayStep(inc,'เริ่มแผนปฏิบัติการ: ');
 }
+function selectBcpStep(id,k){
+  const inc=S.incidents.find(x=>x.id===id&&x.state==='open');
+  if(!inc||inc.animating||k<(inc.step||0)) return;
+  inc.planStep=k; renderAll();
+}
+function removeBcpItem(id,k,key){
+  const inc=S.incidents.find(x=>x.id===id&&x.state==='open');
+  if(!inc||inc.animating||k<(inc.step||0)) return;
+  const arr=Array.isArray(inc.stepItems[k])?inc.stepItems[k]:inc.stepItems[k]?[inc.stepItems[k]]:[];
+  if(inc.resourceReady){ if((inc.revisionsLeft??2)<=0){toast('ใช้สิทธิ์แก้ไขแผนครบ 2 ครั้งแล้ว','bad');return;} inc.revisionsLeft--; }
+  inc.stepItems[k]=arr.filter(x=>x.key!==key); renderAll(); toast('นำ Item ออกจากขั้นที่ '+(k+1)+' แล้ว'+(inc.resourceReady?' · ใช้สิทธิ์แก้ไข 1 ครั้ง':''),'good');
+}
+function placeBcpItem(tid,key){
+  const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
+  if(!inc||inc.animating) return false;
+  const steps=bcpFor(inc.def), k=Number.isInteger(inc.planStep)?inc.planStep:(inc.step||0), st=steps[k];
+  if(!st||k<(inc.step||0)){toast('เลือกขั้นตอน BCP ที่ยังไม่ดำเนินการก่อน','bad');return true;}
+  if(tid!==st.team){toast('ขั้นนี้เป็นหน้าที่ของ '+TEAM_DEF[st.team].name+' กรุณาเลือก Item จากทีมที่รับผิดชอบ','bad');Sfx.bad();return true;}
+  const t=S.teams[tid];
+  if(key!=='proc'&&key!=='manual'&&t.cards[key]<=0){toast('Item นี้หมดแล้ว กรุณาเลือกทรัพยากรอื่น','bad');return true;}
+  const arr=Array.isArray(inc.stepItems[k])?inc.stepItems[k]:(inc.stepItems[k]?[inc.stepItems[k]]:[]);
+  const idx=arr.findIndex(x=>x.key===key&&x.team===tid);
+  if(inc.resourceReady){ if((inc.revisionsLeft??2)<=0){toast('ใช้สิทธิ์แก้ไขแผนครบ 2 ครั้งแล้ว','bad');return true;} inc.revisionsLeft--; }
+  if(idx>=0){arr.splice(idx,1);toast('นำ '+CARD_DEF[key].s+' ออกจากขั้นที่ '+(k+1)+' แล้ว'+(inc.resourceReady?' · ใช้สิทธิ์แก้ไข 1 ครั้ง':''),'good');}
+  else {arr.push({team:tid,key:key});toast('เพิ่ม '+CARD_DEF[key].s+' ในขั้นที่ '+(k+1)+' แล้ว'+(inc.resourceReady?' · ใช้สิทธิ์แก้ไข 1 ครั้ง':''),'good');}
+  inc.stepItems[k]=arr; inc.lastAdd=(idx>=0)?null:(k+':'+key); Sfx.click(); renderAll(); return true;
+}
+function runBcpStep(id){
+  const inc=S.incidents.find(x=>x.id===id&&x.state==='open');
+  if(!inc||inc.animating||!inc.resourceReady) return;
+  const k=inc.step||0, steps=bcpFor(inc.def), picks=Array.isArray((inc.stepItems||[])[k])?(inc.stepItems||[])[k]:((inc.stepItems||[])[k]?[(inc.stepItems||[])[k]]:[]);
+  if(!picks.length){toast('ยังไม่มี Item ในขั้นตอนนี้ · เลือก Item จากทีมผู้รับผิดชอบก่อน','bad');return;}
+  inc.planStep=k; inc.animating=true; renderAll();
+  say(picks[0].team,'เริ่มปฏิบัติภารกิจ: '+picks.map(p=>CARD_DEF[p.key].n).join(' + ')+' · '+shortTxt(steps[k].s,90),'ok',3000); Sfx.card();
+  setTimeout(()=>finishBcpStep(inc.id),1100);
+}
+function finishBcpStep(id){
+  const inc=S.incidents.find(x=>x.id===id&&x.state==='open'); if(!inc) return;
+  const k=inc.step||0, steps=bcpFor(inc.def), st=steps[k], raw=(inc.stepItems||[])[k], picks=Array.isArray(raw)?raw:(raw?[raw]:[]);
+  if(!picks.length){inc.animating=false;renderAll();return;}
+  const def=inc.def, frac=S.timeLeft/S.roundLen; let wrongCount=0, goodCount=0;
+  picks.forEach(pick=>{
+    const t=S.teams[pick.team], key=pick.key; let q;
+    if(key==='manual') q='manual';
+    else if(def.sol[key]) q=def.sol[key];
+    else q=FREE_PROC.includes(key)&&key!=='manual'?'best':'miss';
+    if(key!=='manual'&&key!=='proc'){ if(t.cards[key]>0) t.cards[key]--; else q='miss'; }
+    t.used[key]=(t.used[key]||0)+1;
+    const bonus=q==='miss'?0:(frac>.66?3:(frac>.33?1:0)); t.auto+=Q[q].pt+bonus;
+    inc.plays.push({team:pick.team,key:key,q:q,step:k});
+    inc.log.push({n:k,exp:st.team,team:pick.team,key:key,q:q,solve:!!st.solve});
+    if(q==='miss'){
+      wrongCount++; S.meters[def.m]=clamp(S.meters[def.m]-12,0,100); S.minM[def.m]=Math.min(S.minM[def.m],S.meters[def.m]); if(S.meters[def.m]<=0) S.lost=true;
+    }else {goodCount++; if(q!=='manual'&&st.solve){const gain=def.imp/Math.max(1,def.needs)*Q[q].f/Math.max(1,picks.length);S.meters[def.m]=clamp(S.meters[def.m]+gain,0,100);}}
+  });
+  inc.animating=false;
+  const msg=wrongCount?'เลือก Item ไม่ตรง '+wrongCount+' ชิ้น · หัก '+(wrongCount*Math.abs(Q.miss.pt))+' คะแนน': 'ดำเนินการด้วย Item '+picks.length+' ชิ้นแล้ว';
+  picks.forEach(p=>say(p.team,CARD_DEF[p.key].n+' '+(inc.log.find(x=>x.n===k&&x.key===p.key&&x.team===p.team)?.q==='miss'?'ไม่ตรงขั้นตอน!':'ดำเนินการแล้ว ✓'),inc.log.find(x=>x.n===k&&x.key===p.key&&x.team===p.team)?.q==='miss'?'bad':'ok',4200));
+  inc.step++;
+  if(inc.step>=steps.length){inc.state='resolved';inc.grade=inc.plays.reduce((w,p)=>RANK[p.q]<RANK[w]?p.q:w,'best');S.targetId=null;toast('ครบทุกขั้นตอน BCP · '+msg,'good');}
+  else {inc.planStep=inc.step;toast('✓ ขั้นที่ '+inc.step+'/'+steps.length+' เสร็จแล้ว · '+msg,'good');}
+  afterStep(inc); Sfx.good(); renderArm(); renderAll();
+  if(S.lost){toast('เหตุการณ์ลุกลามเกินควบคุม!','bad');setTimeout(endRound,900);return;} chkEnd();
+}
+
 function commitTabletopDecision(id){
   const inc=S.incidents.find(x=>x.id===id);
   if(!inc||inc.state!=='open'||inc.flowReady) return;
@@ -1598,7 +1856,7 @@ function renderIncidents(){
     else status='<span class="tag">'+esc(BLD[d.b].n)+'</span>';
     let dots=''; for(let k=0;k<d.needs;k++) dots+='<i class="'+(k<openCount(i)||i.state==='resolved'?'f':'')+'"></i>';
     dots=''; const cls='inc '+(i.state==='open'?'open':(i.state==='resolved'?'done':'fail'))+(tg?' target':'')+(selected?' selected':'');
-    return '<div class="'+cls+'" data-id="'+i.id+'"'+(tg?' role="button" tabindex="0" aria-label="เลือกเหตุการณ์ '+esc(d.t)+'"':'')+'>'+
+    return '<div class="'+cls+'" style="--ic:'+m.c+'" data-id="'+i.id+'"'+(tg?' role="button" tabindex="0" aria-label="เลือกเหตุการณ์ '+esc(d.t)+'"':'')+'>'+
       '<div class="bub" style="background:'+m.c+'">'+ic(m.ic,22)+'</div>'+
       '<div><h3>'+esc(d.t)+'</h3><p>'+esc(d.d)+'</p>'+flowMarkup(i)+(i.state!=='open'?'<details class="incident-steps"><summary>แนวทางทบทวนหลังเหตุการณ์ (ใช้ใน AAR)</summary><ol>'+stepsForIncident(d).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ol></details>':'')+'<div class="meta">'+status+
       '<span class="dots" title="ต้องใช้การ์ด '+d.needs+' ใบ">'+dots+'</span>'+(d.needs>1&&i.state==='open'?'<span class="tag">ต้องใช้ '+d.needs+' ใบ</span>':'')+'</div></div></div>';
@@ -1629,7 +1887,7 @@ function renderTeams(){
       const c=CARD_DEF[k], n=(k==='manual'||k==='proc')?Infinity:t.cards[k];
       const armed=S.armed&&S.armed.team===t.id&&S.armed.key===k;
       const target=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
-      const picked=!!(target&&!target.resourceReady&&(target.resourcePicks||[]).some(x=>x.team===t.id&&x.key===k));
+      const raw=target&&(target.stepItems||[])[Number.isInteger(target.planStep)?target.planStep:(target.step||0)]; const ps=Array.isArray(raw)?raw:(raw?[raw]:[]); const picked=ps.some(x=>x&&x.team===t.id&&x.key===k);
       return '<button type="button" class="cardb'+(k==='manual'?' manual':'')+(n===0?' empty':'')+(armed?' armed':'')+(picked?' plan-picked':'')+'" style="--cc:'+c.c+'" data-team="'+t.id+'" data-card="'+k+'" aria-pressed="'+(armed?'true':'false')+'" aria-label="'+esc(t.name+' การ์ด '+c.n+(n===Infinity?' ไม่จำกัด':' เหลือ '+n))+'">'+
         '<span class="n">'+(n===Infinity?'∞':'×'+n)+'</span><span class="ico">'+ic(k,20)+'</span><span>'+esc(c.s)+'</span></button>';
     }).join('');
@@ -1639,7 +1897,7 @@ function renderTeams(){
   }).join('');
   if(key){ const p=key.split(':'), n=$('#teams [data-team="'+p[0]+'"][data-card="'+p[1]+'"]'); if(n) n.focus({preventScroll:true}); }
 }
-function renderAll(){ renderHud(); renderTeams(); renderIncidents(); renderPins(); updateMeters(); updateFx(); }
+function renderAll(){ renderHud(); renderTeams(); renderIncidents(); renderPins(); renderPlanner(); updateMeters(); updateFx(); }
 function setTicker(r){
   const facts=[ACTIVE_ROUNDS[Math.max(0,r)].head].concat(TICKER_FACTS);
   const inner=facts.map(f=>'<span>'+esc(f)+'</span>').join('');
@@ -1776,57 +2034,25 @@ function renderArm(){
   const inc=S.incidents.find(i=>i.id===S.targetId);
   if(!inc||inc.state!=='open'){ bar.hidden=true; return; }
   bar.hidden=false;
-  bar.innerHTML='<span>เลือกเหตุการณ์: “'+esc(inc.def.t)+'” · '+(inc.resourceReady?'กำลังดำเนินการตามขั้นตอน BCP':'เลือก Item จากการ์ดของแต่ละทีมให้ครบ '+inc.def.needs+' รายการก่อนเริ่ม BCP')+'</span><button type="button" class="btn sm" id="btnDisarm">ยกเลิกจุด</button>';
+  bar.innerHTML='<span>เลือกเหตุการณ์: “'+esc(inc.def.t)+'” · '+(inc.resourceReady?'ดำเนิน BCP ทีละขั้น · แก้แผนได้อีก '+(inc.revisionsLeft??2)+' ครั้ง':'วาง Item ลงในแต่ละขั้นตอน BCP ก่อนเริ่ม')+'</span><button type="button" class="btn sm" id="btnDisarm">ยกเลิกจุด</button>';
 }
-function disarm(){ S.targetId=null; S.armed=null; renderArm(); renderTeams(); renderIncidents(); renderPins(); }
+function disarm(){ S.targetId=null; S.armed=null; renderArm(); renderTeams(); renderIncidents(); renderPins(); renderPlanner(); }
 function onCard(tid,key){
-  if(S.phase!=='play'){ toast('กดเริ่มจับเวลาก่อนจึงจะใช้ Item ได้'); return; }
-  if(!S.running){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return; }
+  if(S.phase!=='play'){toast('กดเริ่มจับเวลาก่อนจึงจะใช้ Item ได้');return;}
+  if(!S.running){toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน');return;}
   const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
-  if(!inc){ Sfx.soft(); toast('ขั้นแรก แตะหมุดสีแดงบนอาคารเพื่อเลือกจุดเกิดเหตุก่อน'); return; }
+  if(!inc){Sfx.soft();toast('แตะหมุดสีแดงบนอาคารเพื่อเลือกเหตุการณ์ก่อน');return;}
   const t=S.teams[tid];
   if(!(TEAM_CARDS[t.kind]||[]).includes(key)){toast('Item นี้ไม่ใช่ทรัพยากรของทีม '+t.name,'bad');return;}
-  if(!inc.resourceReady){
-    if(key==='proc'||key==='ics'||key==='manual'){toast('กรุณาเลือกทรัพยากรที่ทีมประเมินว่าเหมาะกับเหตุการณ์ ไม่เลือกการ์ดขั้นตอนหรือ Manual ในช่วงเตรียมแผน','bad');return;}
-    if(t.cards[key]<=0){toast('ทรัพยากรนี้หมดแล้ว กรุณาเลือก Item อื่น','bad');return;}
-    inc.resourcePicks=inc.resourcePicks||[];
-    const at=inc.resourcePicks.findIndex(x=>x.team===tid&&x.key===key);
-    if(at>=0){inc.resourcePicks.splice(at,1);toast('นำ '+CARD_DEF[key].s+' ออกจากแผนทรัพยากร');}
-    else if(inc.resourcePicks.length>=inc.def.needs){toast('เลือกครบ '+inc.def.needs+' รายการแล้ว หากต้องการเปลี่ยนให้กด Item ที่เลือกไว้เพื่อเอาออกก่อน');return;}
-    else {inc.resourcePicks.push({team:tid,key:key});toast('เพิ่ม '+CARD_DEF[key].s+' ในแผนทรัพยากร · '+inc.resourcePicks.length+'/'+inc.def.needs,'good');}
-    Sfx.click(); renderAll(); return;
-  }
-  const steps=bcpFor(inc.def), si=inc.step||0, st=steps[si];
-  if(st.solve){
-    if(key==='proc'||key==='ics'){ Sfx.soft(); toast('ขั้นนี้ต้องใช้ทรัพยากรจากแผนที่ทีมเลือกไว้ก่อนเริ่ม BCP','bad'); return; }
-    const planned=(inc.resourcePicks||[]).some(x=>x.team===tid&&x.key===key);
-    const alreadyUsed=(inc.plays||[]).some(x=>x.team===tid&&x.key===key);
-    if(alreadyUsed){toast('Item นี้ถูกใช้ไปแล้วในเหตุการณ์นี้','bad');return;}
-    if(!planned){
-      const allPlannedAttempted=(inc.resourcePicks||[]).every(x=>(inc.plays||[]).some(p=>p.team===x.team&&p.key===x.key));
-      if(!allPlannedAttempted){Sfx.bad();toast('ให้ทดลองใช้ Item ที่วางแผนไว้ก่อน หากยังแก้ปัญหาไม่ได้จึงเลือกทรัพยากรเพิ่มเติมได้','bad');return;}
-      if(t.cards[key]<=0){toast('ทรัพยากรนี้หมดแล้ว กรุณาเลือก Item อื่น','bad');return;}
-      inc.resourcePicks.push({team:tid,key:key,additional:true});
-      toast('เพิ่มทรัพยากรสำรองเข้าปฏิบัติการ · มีการเลือกเพิ่มเติมหลังแผนเดิมไม่เพียงพอ','bad');
-    }
-  }else{
-    if(tid!==st.team){
-      Sfx.bad(); t.auto-=1; inc.log=inc.log||[]; inc.log.push({n:si,exp:st.team,team:tid,key:key,q:'wrong',solve:false});
-      toast('ขั้น '+(si+1)+'/'+steps.length+' เป็นหน้าที่ของ “'+TEAM_DEF[st.team].name+'” ไม่ใช่ทีม '+t.name+' (หัก 1 คะแนน)','bad'); say(tid,'ขั้นนี้ไม่ใช่หน้าที่ของทีมเรา ต้องเป็น “'+TEAM_DEF[st.team].name+'”','bad',4500); renderTeams(); return;
-    }
-    if(!FREE_PROC.includes(key)){ Sfx.soft(); toast('ขั้น '+(si+1)+' เป็นขั้นตอนปฏิบัติ ใช้การ์ด “ปฏิบัติตามขั้นตอน (SOP)” ของทีมนี้ (ไม่ต้องใช้ทรัพยากร)','bad'); return; }
-  }
-  const consume=key!=='manual'&&key!=='proc'&&(st.solve||!FREE_PROC.includes(key));
-  if(consume&&t.cards[key]<=0){ Sfx.bad(); toast('การ์ด'+CARD_DEF[key].s+'ของทีมนี้หมดแล้ว ลองแผน Manual','bad'); return; }
-  const c=CARD_DEF[key];
-  ask('ยืนยันใช้ Item “'+c.n+'” ?', 'ทีม '+t.name+' จะดำเนินการขั้น '+(si+1)+'/'+steps.length+' ของเหตุการณ์ “'+inc.def.t+'”. เลือกตามการประเมินของผู้เล่น หากไม่ตรงปัญหาอาจเสียทรัพยากรและคะแนน', 'ยืนยันใช้ Item',()=>{ closeAsk(); playCard(tid,key,inc.id); });
+  if(placeBcpItem(tid,key)) return;
 }
 function onIncident(id){
   if(S.phase!=='play'){ toast('เริ่มภารกิจก่อนจึงจะเลือกจุดเกิดเหตุได้'); return; }
   if(!S.running){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return; }
   const inc=S.incidents.find(i=>i.id===id); if(!inc||inc.state!=='open') return;
   S.targetId=id; Sfx.click();
-  renderArm(); renderIncidents(); renderPins();
+  renderArm(); renderIncidents(); renderPins(); renderPlanner();
+  setTimeout(()=>{ const pl=$('#planner'); if(pl&&!pl.hidden) pl.scrollIntoView({behavior:'smooth',block:'start'}); },80);
   toast('เลือกจุดเกิดเหตุแล้ว · เลือกทีมและ Item ที่เหมาะสม','good');
 }
 /* ---------- playing a card ---------- */
@@ -1860,43 +2086,10 @@ function advanceStep(inc,steps,def,msg){
   return msg;
 }
 function playCard(tid,key,incId){
-  const inc=S.incidents.find(i=>i.id===incId); if(!inc||inc.state!=='open'){ disarm(); return; }
-  const t=S.teams[tid], def=inc.def, q=def.sol[key]||'miss';
-  const steps=bcpFor(def), si=inc.step||0, st=steps[si];
-  inc.log=inc.log||[];
-  if(!st.solve){
-    t.used[key]=(t.used[key]||0)+1;
-    t.auto+=key==='manual'?2:(key==='proc'?4:5);
-    inc.log.push({n:si,exp:st.team,team:tid,key:key,q:key==='manual'?'manual':'best',solve:false});
-    say(tid,'ดำเนินการแล้ว ✓ '+shortTxt(st.s,80),'ok',4000);
-    const msg=advanceStep(inc,steps,def,''); afterStep(inc);
-    toast(msg,'good'); Sfx.good(); S.armed=null; S.targetId=inc.state==='open'?inc.id:null; renderArm(); renderAll(); chkEnd(); return;
-  }
-  if(key!=='manual'){ if(t.cards[key]<=0){ disarm(); return; } t.cards[key]--; }
-  t.used[key]=(t.used[key]||0)+1;
-  inc.plays.push({team:tid,key:key,q:q});
-  inc.log.push({n:si,exp:st.team,team:tid,key:key,q:q,solve:true});
-  const frac=S.timeLeft/S.roundLen, bonus=q==='miss'?0:(frac>.66?3:(frac>.33?1:0));
-  t.auto+=Q[q].pt+bonus;
-  if(q==='miss'){ S.meters[def.m]=clamp(S.meters[def.m]-12,0,100); S.minM[def.m]=Math.min(S.minM[def.m],S.meters[def.m]); if(S.meters[def.m]<=0) S.lost=true; }
-  if(q!=='miss'){
-    const gain=def.imp/def.needs*Q[q].f;
-    S.meters[def.m]=clamp(S.meters[def.m]+gain,0,100);
-  }
-  const good=inc.plays.filter(p=>p.q!=='miss');
-  let msg=t.name+' ใช้ “'+CARD_DEF[key].n+'” แล้ว · '+(q==='miss'?'ไม่ตรงปัญหา ติดตามสถานการณ์ต่อ':(good.length<def.needs?'ยังต้องใช้ Item อีก '+(def.needs-good.length)+' ใบ':'')), kind=q==='miss'?'bad':'good';
-  if(good.length>=def.needs){
-    inc.grade=good.reduce((w,p)=>RANK[p.q]<RANK[w]?p.q:w,'best');
-    msg=advanceStep(inc,steps,def,''); kind='good'; afterStep(inc);
-  }
-  say(tid,'ใช้ “'+CARD_DEF[key].n+'” '+(q==='miss'?'— ไม่ตรงปัญหา! เหตุการณ์ลุกลาม':q==='best'?'— ตรงจุดที่สุด!':q==='ok'?'— แก้ขัดไปก่อน':'— ใช้ระบบกระดาษ'),q==='miss'?'bad':'ok',4500);
-  Sfx.card();
-  if(q!=='miss'&&inc.state==='resolved'&&q!=='best') Sfx.card();
-  toast(msg,kind);
-  S.armed=null; S.targetId=inc.state==='open'?inc.id:null; renderArm(); renderAll();
-  if(S.lost){ toast('เหตุการณ์ลุกลามเกินควบคุม!','bad'); setTimeout(endRound,900); return; }
-  chkEnd();
+  // v11: การใช้ Item ดำเนินผ่านการวางแผนรายขั้นและ runBcpStep()
+  const inc=S.incidents.find(i=>i.id===incId); if(inc) runBcpStep(incId);
 }
+
 
 /* ---------- round flow ---------- */
 function startRound(r){
@@ -1935,7 +2128,7 @@ function beginRound(){
   chatT.forEach(clearTimeout); chatT=[]; Voice.stop();
   hideOv('ovAlert');
   S.incidents=R.inc.map(d=>({id:d.id,def:d,round:r,state:'open',plays:[],grade:null,
-    flowStep:0,flowReports:[],flowReady:true,resourcePicks:[],resourceReady:false,step:0,decisions:[],log:[]}));
+    flowStep:0,flowReports:[],flowReady:true,resourcePicks:[],resourceReady:false,step:0,planStep:0,stepItems:bcpFor(d).map(()=>[]),revisionsLeft:2,animating:false,decisions:[],log:[]}));
   S.incidents.forEach(i=>{ S.all.push(i); const m=i.def.m; S.meters[m]=clamp(S.meters[m]-i.def.imp,0,100); S.minM[m]=Math.min(S.minM[m],S.meters[m]); });
   S.phase='play'; S.running=true; lastT=performance.now();
   renderAll(); lightning(); Sfx.siren(2);
@@ -2014,6 +2207,7 @@ function weakOf(i){
 }
 function lgLabel(x){
   if(x.q==='wrong') return ['เลือกทีมผิดหน้าที่ ✗','bad'];
+  if(x.q==='miss') return ['Item ไม่ตรงขั้นตอน · หัก 2 คะแนน','bad'];
   if(x.solve) return x.q==='best'?['ตรงจุดที่สุด ✓','ok']:x.q==='ok'?['ใช้แก้ขัดได้ ~','mid']:x.q==='manual'?['ระบบ Manual (คะแนนน้อย)','mid']:['ไม่ตรงปัญหา ✗','bad'];
   return x.q==='manual'?['Manual แทน SOP (คะแนนน้อย)','mid']:['ถูกต้อง ✓','ok'];
 }
@@ -2021,7 +2215,9 @@ function afterActionHtml(i){
   const d=i.def, steps=bcpFor(d), log=i.log||[], st=i.step||0, done=i.state==='resolved';
   const nm=q=>Object.keys(d.sol).filter(k=>d.sol[k]===q).map(k=>CARD_DEF[k].n).join(', ')||'-';
   const wrongN=log.filter(x=>x.q==='wrong'||x.q==='miss').length;
+  const itemWrong=log.filter(x=>x.q==='miss').length, teamWrong=log.filter(x=>x.q==='wrong').length, deduction=itemWrong*Math.abs(Q.miss.pt)+teamWrong;
   let h='<div class="aa"><div class="aa-head '+(done?'ok':'bad')+'"><b>'+(done?'✓ ผ่านเหตุการณ์':'✗ ไม่ผ่านเหตุการณ์ภายในเวลา')+' · '+esc(d.t)+'</b><span>ผ่านขั้นตอน BCP '+Math.min(st,steps.length)+' / '+steps.length+' ขั้น · เลือกผิด '+wrongN+' ครั้ง</span></div>';
+  h+='<div class="aa-penalty"><b>สรุปคะแนนที่ถูกหักจากการเลือก Item/ทีมผิด</b><span>Item ไม่ตรง '+itemWrong+' ครั้ง × '+Math.abs(Q.miss.pt)+' คะแนน = <strong>−'+(itemWrong*Math.abs(Q.miss.pt))+'</strong> คะแนน</span><span>เลือกทีมผิด '+teamWrong+' ครั้ง × 1 คะแนน = <strong>−'+teamWrong+'</strong> คะแนน</span><span class="aa-total">รวมถูกหัก <strong>−'+deduction+' คะแนน</strong></span></div>';
   h+='<div class="aa-cols"><div><h4>✓ จุดแข็ง</h4><ul>'+goodOf(i).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div><div><h4>⚠ จุดอ่อน</h4><ul>'+weakOf(i).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div></div>';
   h+='<h4>ขั้นตอน BCP ที่ถูกต้องของเหตุการณ์นี้ เทียบกับที่ทีมเลือก</h4>';
   steps.forEach((s,k)=>{
@@ -2176,6 +2372,10 @@ function wire(){
   $('#teams').addEventListener('click',e=>{ const b=e.target.closest('.cardb'); if(b) onCard(+b.dataset.team,b.dataset.card); });
   $('#incList').addEventListener('click',e=>{
     const plan=e.target.closest('[data-resource-commit]'); if(plan){commitResourcePlan(plan.dataset.resourceCommit);return;}
+    const pick=e.target.closest('[data-bcp-pick]'); if(pick){placeBcpItem(+pick.dataset.bcpPickTeam,pick.dataset.bcpPick);return;}
+    const run=e.target.closest('[data-bcp-run]'); if(run){runBcpStep(run.dataset.bcpRun);return;}
+    const step=e.target.closest('[data-bcp-step]'); if(step){const inc=e.target.closest('.inc'); if(inc) selectBcpStep(inc.dataset.id,+step.dataset.bcpStep);return;}
+    const remove=e.target.closest('[data-bcp-remove]'); if(remove){const inc=e.target.closest('.inc'); if(inc) removeBcpItem(inc.dataset.id,+remove.dataset.bcpRemove,remove.dataset.bcpKey);return;}
     const commit=e.target.closest('[data-flow-commit]');
     if(commit){ e.preventDefault(); e.stopPropagation(); commitTabletopDecision(commit.dataset.flowCommit); return; }
     if(e.target.closest('.flow-box, .incident-steps, input, label, textarea, button')) return;
@@ -2183,6 +2383,17 @@ function wire(){
   });
   $('#incList').addEventListener('keydown',e=>{ if(e.target.closest('.flow-box, input, textarea, button')) return; if(e.key==='Enter'||e.key===' '){ const n=e.target.closest('.inc.target'); if(n){ e.preventDefault(); onIncident(n.dataset.id); } } });
   $('#scene').addEventListener('click',e=>{ const p=e.target.closest('.pin.target'); if(p) onIncident(p.dataset.id); });
+  $('#planner').addEventListener('click',e=>{
+    const root=e.target.closest('.pl'); if(!root) return; const id=root.dataset.inc;
+    let b;
+    if((b=e.target.closest('[data-resource-commit]'))){ commitResourcePlan(id); return; }
+    if((b=e.target.closest('[data-bcp-run]'))){ runBcpStep(id); return; }
+    if((b=e.target.closest('[data-bcp-pick]'))){ placeBcpItem(+b.dataset.bcpPickTeam,b.dataset.bcpPick); return; }
+    if((b=e.target.closest('[data-bcp-remove]'))){ removeBcpItem(id,+b.dataset.bcpRemove,b.dataset.bcpKey); return; }
+    if((b=e.target.closest('[data-pl-nav]'))){ navStep(id,+b.dataset.plNav); return; }
+    if((b=e.target.closest('[data-pl-step]'))){ selectBcpStep(id,+b.dataset.plStep); }
+  });
+  $('#planner').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('.pl-step')){ e.preventDefault(); const root=e.target.closest('.pl'); selectBcpStep(root.dataset.inc,+e.target.dataset.plStep); } });
   $('#armBar').addEventListener('click',e=>{ if(e.target.closest('#btnDisarm')) disarm(); });
   $('#rdTable').addEventListener('input',e=>{
     const el=e.target; if(!el.dataset||el.dataset.i===undefined) return;
