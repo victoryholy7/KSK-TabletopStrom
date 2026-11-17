@@ -108,6 +108,16 @@
 .flow-log b{color:#8fffc9}
 .flow-box.tabletop .resource-gate{color:#ffe7a1;font-weight:700;margin:8px 0 0}
 @media(max-width:700px){.flow-box.tabletop textarea{font-size:16px}.flow-box.tabletop .flow-commit{min-height:46px}}
+
+.decision-choices{border:0;padding:0;margin:10px 0;display:grid;gap:8px;min-width:0}
+.decision-choices legend{font-weight:800;color:#ffe36b;margin-bottom:8px}
+.decision-option{display:flex;align-items:flex-start;gap:10px;padding:11px;border:1px solid #829bd1;border-radius:11px;background:#0b1a38;cursor:pointer}
+.decision-option:has(input:checked){border:2px solid #ffd93b;background:#26365f;box-shadow:0 0 0 2px #ffd93b22}
+.decision-option input{width:20px;height:20px;flex:0 0 20px;margin:2px 0 0;accent-color:#ffd93b}
+.decision-option span{display:grid;gap:4px;min-width:0}
+.decision-option b{color:#fff;font-size:14px;line-height:1.4}
+.decision-option small{color:#c5d3f3;font-size:12px;line-height:1.5}
+@media(max-width:700px){.decision-option{padding:12px}.decision-option b{font-size:15px}.decision-option small{font-size:13px}}
 </style></head><body>
 <title>KSK: STORM COMMAND</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -1329,38 +1339,74 @@ function tabletopQuestion(d,teamId){
   if(teamId===3) return 'ต้องประสานใครภายใน/ภายนอกโรงพยาบาลเพื่อให้ภารกิจเดินต่อ ใครเป็นผู้สื่อสารหลัก จะขอทรัพยากรอะไร และจะสื่อสารเฉพาะข้อมูลที่ยืนยันแล้วอย่างไร?';
   return 'เมื่อรับรายงานครบแล้ว จะเลือกแนวทางใด ใครรับคำสั่ง กำหนดเส้นตาย/รอบรายงานอย่างไร และมีเกณฑ์ใดที่จะยกระดับหรือยุติการตอบโต้เหตุ?';
 }
+function choiceOptionsFor(d,teamId){
+  const task=eventTasksForTeam(d,teamId);
+  const primary=task[0]||'ประเมินสถานการณ์และรายงานต่อศูนย์บัญชาการ';
+  const optionsByTeam=[
+    [
+      {t:'เปิดระบบบัญชาการทันที',d:'ยืนยันข้อมูลที่ทราบ/ไม่ทราบ แต่งตั้งผู้บัญชาการ กำหนดเป้าหมายความปลอดภัยและรอบรายงาน',good:true},
+      {t:'ให้แต่ละหน่วยงานแก้ปัญหาเองก่อน แล้วค่อยรายงานเมื่อเสร็จ',d:'เสี่ยงต่อคำสั่งซ้ำซ้อนและขาดภาพรวมของโรงพยาบาล'},
+      {t:'รอข้อมูลครบทุกด้านก่อนจึงประกาศใช้แผน',d:'ทำให้การคุ้มครองชีวิตและการควบคุมความเสี่ยงล่าช้า'}
+    ],
+    [
+      {t:'ประเมินผู้ป่วยกลุ่มเสี่ยงและบริการวิกฤตก่อน',d:'จัดลำดับการดูแลต่อเนื่อง แจ้งจำนวนผู้ป่วย/ทรัพยากรที่ต้องการ และเตรียมแผนสำรอง',good:true},
+      {t:'เคลื่อนย้ายผู้ป่วยทั้งหมดออกจากอาคารทันที',d:'อาจเพิ่มความเสี่ยงหากยังไม่ประเมินความปลอดภัยและความจำเป็นรายบุคคล'},
+      {t:'รอคำสั่งจากทีมอาคารก่อนเริ่มดูแลผู้ป่วย',d:'การดูแลผู้ป่วยฉุกเฉินต้องดำเนินควบคู่กับการประเมินระบบอาคาร'}
+    ],
+    [
+      {t:'กั้นเขตอันตรายและให้ผู้มีความชำนาญประเมินระบบ',d:'ไม่ให้ผู้ไม่มีหน้าที่สัมผัสระบบเสี่ยง พร้อมรายงานผลกระทบและทรัพยากรที่ต้องใช้',good:true},
+      {t:'ส่งเจ้าหน้าที่ทั่วไปเข้าไปตรวจและซ่อมทันที',d:'อาจทำให้เกิดอันตรายซ้ำ โดยเฉพาะไฟฟ้า โครงสร้าง และก๊าซทางการแพทย์'},
+      {t:'ปิดระบบสนับสนุนทั้งหมดของโรงพยาบาลโดยไม่แยกความจำเป็น',d:'อาจกระทบบริการวิกฤต ควรประเมินและจัดลำดับตามแผน'}
+    ],
+    [
+      {t:'ประสานเครือข่ายและจัดช่องทางสื่อสารกลาง',d:'กำหนดผู้ให้ข้อมูลหลัก ตรวจสอบข้อเท็จจริง และขอทรัพยากรตามความจำเป็น',good:true},
+      {t:'แจ้งข้อมูลทุกอย่างผ่านหลายช่องทางโดยไม่ต้องตรวจสอบ',d:'เสี่ยงต่อข่าวคลาดเคลื่อนและคำสั่งไม่ตรงกัน'},
+      {t:'รอให้สถานการณ์ยุติก่อนจึงติดต่อหน่วยงานภายนอก',d:'ทำให้การขอความช่วยเหลือและทรัพยากรล่าช้า'}
+    ]
+  ];
+  const opts=(optionsByTeam[teamId]||optionsByTeam[0]).map(x=>({...x}));
+  // เพิ่มโจทย์เฉพาะเหตุการณ์ไว้ในคำอธิบายของตัวเลือกที่เหมาะสม
+  opts[0].d += ' | ประเด็นเฉพาะเหตุการณ์: '+primary;
+  return opts;
+}
 function flowMarkup(i){
-  if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>บันทึกการตัดสินใจของทุกทีมและการใช้ทรัพยากรแล้ว เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
-  if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>เก็บบันทึกการตัดสินใจที่ทำได้และประเด็นที่ยังค้าง เพื่อนำไปทบทวนใน AAR</p></div>';
-  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่ม Tabletop ที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเปิดวงอภิปรายและบันทึกมติของแต่ละทีมตามลำดับ</p></div>';
+  if(i.state==='resolved') return '<div class="flow-box done"><b>✓ ภารกิจปฏิบัติการสำเร็จ</b><p>เปิดแนวทางทบทวนหลังเหตุเพื่อทำ AAR ได้</p></div>';
+  if(i.state==='failed') return '<div class="flow-box"><b>หมดเวลาปฏิบัติการ</b><p>นำผลการเลือกและการใช้ทรัพยากรไปทบทวนใน AAR</p></div>';
+  if(S.targetId!==i.id) return '<div class="flow-box"><b>เริ่ม Tabletop ที่จุดเกิดเหตุนี้</b><p>แตะหมุดสีแดงบนอาคารเพื่อเริ่มโจทย์ตัดสินใจ</p></div>';
   if(!i.flowReady){
-    const step=i.flowStep||0, cur=TABLETOP_STAGES[step], team=TEAM_DEF[cur.team];
-    const logs=(i.decisions||[]).map((x,n)=>'<div><b>'+esc(x.teamName)+' · '+esc(x.stage)+'</b><br>'+esc(x.note)+'</div>').join('');
+    const step=i.flowStep||0, cur=TABLETOP_STAGES[step], team=TEAM_DEF[cur.team], opts=choiceOptionsFor(i.def,cur.team);
+    const logs=(i.decisions||[]).map(x=>'<div><b>'+esc(x.teamName)+' · '+esc(x.stage)+'</b><br>'+esc(x.note)+'</div>').join('');
     return '<div class="flow-box tabletop"><div class="flow-head"><b>วงรอบการบัญชาการและตัดสินใจ</b><span class="step-count">ขั้น '+(step+1)+' / '+TABLETOP_STAGES.length+'</span></div>'+ 
       '<div class="team-task"><b style="color:'+team.color+'">'+esc(cur.title)+'</b><p>'+esc(cur.role)+'</p><p style="margin-top:7px;color:#ffe7a1;font-weight:700">ภารกิจเฉพาะเหตุการณ์นี้</p><ul style="margin:4px 0 0;padding-left:20px;color:#dbe6ff">'+eventTasksForTeam(i.def,cur.team).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>'+ 
       '<p><b>โจทย์ตัดสินใจ:</b> '+esc(tabletopQuestion(i.def,cur.team))+'</p>'+ 
-      '<label for="decision-'+i.id+'" style="font-size:12px;color:#ffe36b;font-weight:700">บันทึกมติ/คำสั่งของทีม (ต้องอภิปรายก่อนกดบันทึก)</label>'+ 
-      '<textarea id="decision-'+i.id+'" data-decision-for="'+esc(i.id)+'" placeholder="ระบุว่าใครตัดสินใจ ทำอะไร ที่ไหน ภายในเวลาเท่าใด และจะรายงานกลับอย่างไร..."></textarea>'+ 
-      '<button type="button" class="flow-commit" data-flow-commit="'+esc(i.id)+'">บันทึกมติทีม '+esc(team.name)+' แล้วไปขั้นถัดไป</button>'+ 
-      (logs?'<div class="flow-log"><b>บันทึกการตัดสินใจที่ผ่านมา</b>'+logs+'</div>':'')+'</div>';
+      '<fieldset class="decision-choices"><legend>เลือกแนวทางที่ทีมจะดำเนินการ (เลือก 1 ข้อ)</legend>'+opts.map((o,n)=>'<label class="decision-option"><input type="radio" name="decision-'+esc(i.id)+'" value="'+n+'"><span><b>'+String.fromCharCode(65+n)+'. '+esc(o.t)+'</b><small>'+esc(o.d)+'</small></span></label>').join('')+'</fieldset>'+ 
+      '<button type="button" class="flow-commit" data-flow-commit="'+esc(i.id)+'">ยืนยันคำตอบของทีมและส่งต่อ</button>'+ 
+      (logs?'<div class="flow-log"><b>ผลการตัดสินใจที่ผ่านมา</b>'+logs+'</div>':'')+'</div>';
   }
-  return '<div class="flow-box done"><b>✓ ผ่านขั้นตอนการบัญชาการครบทุกทีมแล้ว</b><p>ทุกทีมมีมติและรายงานต่อศูนย์บัญชาการแล้ว ขั้นต่อไปให้ผู้เล่นเลือกการ์ดทรัพยากร/Item ที่เห็นว่าเหมาะสมกับเหตุการณ์นี้ การ์ดผิดประเภทหรือใช้ไม่สอดคล้องกับมติจะเสียทรัพยากรและคะแนน</p></div>';
+  return '<div class="flow-box done"><b>✓ ผ่านขั้นตอนการบัญชาการครบทุกทีมแล้ว</b><p>ทุกทีมเลือกแนวทางปฏิบัติครบแล้ว ขั้นต่อไปให้ผู้เล่นเลือกการ์ดทรัพยากร/Item ที่เห็นว่าเหมาะสมกับเหตุการณ์นี้ การ์ดผิดประเภทหรือใช้ไม่สอดคล้องกับสถานการณ์จะเสียทรัพยากรและคะแนน</p></div>';
 }
 function commitTabletopDecision(id){
   const inc=S.incidents.find(x=>x.id===id);
   if(!inc||inc.state!=='open'||inc.flowReady) return;
-  if(S.phase!=='play'||!S.running){toast('เริ่มจับเวลาและเปิดภารกิจก่อนจึงบันทึกมติได้','bad');return;}
+  if(S.phase!=='play'||!S.running){toast('เริ่มจับเวลาและเปิดภารกิจก่อนจึงเลือกคำตอบได้','bad');return;}
   const step=inc.flowStep||0, cur=TABLETOP_STAGES[step];
-  const field=$('[data-decision-for="'+CSS.escape(id)+'"]');
-  const note=(field?.value||'').trim();
-  if(note.length<12){toast('กรุณาบันทึกมติให้ชัดเจนอย่างน้อย 12 ตัวอักษร เช่น ผู้รับผิดชอบ การดำเนินการ และเวลารายงานกลับ','bad');field?.focus();return;}
+  const picked=$('input[name="decision-'+CSS.escape(id)+'"]:checked');
+  if(!picked){toast('กรุณาเลือกแนวทางของทีมก่อนยืนยัน','bad');return;}
+  const opts=choiceOptionsFor(inc.def,cur.team), selected=opts[Number(picked.value)];
+  const correct=!!selected.good;
   inc.decisions=inc.decisions||[];
-  inc.decisions.push({team:cur.team,teamName:TEAM_DEF[cur.team].name,stage:cur.title,note:note,at:new Date().toISOString()});
+  inc.decisions.push({team:cur.team,teamName:TEAM_DEF[cur.team].name,stage:cur.title,note:selected.t+' — '+selected.d,choice:selected.t,correct:correct,at:new Date().toISOString()});
+  if(correct){
+    inc.choiceScore=(inc.choiceScore||0)+10;
+    toast('เหมาะสมกับหลักการบัญชาการ · '+selected.d,'good');
+  }else{
+    inc.choiceScore=(inc.choiceScore||0)-5;
+    toast('ยังมีความเสี่ยง · '+selected.d,'bad');
+  }
   inc.flowStep++;
   if(inc.flowStep>=TABLETOP_STAGES.length) inc.flowReady=true;
   Sfx.good(); renderAll();
-  if(inc.flowReady) toast('ทุกทีมบันทึกมติครบแล้ว · เลือกทรัพยากรตามแผนที่ตกลง','good');
-  else toast('บันทึกมติแล้ว · ส่งต่อให้ '+TEAM_DEF[TABLETOP_STAGES[inc.flowStep].team].name,'good');
+  if(inc.flowReady) toast('ทุกทีมเลือกแนวทางครบแล้ว · เลือกการ์ดทรัพยากรและ Item ต่อได้','good');
 }
 
 function renderIncidents(){
@@ -1508,7 +1554,7 @@ function onCard(tid,key){
   if(!S.running){ toast('เวลาหยุดอยู่ กดปุ่มเล่นต่อก่อน'); return; }
   const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
   if(!inc){ Sfx.soft(); toast('ขั้นแรก แตะหมุดสีแดงบนอาคารเพื่อเลือกจุดเกิดเหตุก่อน'); return; }
-  if(!inc.flowReady){ Sfx.soft(); toast('ยังใช้ Item ไม่ได้ · ให้ทั้ง 4 ทีมอภิปรายและบันทึกมติตามลำดับก่อน','bad'); return; }
+  if(!inc.flowReady){ Sfx.soft(); toast('ยังใช้ Item ไม่ได้ · ให้แต่ละทีมเลือกแนวทางตามลำดับก่อน','bad'); return; }
   const t=S.teams[tid];
   if(!(TEAM_CARDS[t.kind]||[]).includes(key)){toast('Item นี้ไม่ใช่ทรัพยากรของทีม '+t.name,'bad');return;}
   if(key!=='manual'&&t.cards[key]<=0){ Sfx.bad(); toast('การ์ด'+CARD_DEF[key].s+'ของทีมนี้หมดแล้ว ลองแผน Manual','bad'); return; }
@@ -1675,7 +1721,7 @@ function showFinal(){
   rp.res.forEach(x=>{ html+='<div class="it"><h4>ทรัพยากรไม่พอ<span class="tag q-miss">ความเสี่ยงสูง</span></h4><p>'+esc(x)+'</p></div>'; });
   rp.items.forEach(x=>{
     html+='<div class="it"><h4>'+esc(x.title)+'<span class="tag '+SEV[x.sev].c+'">'+SEV[x.sev].n+'</span><span class="tag">รอบที่ '+x.round+'</span></h4>'+
-      '<p>'+esc(x.note)+'</p>'+(x.decisions&&x.decisions.length?'<p><b>บันทึกมติ Tabletop:</b></p><ol>'+x.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>':'<p><b>บันทึกมติ Tabletop:</b> ไม่มีการบันทึกครบทุกทีม</p>')+'<p><b>จุดอ่อน:</b> '+esc(x.vuln)+'</p><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p></div>';
+      '<p>'+esc(x.note)+'</p>'+(x.decisions&&x.decisions.length?'<p><b>ตัวเลือก Tabletop:</b></p><ol>'+x.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>':'<p><b>ตัวเลือก Tabletop:</b> ไม่มีการบันทึกครบทุกทีม</p>')+'<p><b>จุดอ่อน:</b> '+esc(x.vuln)+'</p><p><b>ข้อเสนอ:</b> '+esc(x.fix)+'</p></div>';
   });
   const tabletopRecords=S.all.filter(i=>i.decisions&&i.decisions.length);
   if(tabletopRecords.length){ html+='<div class="it"><h4>บันทึกการตัดสินใจ Tabletop ทุกเหตุการณ์</h4>'+tabletopRecords.map(i=>'<p><b>'+esc(i.def.t)+'</b></p><ol>'+i.decisions.map(d=>'<li><b>'+esc(d.teamName)+':</b> '+esc(d.note)+'</li>').join('')+'</ol>').join('')+'</div>'; }
