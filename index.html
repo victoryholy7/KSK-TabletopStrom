@@ -724,6 +724,28 @@ button{font-family:inherit;color:inherit}
 .score-pop.good{color:#6dffb8}.score-pop.bad{color:#ff7a7c}
 @keyframes scorePop{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}20%{opacity:1;transform:translate(-50%,-60%) scale(1.25)}100%{opacity:0;transform:translate(-50%,-170%) scale(1)}}
 @media(max-width:700px){.cs-ttl b{font-size:15px}.cs-num{min-width:50px;height:50px}.score-pop{font-size:24px}}
+
+/* ===== v16: mobile zoom, visual tiles, voice ===== */
+.cs-act{margin:9px 0 6px}.cs-act>b{display:block;color:#fff;font:800 15px/1.45 var(--f-display);margin-bottom:6px}
+.cs-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cs-chips span{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;background:color-mix(in srgb,var(--sc) 24%,#14244b);border:1px solid var(--sc);color:#fff;font-size:12px;font-weight:700}
+.cs-chips i{font-style:normal;font-size:15px}
+.cs-tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.cs-tiles .t{display:grid;justify-items:center;align-content:start;gap:2px;text-align:center;padding:8px 6px;border-radius:12px;border:2px solid}
+.cs-tiles .t span{font-size:26px;line-height:1.1}.cs-tiles .t b{font-size:13px;color:#fff;line-height:1.3}.cs-tiles .t small{font-size:11px;color:#d8e4ff}
+.cs-tiles .t.star{background:#3b3208;border-color:#ffd93b}.cs-tiles .t.ok{background:#0d4a3d;border-color:#36e5a2}.cs-tiles .t.no{background:#4a2233;border-color:#ff7a7c}
+.cs-tiles .cs-need{margin-top:4px;justify-content:center}
+.cs-cancel{justify-content:space-between!important}
+.armbar details{flex:1;min-width:0}.armbar summary{cursor:pointer;list-style:none}.armbar summary::-webkit-details-marker{display:none}
+.armbar u{text-decoration:none;font-size:12px;opacity:.75;margin-left:6px;white-space:nowrap}
+.armbar details p{margin:6px 0 0;padding:7px 10px;border-radius:9px;background:#ffffff66;font-size:14px;line-height:1.55;font-weight:600}
+@media(max-width:700px){
+  .scene-wrap{aspect-ratio:4/3}
+  #says{display:none}
+  .lbl{font-size:16px!important}
+  .team-station-label{font-size:16px}
+  .cs-tiles .t b{font-size:12px}
+}
 </style>
 <div class="app" id="app">
   <header class="hud">
@@ -1335,8 +1357,8 @@ const Voice=(function(){
   load(); if(has){ try{ speechSynthesis.onvoiceschanged=load; }catch(e){} }
   return {
     on:false,
-    get ok(){ return !!v; },
-    speak(t,pitch){ if(!this.on||!v) return; try{ const u=new SpeechSynthesisUtterance(t); u.voice=v; u.lang='th-TH'; u.rate=1.05; u.pitch=pitch||1; speechSynthesis.speak(u); }catch(e){} },
+    get ok(){ return has; },
+    speak(t,pitch,flush){ if(!this.on||!has) return; const go=()=>{ try{ const u=new SpeechSynthesisUtterance(t); if(v) u.voice=v; u.lang='th-TH'; u.rate=1; u.pitch=pitch||1; speechSynthesis.speak(u); }catch(e){} }; if(flush){ try{ speechSynthesis.cancel(); }catch(e){} setTimeout(go,60); } else go(); },
     stop(){ if(has){ try{ speechSynthesis.cancel(); }catch(e){} } }
   };
 })();
@@ -1436,7 +1458,7 @@ function buildScene(){
   // flood water
   s+='<g id="flood"><rect x="0" y="446" width="1200" height="100" fill="#2EC4F3" opacity=".8"/><path class="wave" d="'+wave+'" fill="#7FE3FF" opacity=".85"/></g>';
   // labels
-  Object.keys(BLD).forEach(k=>{ const b=BLD[k]; s+='<text class="lbl" x="'+(k==='gate'?500:b.x)+'" y="528">'+esc(b.n)+'</text>'; });
+  Object.keys(BLD).sort((a,b)=>BLD[a].x-BLD[b].x).forEach((k,ix)=>{ const b=BLD[k]; s+='<text class="lbl" x="'+(k==='gate'?500:b.x)+'" y="'+(ix%2?530:512)+'">'+esc(b.n)+'</text>'; });
   s+='<polygon id="bolt" points="14,0 -14,140 6,140 -26,300 40,110 14,110 44,0" fill="#FFFBD0" stroke="#fff" stroke-width="3" opacity="0" style="filter:drop-shadow(0 0 10px #fff) drop-shadow(0 0 22px #bfe0ff)"/>';
   s+='<g id="pins"></g>';
   s+='<g id="runner" style="opacity:0;transform:translate(0px,0px);transition:transform 1.1s ease-in-out,opacity .3s"><circle r="21" fill="#fff" stroke="#FFD93B" stroke-width="4"/><text id="runnerIc" text-anchor="middle" y="9" font-size="26">🎖️</text></g>';
@@ -1482,7 +1504,7 @@ function lightning(){
     b.setAttribute('transform','translate('+Math.round(rnd(120,1000))+' 0) scale('+rnd(1,1.5).toFixed(2)+')');
     b.animate([{opacity:1},{opacity:.15},{opacity:1},{opacity:.3},{opacity:1},{opacity:0}],{duration:650});
   }
-  const bm=document.createElement('div'); bm.className='boom'; bm.textContent='⚡⚡'; sw.appendChild(bm); setTimeout(()=>bm.remove(),1200);
+  const bm=document.createElement('div'); bm.className='boom'; bm.textContent='⚡⚡ '; sw.appendChild(bm); setTimeout(()=>bm.remove(),1200);
   Sfx.thunder(rnd(.05,.3));
 }
 /* ฟ้าผ่าเป็นระยะระหว่างพายุ (ทุกช่วงของเหตุการณ์ ยกเว้นตอนพายุสงบ) */
@@ -1730,6 +1752,15 @@ function stepName(st,k){
   if(st.solve) return '🔧 แก้ปัญหาหลัก (ใช้ Item!)';
   return ['🎖️ สั่งการและประเมินสถานการณ์','🩺 ดูแลผู้ป่วยและบริการ','🛠️ ควบคุมอันตรายและระบบ','📢 ประสานงานและสื่อสาร'][st.team];
 }
+function shortAction(t){
+  t=String(t); const m=t.search(/\s*(?:พร้อม|โดย|เพื่อ|แล้ว|ห้าม|ก่อน|\(|—|:|,)/);
+  let r=(m>=14?t.slice(0,m):t); if(r.length>48) r=r.slice(0,46)+'…'; return r;
+}
+const CHIP_RULES=[[/บัญชาการ|Incident|ICS/i,'🎖️','บัญชาการ'],[/ไฟฟ้า|ไฟดับ|เครื่องกำเนิด|โหลดไฟ/,'⚡','ไฟฟ้า'],[/HOSxP|Server|เครือข่าย|UPS|ระบบสำรอง/i,'🖥️','ระบบ IT'],
+ [/ผู้ป่วย|คัดแยก|เตียง|ผู้บาดเจ็บ/,'🛏️','ผู้ป่วย'],[/กั้น|เขต|อันตราย/,'🚧','กั้นเขต'],[/ย้าย|ส่งต่อ|รถพยาบาล/,'🚑','ย้าย/ส่งต่อ'],
+ [/ออกซิเจน/,'🫁','ออกซิเจน'],[/น้ำเสีย|ขยะ|ENV/,'☣️','สุขาภิบาล'],[/น้ำ/,'💧','น้ำ'],[/ยา|เวชภัณฑ์|คลัง/,'💊','ยา/คลัง'],
+ [/ช่าง|ซ่อม|ตรวจ|ประเมิน/,'🔍','ตรวจ/ประเมิน'],[/ประสาน|แจ้ง|สื่อสาร|ญาติ|โฆษก|สื่อ/,'📞','ประสาน/แจ้ง'],[/บันทึก|รายงาน/,'📝','บันทึก']];
+function stepChips(st){ const out=[]; CHIP_RULES.forEach(r=>{ if(out.length<4&&r[0].test(st.s)) out.push(r); }); return out; }
 function stepRule(st,def){
   return st.solve?'นี่คือ “จุดแก้ปัญหา” เลือก Item ทรัพยากรที่ตรงกับปัญหาของเหตุการณ์ ต้องใช้ '+Math.max(1,def.needs)+' ชิ้น เลือกผิดจะเสียคะแนนและความพร้อมลด'
     :'ขั้นตอนทั่วไป ไม่ควรสิ้นเปลืองทรัพยากรวิกฤต ให้เลือกการ์ด “ปฏิบัติตามขั้นตอน (SOP)” หรือชุดสั่งการ/สื่อสารของทีม';
@@ -1744,6 +1775,20 @@ function stepLoc(def,st){
   if(st.team===2) return BLD[def.b];
   return BLD.gate;
 }
+const VB={x:0,y:0,w:1200,h:540}; let vbAnim=0, vbCx=null;
+const isNarrow=()=>!!(window.matchMedia&&window.matchMedia('(max-width:700px)').matches);
+function applyVB(){ const sc=$('#scene'); if(sc) sc.setAttribute('viewBox',VB.x.toFixed(1)+' '+VB.y.toFixed(1)+' '+VB.w.toFixed(1)+' '+VB.h.toFixed(1)); }
+function setView(cx,instant){
+  vbCx=cx;
+  const t=isNarrow()?{x:clamp((cx==null?300:cx)-300,0,600),y:90,w:600,h:450}:{x:0,y:0,w:1200,h:540};
+  if(Math.abs(VB.x-t.x)+Math.abs(VB.y-t.y)+Math.abs(VB.w-t.w)<1) return;
+  cancelAnimationFrame(vbAnim);
+  if(instant){ Object.assign(VB,t); applyVB(); return; }
+  const f=Object.assign({},VB), t0=performance.now();
+  (function step(now){ const k=clamp((now-t0)/700,0,1), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    ['x','y','w','h'].forEach(a=>{ VB[a]=f[a]+(t[a]-f[a])*e; }); applyVB(); if(k<1) vbAnim=requestAnimationFrame(step); })(t0);
+}
+window.addEventListener('resize',()=>setView(vbCx,true));
 function stepPoints(inc){
   const sq=bcpFor(inc.def), locs=sq.map(x=>stepLoc(inc.def,x)), cnt={}, idx=[];
   locs.forEach((l,k)=>{const key=l.x+','+l.y; idx[k]=cnt[key]||0; cnt[key]=(cnt[key]||0)+1;});
@@ -1752,7 +1797,7 @@ function stepPoints(inc){
 function scorePop(x,y,txt,good){
   const w=$('#sceneWrap'); if(!w) return;
   const d=document.createElement('div'); d.className='score-pop '+(good?'good':'bad'); d.textContent=txt;
-  d.style.left=(x/12)+'%'; d.style.top=(y/5.4)+'%'; w.appendChild(d); setTimeout(()=>d.remove(),1300);
+  d.style.left=clamp((x-VB.x)/VB.w*100,6,94)+'%'; d.style.top=clamp((y-VB.y)/VB.h*100,10,90)+'%'; w.appendChild(d); setTimeout(()=>d.remove(),1300);
 }
 function renderConsole(){
   const el=$('#console'); if(!el) return;
@@ -1771,14 +1816,17 @@ function renderConsole(){
   h+='<div class="cs-head"><div class="cs-num"><b>'+(k+1)+'</b><small>/ '+n+'</small></div><div class="cs-ttl"><small>🚨 '+esc(def.t)+'</small><b>'+esc(stepName(st,k))+'</b></div></div>';
   h+='<div class="cs-track">'+sq.map((x,j)=>'<i class="'+(j<k?'done':j===k?'cur':'')+'" style="--sc:'+STEP_COLORS[j%7]+'"></i>').join('')+'</div>';
   h+='<div class="cs-timer"><div class="cs-tbar"><i id="csBar" class="'+(inc.stepLeft<=8?'warn':'')+'" style="width:'+Math.max(0,inc.stepLeft/STEP_SECS*100)+'%"></i></div><span id="csSec">'+Math.ceil(Math.max(0,inc.stepLeft))+'</span></div>';
-  h+='<div class="cs-cancel"><button type="button" class="pl-ghost" data-cs-cancel="1">✕ ยกเลิกจุด</button></div>';
-  h+='<div class="cs-box pick"><small>🎯 เลือก Item ยังไง</small><p>'+esc(stepRule(st,def))+'</p>'+(st.solve?'<div class="cs-need">'+Array.from({length:need},(_,j)=>'<i class="'+(j<(inc.solveCount||0)?'f':'')+'"></i>').join('')+'<span>ใส่แล้ว '+(inc.solveCount||0)+' / '+need+'</span></div>':'')+'</div>';
+  h+='<div class="cs-cancel"><button type="button" class="pl-ghost" data-cs-voice="1">🔊 ฟังอีกครั้ง</button><button type="button" class="pl-ghost" data-cs-cancel="1">✕ ยกเลิกจุด</button></div>';
+  h+='<div class="cs-act"><b>'+esc(shortAction(st.s))+'</b><div class="cs-chips">'+stepChips(st).map(c=>'<span><i>'+c[1]+'</i>'+c[2]+'</span>').join('')+'</div></div>';
+  h+='<div class="cs-tiles">'+(st.solve
+    ?'<div class="t star"><span>⭐</span><b>ใช้ Item ตรงปัญหา</b><small>ต้อง '+need+' ชิ้น</small><div class="cs-need">'+Array.from({length:need},(_,j)=>'<i class="'+(j<(inc.solveCount||0)?'f':'')+'"></i>').join('')+'</div></div><div class="t no"><span>🚫</span><b>SOP ใช้แทนไม่ได้</b><small>ต้องเป็นทรัพยากร</small></div>'
+    :'<div class="t ok"><span>✅</span><b>SOP / ชุดสั่งการ</b><small>ใช้ได้ไม่จำกัด</small></div><div class="t no"><span>🚫</span><b>ทรัพยากรวิกฤต</b><small>เก็บไว้ขั้น ⭐</small></div>')+'</div>';
   h+='<div class="cs-team">'+avatar(team.kind,team.skin)+'<div><small>ทีมที่รับผิดชอบขั้นนี้</small><b>'+esc(team.name)+'</b></div><button type="button" class="pl-ghost" data-cs-hint="1" '+(inc.hintFor===k?'disabled':'')+'>💡 คำใบ้ −1</button></div>';
   if(inc.hintFor===k) h+='<div class="cs-hint">💡 '+esc(stepHintTxt(st,def))+'</div>';
   if(inc.fb) h+='<div class="cs-fb '+(inc.fb.ok?'ok':'bad')+'">'+esc(inc.fb.text)+'</div>';
   h+='<div class="pl-inv-label">🎒 แตะเลือก Item ของ'+esc(team.name)+'</div><div class="pl-inv">';
   h+=avail.map(key=>{const c=CARD_DEF[key], stock=(key==='manual'||key==='proc')?Infinity:team.cards[key];
-    return '<button type="button" class="pl-card'+(stock===0?' out':'')+'" style="--item:'+c.c+'" data-cs-team="'+st.team+'" data-cs-key="'+key+'" '+(stock===0?'disabled':'')+'><span class="ci">'+ic(key,28)+'</span><span><b>'+esc(c.n)+'</b><small>'+(stock===Infinity?'ใช้ได้ไม่จำกัด':'เหลือ '+stock+' ชิ้น')+'</small><small>'+esc(c.d)+'</small></span></button>';}).join('');
+    return '<button type="button" class="pl-card'+(stock===0?' out':'')+'" style="--item:'+c.c+'" data-cs-team="'+st.team+'" data-cs-key="'+key+'" title="'+esc(c.d)+'" '+(stock===0?'disabled':'')+'><span class="ci">'+ic(key,28)+'</span><span><b>'+esc(c.n)+'</b><small>'+(stock===Infinity?'ใช้ได้ไม่จำกัด':'เหลือ '+stock+' ชิ้น')+'</small></span></button>';}).join('');
   h+='</div></div>';
   el.innerHTML=h;
 }
@@ -1792,7 +1840,7 @@ function stepTimeout(inc){
   const sq=bcpFor(inc.def), k=inc.step||0, st=sq[k], pt=stepPoints(inc)[k];
   S.teams[st.team].auto-=2; inc.timeouts=(inc.timeouts||0)+1; inc.stepLeft=STEP_SECS;
   inc.fb={ok:false,text:'⏰ หมดเวลาตัดสินใจ! หัก 2 คะแนน · เวลาเริ่มนับใหม่ รีบเลือกเลย'};
-  scorePop(pt.x,pt.y,'−2',false); Sfx.bad(); say(st.team,'ช้าไปแล้ว! ต้องตัดสินใจเร็วกว่านี้','bad',3500); renderAll();
+  scorePop(pt.x,pt.y,'−2',false); Sfx.bad(); say(st.team,'ช้าไปแล้ว! ต้องตัดสินใจเร็วกว่านี้','bad',3500); Voice.speak('หมดเวลา หักสองคะแนน',1,true); renderAll();
 }
 function useHint(){
   const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
@@ -1839,7 +1887,7 @@ function placeBcpItem(tid,key){
   if(tid!==st.team){
     t.auto-=1; inc.log.push({n:k,exp:st.team,team:tid,key:key,q:'wrong',solve:!!st.solve});
     inc.fb={ok:false,text:'✗ ขั้นนี้เป็นหน้าที่ของ '+S.teams[st.team].name+' ไม่ใช่ '+t.name+' · หัก 1 คะแนน'};
-    scorePop(pt.x,pt.y,'−1',false); Sfx.bad(); say(tid,'ขั้นนี้ไม่ใช่หน้าที่ของเรา!','bad',3000); renderAll(); return true;
+    scorePop(pt.x,pt.y,'−1',false); Sfx.bad(); say(tid,'ขั้นนี้ไม่ใช่หน้าที่ของเรา!','bad',3000); Voice.speak('ขั้นนี้ไม่ใช่หน้าที่ของทีมนี้',1,true); renderAll(); return true;
   }
   const free=(key==='manual'||key==='proc');
   if(!free&&t.cards[key]<=0){ toast('Item นี้หมดแล้ว เลือกอย่างอื่น','bad'); return true; }
@@ -1855,8 +1903,8 @@ function placeBcpItem(tid,key){
   inc.log.push({n:k,exp:st.team,team:tid,key:key,q:q,solve:!!st.solve});
   if(q==='miss'){
     S.meters[def.m]=clamp(S.meters[def.m]-6,0,100); S.minM[def.m]=Math.min(S.minM[def.m],S.meters[def.m]); if(S.meters[def.m]<=0) S.lost=true;
-    inc.fb={ok:false,text:'✗ '+CARD_DEF[key].n+' ไม่ตรงกับขั้นนี้ · หัก '+Math.abs(Q.miss.pt)+' คะแนน'+(free?'':' และเสีย Item 1 ใบ')+' · '+(st.solve?'อ่านปัญหาอีกครั้ง หรือกดขอคำใบ้':'ขั้นทั่วไปให้ใช้ SOP หรือชุดสั่งการ/สื่อสาร')};
-    scorePop(pt.x,pt.y,String(Q.miss.pt),false); Sfx.bad(); say(tid,CARD_DEF[key].n+' ไม่ตรงขั้นตอน!','bad',3500);
+    inc.fb={ok:false,text:'✗ '+CARD_DEF[key].n+' ไม่ตรง · −'+Math.abs(Q.miss.pt)+' คะแนน'+(free?'':' · เสีย 1 ใบ')+(st.solve?' · ลองกด 💡':' · ใช้ SOP')};
+    scorePop(pt.x,pt.y,String(Q.miss.pt),false); Sfx.bad(); say(tid,CARD_DEF[key].n+' ไม่ตรงขั้นตอน!','bad',3500); Voice.speak('ไม่ตรงขั้นตอน หักสองคะแนน',1,true);
     renderAll();
     if(S.lost){ toast('เหตุการณ์ลุกลามเกินควบคุม!','bad'); setTimeout(endRound,900); }
     return true;
@@ -1864,7 +1912,7 @@ function placeBcpItem(tid,key){
   if(q!=='manual'&&st.solve){ S.meters[def.m]=clamp(S.meters[def.m]+def.imp/Math.max(1,def.needs)*Q[q].f,0,100); }
   inc.solveCount=(inc.solveCount||0)+1;
   const need=st.solve?Math.max(1,def.needs):1;
-  scorePop(pt.x,pt.y,'+'+(Q[q].pt+bonus),true); say(tid,CARD_DEF[key].n+' ✓ ดำเนินการแล้ว','ok',3500);
+  scorePop(pt.x,pt.y,'+'+(Q[q].pt+bonus),true); say(tid,CARD_DEF[key].n+' ✓ ดำเนินการแล้ว','ok',3500); Voice.speak(CARD_DEF[key].n+' ถูกต้อง',1,true);
   if(inc.solveCount<need){
     inc.fb={ok:true,text:'✓ '+CARD_DEF[key].n+' ถูกต้อง · ใส่แล้ว '+inc.solveCount+'/'+need+' เลือกเพิ่มอีก '+(need-inc.solveCount)+' ชิ้น'};
     Sfx.good(); renderAll(); return true;
@@ -1991,6 +2039,7 @@ function renderPins(){
       const ri=$('#runnerIc'); if(ri) ri.textContent=TEAM_EMO[curTeam];
     }else run.style.opacity='0';
   }
+  setView(cur?cur.x:null,!cur);
 }
 function updateFx(){
   const sc=$('#scene'), open=S.incidents.filter(i=>i.state==='open');
@@ -2034,12 +2083,14 @@ function say(tid,text,kind,ms){
   d.style.cssText='left:'+(P.x/12).toFixed(2)+'%;top:78%;--tx:'+P.tx+';--tail:'+P.tail+';--c:'+T.color;
   d.innerHTML='<b>'+esc(T.name)+'</b>'+esc(text); box.appendChild(d);
   sayTimers[tid]=setTimeout(()=>{ d.remove(); },ms||Math.min(11000,4500+text.length*45));
-  Voice.speak(T.name+' '+text);
 }
+function plainTxt(t){ return String(t).replace(/[\u{1F000}-\u{1FFFF}\u2600-\u27BF\uFE0F]/gu,'').trim(); }
+function narrateStep(inc){ const sq=bcpFor(inc.def), k=inc.step||0, st=sq[k]; if(!st) return; Voice.speak('ขั้นที่ '+(k+1)+' '+plainTxt(stepName(st,k))+' '+st.s,1,true); }
 function sayStep(inc,prefix){
   if(!inc||inc.state!=='open'||S.phase!=='play') return;
   const steps=bcpFor(inc.def), k=inc.step||0, st=steps[k]; if(!st) return;
   say(st.team,(prefix||'')+'ขั้น '+(k+1)+'/'+steps.length+': '+shortTxt(st.s)+(st.solve?' (ต้องเลือก Item แก้ปัญหา)':''));
+  narrateStep(inc);
 }
 function afterStep(inc){
   setTimeout(()=>{ if(S.phase!=='play') return; if(inc.state==='open') sayStep(inc,'ถึงคิวทีมเรา · '); else say(0,'ผ่านเหตุการณ์แล้ว! ครบทุกขั้นตอน BCP','ok',5000); },2000);
@@ -2153,7 +2204,7 @@ function renderArm(){
   const inc=S.incidents.find(i=>i.id===S.targetId);
   if(!inc||inc.state!=='open'){ bar.hidden=true; return; }
   bar.hidden=false;
-  const _sq=bcpFor(inc.def), _k=Math.min(inc.step||0,_sq.length-1); bar.innerHTML='<span><b>📋 ขั้นที่ '+(_k+1)+'/'+_sq.length+' · '+esc(stepName(_sq[_k],_k))+'</b> — ต้องทำ: '+esc(_sq[_k].s)+'</span>';
+  const _sq=bcpFor(inc.def), _k=Math.min(inc.step||0,_sq.length-1); bar.innerHTML='<details'+(S.armOpen?' open':'')+'><summary><b>📋 ขั้นที่ '+(_k+1)+'/'+_sq.length+' · '+esc(stepName(_sq[_k],_k))+'</b> — '+esc(shortAction(_sq[_k].s))+' <u>อ่านเต็ม ▾</u></summary><p>'+esc(_sq[_k].s)+'</p></details>';
 }
 function disarm(){ S.targetId=null; S.armed=null; renderArm(); renderTeams(); renderIncidents(); renderPins(); renderPlanner(); }
 function onCard(tid,key){
@@ -2444,6 +2495,7 @@ function toggleFs(){
 function syncMute(){ $('#btnMute').innerHTML=ic(Sfx.isMuted()?'mute':'vol'); $('#btnMute').classList.toggle('warn',Sfx.isMuted()); }
 function startGame(){
   Sfx.init();
+  if(Voice.ok){ Voice.on=true; const bv=$('#btnVoice'); bv.classList.add('on'); bv.setAttribute('aria-pressed','true'); }
   const names=TEAM_DEF.map((t,i)=>{ const v=($('#tn'+i).value||'').trim(); return v||t.name; });
   S.roundLen=parseInt($('#roundMin').value,10)*60;
   if(!selectedRounds()){
@@ -2508,7 +2560,9 @@ function wire(){
     const b=e.target.closest('[data-cs-key]'); if(b){ placeBcpItem(+b.dataset.csTeam,b.dataset.csKey); return; }
     if(e.target.closest('[data-cs-hint]')) useHint();
     if(e.target.closest('[data-cs-cancel]')) disarm();
+    if(e.target.closest('[data-cs-voice]')){ const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open'); if(inc&&Voice.ok){ Voice.on=true; $('#btnVoice').classList.add('on'); narrateStep(inc); } }
   });
+  $('#armBar').addEventListener('toggle',e=>{ if(e.target.tagName==='DETAILS') S.armOpen=e.target.open; },true);
   $('#armBar').addEventListener('click',e=>{ if(e.target.closest('#btnDisarm')) disarm(); });
   $('#rdTable').addEventListener('input',e=>{
     const el=e.target; if(!el.dataset||el.dataset.i===undefined) return;
