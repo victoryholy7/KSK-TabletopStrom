@@ -28,7 +28,32 @@
 .incident-steps summary{cursor:pointer;font-weight:800;color:#17447d;font-size:12px}
 .incident-steps ol{margin:7px 0 2px;padding-left:22px;color:#24334d;font-size:12px;line-height:1.55}
 .incident-steps li{padding:2px 0}
-</style></head><body>
+</style><style>
+/* ===== Scenario selection cards ===== */
+.scenario-picker{background:#101f49;border:1px solid #ffffff24;border-radius:20px;padding:18px;margin:12px 0}
+.scenario-picker h2{font:800 21px var(--f-display);margin:0 0 5px;color:var(--volt)}
+.scenario-picker>p{margin:0 0 16px;color:var(--mute);font-size:14px}
+.scenario-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.scenario-choice{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;border:2px solid #ffffff25;border-radius:17px;background:#1b2e5b;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
+.scenario-choice:hover{transform:translateY(-3px);border-color:#8daaff;box-shadow:0 9px 22px #0005}
+.scenario-choice:has(input:checked){border-color:var(--ok);background:#204452;box-shadow:0 0 0 2px #2fd08c25}
+.scenario-choice input{position:absolute;z-index:2;top:10px;right:10px;width:23px;height:23px;margin:0;accent-color:var(--ok);cursor:pointer}
+.scenario-art{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:16/8;overflow:hidden;background:#263e75}
+.scenario-art svg{display:block;width:100%;height:100%}
+.scenario-info{display:grid;gap:6px;padding:12px;flex:1}
+.scenario-info b{display:block;color:#fff;font:700 15px var(--f-display);line-height:1.35;padding-right:22px}
+.scenario-info small{display:block;color:#bdcbed;font-size:12px;line-height:1.5}
+.scenario-status{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-top:3px}
+.scenario-check{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid #ffffff35;border-radius:99px;background:#ffffff12;color:#dce6ff;font-size:11px;font-weight:700}
+.scenario-check:before{content:'○';font-size:13px}
+.scenario-choice:has(input:checked) .scenario-check{background:var(--ok);border-color:var(--ok);color:#06301f}
+.scenario-choice:has(input:checked) .scenario-check:before{content:'✓'}
+.scenario-actions{display:flex;gap:9px;margin-top:15px;flex-wrap:wrap}
+.scenario-count{margin-left:auto;color:var(--mute);font-size:13px;align-self:center}
+@media(max-width:900px){.scenario-choices{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){.scenario-choices{grid-template-columns:1fr}.scenario-picker{padding:13px}.scenario-info b{font-size:15px}}
+</style>
+</head><body>
 <title>KSK: STORM COMMAND</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -378,10 +403,14 @@ button{font-family:inherit;color:inherit}
     </div>
     <div class="tgrid" id="setupTeams"></div>
     <section class="scenario-picker">
-      <h2>เลือกเหตุการณ์เพิ่มเติมสำหรับการซ้อม</h2>
-      <p>4 รอบพื้นฐานจะอยู่ในเกมเสมอ เลือกเปิดหรือปิดเหตุการณ์เพิ่มเติมได้ตามเวลาซ้อม</p>
+      <h2>⚡ เลือกเหตุการณ์สำหรับการซ้อมแผน</h2>
+      <p>แสดงเหตุการณ์ทั้งหมด ทั้ง 4 รอบพื้นฐานและเหตุการณ์เพิ่มเติม คลิกเลือกหรือยกเลิกได้ทีละการ์ด</p>
       <div id="scenarioChoices" class="scenario-choices"></div>
-      <div class="scenario-actions"><button class="btn sm ghost" type="button" id="btnAllScenarios">เลือกทั้งหมด</button><button class="btn sm ghost" type="button" id="btnNoScenarios">ยกเลิกทั้งหมด</button></div>
+      <div class="scenario-actions">
+        <button class="btn sm ghost" type="button" id="btnAllScenarios">✓ เลือกทั้งหมด</button>
+        <button class="btn sm ghost" type="button" id="btnNoScenarios">ยกเลิกทั้งหมด</button>
+        <span id="scenarioCount" class="scenario-count" aria-live="polite"></span>
+      </div>
     </section>
     <div class="opts">
       <label for="roundMin">เวลาต่อ 1 รอบเหตุการณ์
@@ -647,10 +676,10 @@ const BASE_ROUNDS=[
   text:'ฟ้าผ่าลงเสาสัญญาณและตู้เครือข่าย ระบบ HIS/HOSxP ล่มทั้งโรงพยาบาล พร้อมกับผู้บาดเจ็บจากพายุเข้า ER 5 ราย ไฟสำรองบางจุดเริ่มไม่เสถียร ทีมที่ใช้การ์ดหมดแล้วต้องปรับเข้าสู่ระบบกระดาษ (Manual) ให้ได้',
   qs:['ขั้นตอนลงทะเบียนและสั่งยาด้วยกระดาษเมื่อ HIS ล่ม ใครเป็นผู้รับผิดชอบ','คัดแยกผู้บาดเจ็บ 5 ราย (แดง 2 เหลือง 2 เขียว 1) อย่างไร และเตียง ER พอหรือไม่','ถ้าเครื่องปั่นไฟทำงานหนักต่อเนื่อง ใครตรวจสอบและเติมน้ำมัน'],
   inc:[
-   {id:'r2-his',b:'it',t:'ระบบ HIS/HOSxP ล่ม',d:'ลงทะเบียน สั่งยา ดูผล Lab ไม่ได้ทั้งโรงพยาบาล',m:'it',imp:55,needs:1,fx:'it',
+   {id:'r2-his',b:'it',t:'ระบบ HOSxP ล่ม',d:'ลงทะเบียน สั่งยา ดูผล Lab ไม่ได้ทั้งโรงพยาบาล',m:'it',imp:55,needs:1,fx:'it',
     sol:{itkit:'best',net:'ok',fix:'ok',manual:'manual'},
     hint:'เน็ตสำรอง 5G กู้ระบบได้ตรงจุด ส่วนระบบกระดาษใช้ได้แต่ช้า',
-    vuln:'พึ่งพา HIS สูง แบบฟอร์มกระดาษสำรองและขั้นตอนลงข้อมูลย้อนหลังยังไม่คล่อง',
+    vuln:'พึ่งพา HOSxP สูง แบบฟอร์มกระดาษสำรองและขั้นตอนลงข้อมูลย้อนหลังยังไม่คล่อง',
     fixit:'จัดชุดแบบฟอร์มกระดาษ (Downtime Kit) ทุกจุดบริการ ซ้อมกู้ระบบด้วยเครือข่ายสำรอง'},
    {id:'r2-er',b:'er',t:'ผู้บาดเจ็บเข้า ER 5 ราย',d:'ต้องคัดแยก (Triage) ทันที เตียง ER เต็ม บางรายต้องส่งต่อ',m:'patients',imp:40,needs:2,
     sol:{stock:'best',staff:'best',amb:'ok',fix:'ok',manual:'manual'},
@@ -1155,13 +1184,81 @@ function toast(msg,kind){
   clearTimeout(toastT); toastT=setTimeout(()=>{ t.className='toast'; },2800);
 }
 
-function buildScenarioChoices(){
-  const box=$('#scenarioChoices');
-  box.innerHTML=EXTRA_ROUNDS.map(r=>'<label class="scenario-choice"><input type="checkbox" value="'+esc(r.id)+'" checked><span><b>'+esc(r.name)+'</b><small>'+esc(r.head)+'</small></span></label>').join('');
+// รวมเหตุการณ์พื้นฐานทั้ง 4 รอบ และเหตุการณ์เพิ่มเติมทุกเหตุการณ์
+const PICKABLE_ROUNDS = [
+  ...BASE_ROUNDS.map((r, i) => ({ ...r, _pickId: 'base-' + i })),
+  ...EXTRA_ROUNDS.map(r => ({ ...r, _pickId: r.id }))
+];
+
+// ภาพประกอบ SVG แยกตามเหตุการณ์ ใช้งานในไฟล์ได้ทันที ไม่ต้องโหลดรูปจากเว็บภายนอก
+const SCENARIO_ART = {
+  'base-0': {icon:'⛈️',a:'#243E80',b:'#527CC9',label:'พายุและลมแรง'},
+  'base-1': {icon:'💻',a:'#302B75',b:'#6658C7',label:'ระบบสารสนเทศขัดข้อง'},
+  'base-2': {icon:'🌊',a:'#14547A',b:'#37A9C5',label:'น้ำท่วมฉับพลัน'},
+  'base-3': {icon:'⚡',a:'#87451F',b:'#E9A34E',label:'ผลกระทบหลังพายุ'},
+  water:{icon:'🚰',a:'#155E75',b:'#38BDF8',label:'ระบบน้ำประปา'},
+  oxygen:{icon:'🫁',a:'#263C78',b:'#6598E8',label:'ระบบออกซิเจน'},
+  birth:{icon:'👶',a:'#733F82',b:'#E18AAE',label:'คลอดฉุกเฉิน'},
+  injury:{icon:'🚑',a:'#792E46',b:'#E66A78',label:'เจ้าหน้าที่บาดเจ็บ'},
+  supply:{icon:'💊',a:'#315C42',b:'#67B98B',label:'ยาและเวชภัณฑ์'},
+  waste:{icon:'♻️',a:'#315B4B',b:'#73A97C',label:'ขยะและน้ำเสีย'},
+  solar:{icon:'☀️',a:'#8B5422',b:'#F5BD4B',label:'โซลาร์เซลล์'},
+  aar:{icon:'📋',a:'#31518A',b:'#85A7D9',label:'ฟื้นฟูและ AAR'}
+};
+
+function scenarioPicture(r){
+  const a = SCENARIO_ART[r._pickId] || {icon:'⚠️',a:'#263B69',b:'#6B83B9',label:'เหตุการณ์ฉุกเฉิน'};
+  const sid = 'art-' + r._pickId.replace(/[^a-z0-9]/gi,'');
+  return `<div class="scenario-art">
+    <svg viewBox="0 0 600 300" role="img" aria-label="ภาพประกอบ${esc(a.label)}" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="${sid}" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="${a.a}"/><stop offset="100%" stop-color="${a.b}"/>
+        </linearGradient>
+        <pattern id="${sid}-p" width="36" height="36" patternUnits="userSpaceOnUse">
+          <path d="M0 36L36 0" stroke="#fff" stroke-opacity=".09" stroke-width="2"/>
+        </pattern>
+      </defs>
+      <rect width="600" height="300" fill="url(#${sid})"/>
+      <rect width="600" height="300" fill="url(#${sid}-p)"/>
+      <circle cx="490" cy="45" r="120" fill="#fff" opacity=".09"/>
+      <circle cx="75" cy="280" r="135" fill="#06152f" opacity=".13"/>
+      <path d="M0 255Q145 220 300 260T600 250V300H0Z" fill="#06152f" opacity=".16"/>
+      <text x="300" y="190" text-anchor="middle" font-size="142">${a.icon}</text>
+      <text x="300" y="265" text-anchor="middle" font-family="Kanit,Sarabun,sans-serif" font-size="22" font-weight="700" fill="#fff" opacity=".9">${esc(a.label)}</text>
+    </svg>
+  </div>`;
 }
+
+function updateScenarioCount(){
+  const count = $$('#scenarioChoices input:checked').length;
+  const el = $('#scenarioCount');
+  if(el) el.textContent = 'เลือกแล้ว ' + count + ' / ' + PICKABLE_ROUNDS.length + ' เหตุการณ์';
+}
+
+function buildScenarioChoices(){
+  const box = $('#scenarioChoices');
+  box.innerHTML = PICKABLE_ROUNDS.map(r => `
+    <label class="scenario-choice">
+      <input type="checkbox" value="${esc(r._pickId)}" checked aria-label="เลือกเหตุการณ์ ${esc(r.name)}">
+      ${scenarioPicture(r)}
+      <div class="scenario-info">
+        <b>${esc(r.name)}</b>
+        <small>${esc(r.head)}</small>
+        <div class="scenario-status">
+          <span class="scenario-check">เลือกเหตุการณ์นี้</span>
+          <span class="tag ${r.lvl === 'แดง' ? 'q-miss' : r.lvl === 'ส้ม' ? 'q-ok' : 'q-man'}">ระดับ${esc(r.lvl)}</span>
+        </div>
+      </div>
+    </label>`).join('');
+  box.addEventListener('change', updateScenarioCount);
+  updateScenarioCount();
+}
+
 function selectedRounds(){
-  const chosen=new Set($$('#scenarioChoices input:checked').map(x=>x.value));
-  ACTIVE_ROUNDS=BASE_ROUNDS.concat(EXTRA_ROUNDS.filter(r=>chosen.has(r.id)));
+  const chosen = new Set($$('#scenarioChoices input:checked').map(x => x.value));
+  ACTIVE_ROUNDS = PICKABLE_ROUNDS.filter(r => chosen.has(r._pickId));
+  return ACTIVE_ROUNDS.length > 0;
 }
 function goHome(){
   if(S.phase==='play'||S.phase==='alert'||S.phase==='roundEnd'){
@@ -1412,7 +1509,10 @@ function startGame(){
   Sfx.init();
   const names=TEAM_DEF.map((t,i)=>{ const v=($('#tn'+i).value||'').trim(); return v||t.name; });
   S.roundLen=parseInt($('#roundMin').value,10)*60;
-  selectedRounds();
+  if(!selectedRounds()){
+    alert('กรุณาเลือกเหตุการณ์อย่างน้อย 1 เหตุการณ์');
+    return;
+  }
   resetState(names); buildMeters();
   hideOv('ovSetup'); Sfx.click();
   startRound(0);
@@ -1427,8 +1527,8 @@ function resetAll(){
 function wire(){
   $('#btnStart').addEventListener('click',startGame);
   $('#btnHome').addEventListener('click',()=>{ ask('กลับหน้าหลัก?','ระบบจะหยุดการซ้อมรอบปัจจุบัน สามารถเริ่มใหม่และเลือกเหตุการณ์ได้','กลับหน้าหลัก',goHome); });
-  $('#btnAllScenarios').addEventListener('click',()=>$$('#scenarioChoices input').forEach(x=>x.checked=true));
-  $('#btnNoScenarios').addEventListener('click',()=>$$('#scenarioChoices input').forEach(x=>x.checked=false));
+  $('#btnAllScenarios').addEventListener('click',()=>{$$('#scenarioChoices input').forEach(x=>x.checked=true); updateScenarioCount();});
+  $('#btnNoScenarios').addEventListener('click',()=>{$$('#scenarioChoices input').forEach(x=>x.checked=false); updateScenarioCount();});
   $('#btnBegin').addEventListener('click',()=>{ Sfx.init(); beginRound(); });
   $('#btnNext').addEventListener('click',()=>{ Sfx.click(); commitRound(); });
   $('#btnAgain').addEventListener('click',()=>{ Sfx.click(); resetAll(); });
