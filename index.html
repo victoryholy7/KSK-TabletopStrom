@@ -3034,10 +3034,6 @@ const oldHead=$sr('#fnHead');if(oldHead)oldHead.textContent='สรุปผล�
 .lv-h span,.ab-ilv.lv-h{background:#ff4d4f;color:#fff}.lv-m span,.ab-ilv.lv-m{background:#ffb020;color:#2a1c00}.lv-l span,.ab-ilv.lv-l{background:#2fd08c;color:#00301d}
 
 /* หน้าเลือกเหตุการณ์ */
-.ev-dom{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:6px 0 2px}
-.ev-dom small{font:700 12px var(--f-display);color:#cfe0ff}
-.ev-dom span{font:700 12px var(--f-display);border:1.5px solid var(--dc);color:#fff;background:#ffffff10;border-radius:99px;padding:1px 8px}
-.ev-dom span b{color:var(--dc)}
 .ab-cover{margin:12px 0 4px;border-radius:18px;background:#0f1f4d;border:2px solid #6d8be866;padding:12px 14px}
 .ac-h{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;font:800 16px var(--f-display);color:#fff}
 .ac-h span{color:var(--volt)}
@@ -3120,6 +3116,33 @@ i.pass,.ab-bar i.pass{background:#2fd08c}i.partial,.ab-bar i.partial{background:
 .ab-irow.st-pass{border-left-color:#2fd08c}.ab-irow.st-partial{border-left-color:#ffb020}.ab-irow.st-fail{border-left-color:#ff4d4f}.ab-irow.st-pending{border-left-color:#4da3ff}
 .ab-irow p{margin:0 0 5px;font-size:14.5px}.ab-irow div{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 #ovAssess{z-index:10000}
+
+/* การ์ดเหตุการณ์: แถบตอบแบบประเมิน */
+.ev-dom{margin:8px 0 4px;padding:8px 10px;border-radius:14px;background:#0c1a44;border:1.5px solid #ffffff26}
+.ed-h{font:800 13px var(--f-display);color:#fff;margin-bottom:6px}.ed-h small{font-weight:600;color:#aebdf0}
+.ed-g{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.ed-g span{display:flex;align-items:center;gap:6px;border-radius:12px;padding:4px 8px;background:#ffffff0d;border:1.5px solid #ffffff22;min-width:0}
+.ed-g span.on{border-color:var(--dc);background:color-mix(in srgb,var(--dc) 16%,#0c1a44)}
+.ed-g span.off{opacity:.38}
+.ed-g i{font-style:normal;font-size:17px;line-height:1}
+.ed-g em{font:700 13px var(--f-display);font-style:normal;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-g b{font:800 13px var(--f-hud);min-width:24px;text-align:center;border-radius:99px;padding:1px 7px;background:#ffffff22;color:#fff}
+.ed-g .on b{background:var(--dc);color:#101830}
+/* เรดาร์ */
+.rd-card{margin:16px 0;padding:14px 16px;border-radius:20px;background:#0f1f4d;border:2px solid #6d8be866;color:#f2f6ff}
+.rd-card h4{margin:0 0 8px;font:800 clamp(17px,2.4vw,22px) var(--f-display);color:#fff}
+.rd-wrap{display:grid;grid-template-columns:minmax(260px,400px) 1fr;gap:16px;align-items:center}
+@media(max-width:760px){.rd-wrap{grid-template-columns:1fr}}
+.rd-svg{width:100%;height:auto;background:#ffffff08;border-radius:16px}
+.rd-ring{font:600 10px var(--f-hud);fill:#a9b8e8}
+.rd-ax{font:700 13px var(--f-display);fill:#fff}
+.rd-leg{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;font:700 13.5px var(--f-display)}
+.rd-leg i{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:7px;vertical-align:-2px}
+.rd-tb{width:100%;border-collapse:separate;border-spacing:0 4px;font-size:14.5px}
+.rd-tb th{font:800 12.5px var(--f-display);color:#b9c8f5;text-align:center;padding:2px 6px}.rd-tb th:first-child{text-align:left}
+.rd-tb td{background:#ffffff10;padding:6px 8px;text-align:center}.rd-tb td:first-child{text-align:left;border-radius:10px 0 0 10px;border-left:6px solid var(--dc)}.rd-tb td:last-child{border-radius:0 10px 10px 0}
+.rd-tb td.dn{color:#59e0a8;font-weight:800}.rd-tb td.eq{color:#a9b4d8}
+.rd-note{margin:8px 0 0;font-size:14px;color:#dfe8ff;line-height:1.5}
 /* ===== v21 EvFx ===== */
 #fxHR,#fxWASH,#fxENERGY,#fxINFRA{display:none!important}
 #evFx text{font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;transform-box:fill-box;transform-origin:center}
@@ -3246,12 +3269,12 @@ function impStatus(inc){
   return (inc.grade==='best'&&!hasWrong(inc))?'ctrl':'part';
 }
 const worst=(arr,order)=>{ for(const o of order) if(arr.includes(o)) return o; return arr[0]; };
-function evaluate(){
+function evaluate(list){
   const R={ind:{},imp:{},events:[],dom:{}};
   Object.keys(IND).forEach(id=>R.ind[id]={id,status:'none',tests:[]});
   IMPS.forEach(x=>R.imp[x.id]={id:x.id,status:'none',evs:[]});
   const seen=new Set();
-  (S.all||[]).forEach(inc=>{
+  (list||S.all||[]).forEach(inc=>{
     const steps=D.si[inc.id]; if(!steps) return;
     const key=inc.id+'#'+inc.round; if(seen.has(key)) return; seen.add(key);
     const sq=bcpFor(inc.def), row={inc,id:inc.id,title:inc.def.t,doms:{}};
@@ -3277,6 +3300,47 @@ function evaluate(){
     R.dom[d]={total:ids.length,c,tested:ids.length-c.none,before:b/ids.length,after:a/ids.length,imp:{total:im.length,c:ic,lv:lvc}};
   });
   return R;
+}
+
+/* ---- เรดาร์ความเปราะบาง (เหมือนแผ่น 'ส่วนที่ 2_แสดงผล' ในแบบประเมิน) ---- */
+const RAX=[['HR','บุคลากรด้านสุขภาพ'],['WS','การจัดการน้ำ สุขาภิบาล\nและของเสียทางการแพทย์'],['EN','พลังงาน'],['IN','โครงสร้างพื้นฐาน\nเทคโนโลยี ผลิตภัณฑ์\nและกระบวนการ']];
+function radar(series,size){
+  size=size||360; const c=size/2, R=size*.31, N=4;
+  const pt=(i,v)=>{ const a=-Math.PI/2+i*2*Math.PI/N, r=R*v/3; return [c+r*Math.cos(a),c+r*Math.sin(a)]; };
+  let h='<svg class="rd-svg" viewBox="-110 0 '+(size+220)+' '+size+'" role="img" aria-label="กราฟเรดาร์ความเปราะบาง 4 ด้าน">';
+  for(let g=1;g<=6;g++){ const v=g/2; h+='<polygon points="'+[0,1,2,3].map(i=>pt(i,v).join(',')).join(' ')+'" fill="none" stroke="#ffffff'+(g===6?'66':'2e')+'" stroke-width="1"/>'; h+='<text x="'+(c+4)+'" y="'+(c-R*v/3+3)+'" class="rd-ring">'+v.toFixed(2)+'</text>'; }
+  [0,1,2,3].forEach(i=>{ const p=pt(i,3); h+='<line x1="'+c+'" y1="'+c+'" x2="'+p[0]+'" y2="'+p[1]+'" stroke="#ffffff2e"/>'; });
+  series.forEach(se=>{
+    const pts=[0,1,2,3].map(i=>pt(i,se.v[i]));
+    h+='<polygon points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="'+se.fill+'" stroke="'+se.stroke+'" stroke-width="'+(se.w||2.5)+'"'+(se.dash?' stroke-dasharray="6 5"':'')+'/>';
+    if(!se.nodots) pts.forEach(p=>{ h+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="'+se.stroke+'" stroke="#fff" stroke-width="1.5"/>'; });
+  });
+  RAX.forEach((a,i)=>{ const p=pt(i,3.62), anc=i===1?'start':i===3?'end':'middle', lines=a[1].split('\n'), dy=i===0?-6:i===2?14:0;
+    h+='<text class="rd-ax" x="'+p[0]+'" y="'+(p[1]+dy-(lines.length-1)*(i===2?0:7))+'" text-anchor="'+anc+'">'+lines.map((l,k)=>'<tspan x="'+p[0]+'" dy="'+(k?15:0)+'">'+l+'</tspan>').join('')+'</text>'; });
+  return h+'</svg>';
+}
+function afterScores(R){ return DK.map(d=>R.dom[d].after); }
+function beforeScores(R){ return DK.map(d=>R.dom[d].before); }
+function radarCard(title,R,Rcum,note){
+  const b=beforeScores(R), a=afterScores(R), ac=Rcum?afterScores(Rcum):null;
+  const ser=[{v:b,fill:'#ff9f4344',stroke:'#ff9f43',w:2.5},{v:a,fill:'#2fd08c88',stroke:'#2fd08c',w:3}];
+  if(ac) ser.push({v:ac,fill:'none',stroke:'#fff36a',w:2,dash:1,nodots:1});
+  let h='<div class="rd-card"><h4>'+title+'</h4><div class="rd-wrap">'+radar(ser)+'<div class="rd-side">'+
+    '<div class="rd-leg"><span><i style="background:#ff9f43"></i>ก่อนซ้อม (ค่าจากแบบประเมิน)</span><span><i style="background:#2fd08c"></i>หลังซ้อมสถานการณ์นี้</span>'+(ac?'<span><i style="background:#fff36a"></i>หลังซ้อมสะสมทุกสถานการณ์</span>':'')+'</div>'+
+    '<table class="rd-tb"><thead><tr><th>ด้าน</th><th>ก่อน</th><th>หลัง</th><th>เปลี่ยน</th><th>ผ่าน/ทดสอบ</th></tr></thead><tbody>'+
+    DK.map((d,i)=>{ const m=R.dom[d], df=a[i]-b[i], pass=m.c.pass, tst=m.tested;
+      return '<tr style="--dc:'+DOM[d].c+'"><td><b>'+DOM[d].ic+' '+DOM[d].n+'</b></td><td>'+fx1(b[i])+'</td><td><b>'+fx1(a[i])+'</b></td><td class="'+(df<-0.0001?'dn':'eq')+'">'+(df<-0.0001?'▼ '+fx1(-df):'– 0.00')+'</td><td>'+pass+'/'+tst+'</td></tr>'; }).join('')+
+    '</tbody></table><p class="rd-note">'+note+'</p></div></div></div>';
+  return h;
+}
+function roundRadar(){
+  try{
+    const R=evaluate(S.incidents), Rc=evaluate(S.all);
+    const tot=DK.reduce((n,d)=>n+R.dom[d].c.pass,0);
+    const dif=DK.reduce((n,d)=>n+(R.dom[d].before-R.dom[d].after),0)/4;
+    return radarCard('📉 ความเปราะบางหลังซ้อมสถานการณ์นี้ ลดลงหรือไม่?',R,Rc,
+      (tot?'สถานการณ์นี้ทำให้ตัวชี้วัดผ่าน <b>'+tot+'</b> ข้อ ค่าเฉลี่ยความเปราะบาง 4 ด้านลดลง <b>'+fx1(dif)+'</b> (1 = เปราะบางต่ำ, 3 = สูง)':'สถานการณ์นี้ยังไม่มีตัวชี้วัดที่ผ่านเต็มขั้น ความเปราะบางจึงยังไม่ลดลง ลองซ้อมอีกครั้งโดยเลือกทีม/Item ให้ตรงขั้นตอน')+' · เส้นประเหลืองคือผลสะสมหลายสถานการณ์');
+  }catch(e){ console.warn('radar',e); return ''; }
 }
 
 /* ---- การ์ดในแผงปฏิบัติการ: ขั้นนี้ตอบโจทย์ข้อไหนของแบบประเมิน ---- */
@@ -3352,6 +3416,7 @@ function board(opts){
       '<div class="sc">คะแนนเปราะบางเฉลี่ย <b>'+fx1(m.before)+'</b> → <b class="aft">'+fx1(m.after)+'</b> <small>(จำลองหลังซ้อม)</small></div>'+
       '<div class="im">ผลกระทบ: ควบคุมได้ <b>'+(im.c.ctrl+im.c.part)+'</b>/'+im.total+' · เกิดผล <b>'+im.c.hit+'</b></div></button>';
   }).join('')+'</div>';
+  h+=radarCard('📉 ความเปราะบางก่อน–หลังซ้อม (สะสมทุกสถานการณ์ที่เล่น)',R,null,'ก่อนซ้อม = ค่าจากแบบประเมินจริงของ รพ.เขาสุกิม · หลังซ้อม = จำลองว่าตัวชี้วัดที่ผ่านเต็มขั้นลดความเปราะบางลง 1 ระดับ (1 = ต่ำ, 3 = สูง)');
   /* เมทริกซ์ เหตุการณ์ x ด้าน */
   if(R.events.length){
     h+='<h4 class="ab-h4">เหตุการณ์ที่เล่น → ตอบโจทย์แบบประเมินด้านไหน (จำนวนตัวชี้วัดที่ทดสอบ)</h4><div class="ab-mx-wrap"><table class="ab-mx"><thead><tr><th>เหตุการณ์</th>'+DK.map(d=>'<th style="--dc:'+DOM[d].c+'">'+DOM[d].ic+'<br>'+DOM[d].n+'</th>').join('')+'<th>ผลเหตุการณ์</th></tr></thead><tbody>'+
@@ -3437,7 +3502,7 @@ function decorateSetup(){
     const n={}; ids.forEach(i=>{ n[dom(i)]=(n[dom(i)]||0)+1; });
     const info=lb.querySelector('.scenario-info'); if(!info||info.querySelector('.ev-dom')) return;
     const w=document.createElement('div'); w.className='ev-dom'; w.title='จำนวนตัวชี้วัดแบบประเมินที่เหตุการณ์นี้ทดสอบ · ผลกระทบ '+(EVIMP[id]||[]).length+' ข้อ';
-    w.innerHTML='<small>ตอบแบบประเมิน:</small>'+DK.filter(d=>n[d]).map(d=>'<span style="--dc:'+DOM[d].c+'">'+DOM[d].ic+' '+DOM[d].n+' <b>'+n[d]+'</b></span>').join('');
+    w.innerHTML='<div class="ed-h">ตอบแบบประเมิน <small>(จำนวนตัวชี้วัด)</small></div><div class="ed-g">'+DK.map(d=>'<span class="'+(n[d]?'on':'off')+'" style="--dc:'+DOM[d].c+'"><i>'+DOM[d].ic+'</i><em>'+({HR:'บุคลากร',WS:'WASH',EN:'พลังงาน',IN:'โครงสร้าง'})[d]+'</em><b>'+(n[d]||0)+'</b></span>').join('')+'</div>';
     info.insertBefore(w,info.querySelector('.scenario-status'));
   });
   const sc=document.getElementById('scCount'); if(sc&&!document.getElementById('assCover')){
@@ -3449,6 +3514,13 @@ function decorateSetup(){
 }
 
 /* ---- ตัวเชื่อมกับเกมเดิม ---- */
+const _srs=showRoundSummary;
+showRoundSummary=function(){
+  _srs();
+  const rv=document.getElementById('rdReview'); if(!rv) return;
+  let box=document.getElementById('rdRadar'); if(!box){ box=document.createElement('div'); box.id='rdRadar'; rv.parentNode.insertBefore(box,rv); }
+  box.innerHTML=roundRadar();
+};
 const _afterStep=afterStep;
 afterStep=function(inc){
   try{
