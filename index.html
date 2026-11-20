@@ -1980,11 +1980,6 @@ function renderConsole(){
   h+='<div class="cs-timer"><div class="cs-tbar"><i id="csBar" class="'+(inc.stepLeft<=8?'warn':'')+'" style="width:'+Math.max(0,inc.stepLeft/STEP_SECS*100)+'%"></i></div><span id="csSec">'+Math.ceil(Math.max(0,inc.stepLeft))+'</span></div>';
   h+='<div class="cs-cancel"><button type="button" class="pl-ghost" data-cs-cancel="1">✕ ยกเลิกจุด</button></div>';
   h+='<div class="cs-act"><b>'+esc(shortAction(st.s))+'</b><div class="cs-chips">'+stepChips(st).map(c=>'<span><i>'+c[1]+'</i>'+c[2]+'</span>').join('')+'</div></div>';
-  h+=(window.ASSESS?ASSESS.consoleCard(inc,k):'');h+='<div class="cs-tiles">'+(st.solve
-    ?'<div class="t star"><span>⭐</span><b>ใช้ Item ตรงปัญหา</b><small>ต้อง '+need+' ชิ้น</small><div class="cs-need">'+Array.from({length:need},(_,j)=>'<i class="'+(j<(inc.solveCount||0)?'f':'')+'"></i>').join('')+'</div></div><div class="t no"><span>🚫</span><b>SOP ใช้แทนไม่ได้</b><small>ต้องเป็นทรัพยากร</small></div>'
-    :'<div class="t ok"><span>✅</span><b>SOP / ชุดสั่งการ</b><small>ใช้ได้ไม่จำกัด</small></div><div class="t no"><span>🚫</span><b>ทรัพยากรวิกฤต</b><small>เก็บไว้ขั้น ⭐</small></div>')+'</div>';
-  if(inc.hintFor===k) h+='<div class="cs-hint">💡 '+esc(stepHintTxt(st,def))+'</div>';
-  if(inc.fb) h+='<div class="cs-fb '+(inc.fb.ok?'ok':'bad')+'">'+esc(inc.fb.text)+'</div>';
   /* การ์ดทีมที่รับผิดชอบขั้นนี้ ใช้รูปแบบเดียวกับการ์ดทีมด้านล่าง (ไม่มีช่อง Item ซ้ำซ้อนแล้ว) */
   h+='<article class="team cs-teamcard" style="--tc:'+team.color+'"><div class="team-h">'+avatar(team.kind,team.skin)+
     '<div class="nm"><small class="cs-resp">★ ทีมที่รับผิดชอบขั้นนี้</small><h3>'+esc(team.name)+'</h3><small>'+esc(team.role)+'</small></div><div class="score" aria-label="คะแนน">'+score(team)+'</div></div>'+
@@ -1994,6 +1989,12 @@ function renderConsole(){
       return '<button type="button" class="cardb'+(key==='manual'?' manual':'')+(cnt===0?' empty':'')+'" style="--cc:'+c.c+'" data-cs-team="'+st.team+'" data-cs-key="'+key+'" title="'+esc(c.d)+'" aria-label="'+esc(team.name+' การ์ด '+c.n+(cnt===Infinity?' ไม่จำกัด':' เหลือ '+cnt))+'">'+
         '<span class="n">'+(cnt===Infinity?'∞':'×'+cnt)+'</span><span class="ico">'+ic(key,20)+'</span><span>'+esc(c.s)+'</span></button>';
     }).join('')+'</div></article>';
+  if(inc.hintFor===k) h+='<div class="cs-hint">💡 '+esc(stepHintTxt(st,def))+'</div>';
+  if(inc.fb) h+='<div class="cs-fb '+(inc.fb.ok?'ok':'bad')+'">'+esc(inc.fb.text)+'</div>';
+  h+=(window.ASSESS?ASSESS.consoleCard(inc,k):'');
+  h+='<div class="cs-tiles">'+(st.solve
+    ?'<div class="t star"><span>⭐</span><b>ใช้ Item ตรงปัญหา</b><small>ต้อง '+need+' ชิ้น</small><div class="cs-need">'+Array.from({length:need},(_,j)=>'<i class="'+(j<(inc.solveCount||0)?'f':'')+'"></i>').join('')+'</div></div><div class="t no"><span>🚫</span><b>SOP ใช้แทนไม่ได้</b><small>ต้องเป็นทรัพยากร</small></div>'
+    :'<div class="t ok"><span>✅</span><b>SOP / ชุดสั่งการ</b><small>ใช้ได้ไม่จำกัด</small></div><div class="t no"><span>🚫</span><b>ทรัพยากรวิกฤต</b><small>เก็บไว้ขั้น ⭐</small></div>')+'</div>';
   h+='</div>';
   el.innerHTML=h;
 }
@@ -3722,4 +3723,158 @@ try{ ensure(); }catch(e){}
 })();
 
 </script>
+<style id="tt-style">
+#ovTut{z-index:10001}
+.tt-sheet{width:min(780px,100%)}
+.tt-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tt-top b{font:800 15px var(--f-hud);color:var(--volt);letter-spacing:.08em}
+.tt-stage{position:relative;height:240px;margin:10px 0;border-radius:18px;overflow:hidden;background:linear-gradient(#1c3a7a,#0e1b3d);border:2px solid #ffffff25}
+.tt-stage>*{position:absolute}
+.tt-cap h3{margin:0;font:800 clamp(18px,3vw,24px) var(--f-display);color:#fff}
+.tt-cap p{margin:4px 0 0;color:#cfdcff;font-size:15px;line-height:1.55}
+.tt-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 2px}
+.tt-dots i{width:38px;height:8px;border-radius:9px;background:#ffffff30;cursor:pointer}
+.tt-dots i.on{background:var(--volt)}.tt-dots i.done{background:#2fd08c}
+.tt-act{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-top:12px}
+.tt-act label{color:#c9d8fb;font-size:13px;display:flex;gap:6px;align-items:center;cursor:pointer}
+.tt-btns{display:flex;gap:8px}
+.tt-ground{left:0;right:0;bottom:0;height:62px;background:#2d3a6b}
+.tt-bld{bottom:58px;font-size:46px;transform:translateX(-50%)}
+.tt-pin{top:22px;transform:translateX(-50%);font:900 26px var(--f-display);color:#fff;width:42px;height:42px;border-radius:50%;background:var(--alert);display:grid;place-items:center;border:3px solid #fff;animation:ttBob 1s ease-in-out infinite}
+.tt-pin:after{content:"";position:absolute;inset:-6px;border-radius:50%;border:3px solid #fff;animation:ttPing 1.3s ease-out infinite}
+.tt-n{top:80px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:900 17px var(--f-hud);color:#14224a;border:3px solid #fff;transform:translateX(-50%) scale(0);animation:ttPop .4s forwards}
+.tt-run{bottom:64px;font-size:36px;transform:translateX(-50%);animation:ttRun 6s ease-in-out infinite}
+.tt-pnl{left:50px;right:50px;top:16px;bottom:16px;border-radius:14px;background:#14306f;border:2px solid #6d8be8;padding:10px 14px;color:#fff}
+.tt-pnl .h{display:flex;align-items:center;gap:10px}
+.tt-pnl .num{width:44px;height:44px;border-radius:12px;background:#FFD43B;color:#14224a;display:grid;place-items:center;font:900 22px var(--f-hud)}
+.tt-pnl .h b{font:800 16px var(--f-display)}
+.tt-pnl .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.tt-pnl .chips span{padding:3px 10px;border-radius:99px;background:#ffffff1c;border:1px solid #ffffff44;font-size:13px}
+.tt-pnl .row{display:flex;gap:8px}
+.tt-pnl .t{flex:1;padding:6px;border-radius:10px;text-align:center;font-size:13px;border:2px solid}
+.tt-pnl .t.star{background:#3b3208;border-color:#ffd93b}.tt-pnl .t.no{background:#4a2233;border-color:#ff7a7c}
+.tt-pnl .team{margin-top:8px;padding:5px 10px;border-radius:9px;background:#ffb02033;border:1px solid #ffb020;font-size:13px;animation:ttGlow2 1.6s ease-in-out infinite}
+.tt-arrow{right:14px;top:80px;font-size:34px;animation:ttBobY .8s ease-in-out infinite}
+.tt-row{left:0;right:0;top:56px;display:flex;gap:12px;justify-content:center}
+.tt-c{position:relative!important;width:120px;height:92px;border-radius:14px;background:#f4f8ff;color:#1a2250;display:grid;place-items:center;align-content:center;font:800 14px var(--f-display);box-shadow:inset 0 6px 0 var(--cc),0 4px 0 #0005}
+.tt-c span{font-size:28px}
+.tt-c.hit{animation:ttGlow 3.4s infinite}
+.tt-fing{position:absolute!important;right:6px;bottom:-22px;font-size:38px;animation:ttTap 3.4s infinite;z-index:3}
+.tt-sc{left:50%;top:34px;transform:translateX(-50%);font:900 36px var(--f-display);color:#6dffb8;-webkit-text-stroke:2px #102044;paint-order:stroke fill;opacity:0;animation:ttScore 3.4s infinite}
+.tt-lab{left:0;right:0;bottom:16px;text-align:center;color:#ffe36b;font:800 15px var(--f-display)}
+.tt-tb{left:30px;right:30px;top:26px;height:20px;border-radius:99px;background:#ffffff22;overflow:hidden}
+.tt-tb i{display:block;height:100%;background:linear-gradient(90deg,#2fd08c,#ffd93b 60%,#ff4d4f);animation:ttShrink 4.5s linear infinite}
+.tt-sec{right:34px;top:54px;font:900 30px var(--f-hud);color:var(--volt)}
+.tt-pen{left:24px;right:24px;top:96px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.tt-pen div{padding:8px 10px;border-radius:12px;font:700 14px var(--f-display);color:#fff;border:2px solid;opacity:0;animation:ttPop2 .5s forwards}
+.tt-pen .g{background:#0d4a3d;border-color:#36e5a2}.tt-pen .b{background:#4a2233;border-color:#ff7a7c}
+.tt-st{top:60px;width:44px;height:44px;border-radius:50%;background:#324875;display:grid;place-items:center;font:900 20px var(--f-hud);color:#fff;transform:translateX(-50%) scale(0);animation:ttDone .5s forwards}
+.tt-tro{left:50%;top:128px;transform:translateX(-50%) scale(0);font-size:64px;animation:ttTro .6s 3.4s forwards}
+.tt-aar{left:0;right:0;bottom:12px;text-align:center;color:#cfdcff;font:700 14px var(--f-display);opacity:0;animation:ttFade .6s 3.9s forwards}
+@keyframes ttBob{50%{transform:translateX(-50%) translateY(-6px)}}
+@keyframes ttBobY{50%{transform:translateY(-6px)}}
+@keyframes ttPing{from{transform:scale(.7);opacity:1}to{transform:scale(1.9);opacity:0}}
+@keyframes ttPop{to{transform:translateX(-50%) scale(1)}}
+@keyframes ttRun{0%,8%{left:14%}38%,52%{left:46%}86%,100%{left:82%}}
+@keyframes ttGlow2{50%{background:#ffb02066}}
+@keyframes ttTap{0%{transform:translate(70px,60px);opacity:0}15%{opacity:1}45%{transform:translate(0,0)}55%{transform:translate(0,8px) scale(.9)}65%{transform:translate(0,0)}100%{transform:translate(0,0);opacity:0}}
+@keyframes ttGlow{0%,50%{box-shadow:inset 0 6px 0 var(--cc),0 4px 0 #0005}58%,92%{box-shadow:inset 0 6px 0 var(--cc),0 0 0 4px #ffd93b,0 10px 20px #0008;transform:translateY(-6px)}100%{transform:none}}
+@keyframes ttScore{0%,56%{opacity:0;transform:translateX(-50%) translateY(0)}66%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-34px)}}
+@keyframes ttShrink{from{width:100%}to{width:4%}}
+@keyframes ttPop2{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes ttDone{from{transform:translateX(-50%) scale(0);background:#324875}to{transform:translateX(-50%) scale(1);background:#36e5a2}}
+@keyframes ttTro{to{transform:translateX(-50%) scale(1)}}
+@keyframes ttFade{to{opacity:1}}
+</style>
+<script id="tt-script">
+(()=>{
+'use strict';
+const KEY='kskTutDone', $id=id=>document.getElementById(id);
+const COL=['#FF6B6B','#FFA94D','#FFD43B','#69DB7C','#38D9A9'];
+const SL=[
+ {t:'1 · ตามหมุดแดงบนแผนที่',d:'แตะหมุดสีแดงที่อาคารเกิดเหตุ ตัวละครจะวิ่งไปทีละจุด แต่ละจุดคือ 1 ขั้นตอนของแผน BCP',
+  s:()=>`<div class="tt-ground"></div>
+   <div class="tt-bld" style="left:14%">🏥</div><div class="tt-bld" style="left:46%">🚑</div><div class="tt-bld" style="left:82%">🏭</div>
+   <div class="tt-pin" style="left:46%">!</div>
+   <div class="tt-n" style="left:14%;background:${COL[0]};animation-delay:.3s">1</div>
+   <div class="tt-n" style="left:46%;background:${COL[1]};animation-delay:2.4s">2</div>
+   <div class="tt-n" style="left:82%;background:${COL[2]};animation-delay:4.6s">3</div>
+   <div class="tt-run">🎖️</div>`},
+ {t:'2 · อ่านแผงด้านข้างก่อนลงมือ',d:'แผงบอกว่าขั้นนี้ต้องทำอะไร ทีมไหนรับผิดชอบ และเป็นขั้นธรรมดา (ใช้ SOP) หรือขั้นแก้ปัญหา (ต้องใช้ Item ทรัพยากร ⭐)',
+  s:()=>`<div class="tt-pnl"><div class="h"><div class="num">2</div><div><small style="color:#c9d8fb">🚨 ไฟดับทั้งโรงพยาบาล</small><br><b>🔧 แก้ปัญหาหลัก (ใช้ Item!)</b></div></div>
+   <div class="chips"><span>⚡ ไฟฟ้า</span><span>🚧 กั้นเขต</span><span>🔍 ตรวจ/ประเมิน</span></div>
+   <div class="row"><div class="t star">⭐ ใช้ Item ตรงปัญหา</div><div class="t no">🚫 SOP ใช้แทนไม่ได้</div></div>
+   <div class="team">★ ทีมที่รับผิดชอบขั้นนี้: ทีมสนับสนุน/อาคารสถานที่</div></div><div class="tt-arrow">👈</div>`},
+ {t:'3 · แตะ Item ของทีมที่ถูกหน้าที่',d:'เลือกการ์ดจากการ์ดทีมที่รับผิดชอบเท่านั้น ถูกต้องได้คะแนน ยิ่งเร็วยิ่งได้โบนัส ผิดทีมหรือผิด Item จะถูกหักคะแนน',
+  s:()=>`<div class="tt-row">
+   <div class="tt-c" style="--cc:#FBBF24"><span>📣</span>ชุดบัญชาการ</div>
+   <div class="tt-c" style="--cc:#60A5FA"><span>📻</span>วิทยุสำรอง</div>
+   <div class="tt-c hit" style="--cc:#7DD3FC"><span>✅</span>ปฏิบัติตาม SOP<div class="tt-fing">👆</div></div></div>
+   <div class="tt-sc">✓ +10</div><div class="tt-lab">ขั้นทั่วไป → เลือก SOP · ขั้น ⭐ → เลือก Item ทรัพยากร</div>`},
+ {t:'4 · มีเวลาจำกัดต่อขั้น (30 วินาที)',d:'ตัดสินใจให้ทัน เลือกถูกเร็วได้โบนัส ส่วนคำใบ้ช่วยได้แต่เสียคะแนน',
+  s:()=>`<div class="tt-tb"><i></i></div><div class="tt-sec">⏱ 30s</div>
+   <div class="tt-pen"><div class="g" style="animation-delay:.3s">⚡ เลือกถูกเร็ว +3 โบนัส</div><div class="b" style="animation-delay:1s">✗ เลือก Item ผิด −2</div>
+   <div class="b" style="animation-delay:1.7s">⏰ หมดเวลา −2</div><div class="b" style="animation-delay:2.4s">💡 ขอคำใบ้ −1</div></div>`},
+ {t:'5 · ครบทุกขั้นแล้วดูสรุป AAR',d:'เมื่อผ่านครบทุกขั้นเหตุการณ์จึงจบ ระบบสรุปจุดแข็ง จุดอ่อน เฉลยรายขั้น และตัวชี้วัดแบบประเมิน 4 ด้านที่ทดสอบ',
+  s:()=>[1,2,3,4,5].map((n,i)=>`<div class="tt-st" style="left:${14+i*18}%;animation-delay:${.4+i*.6}s">✓</div>`).join('')+
+   `<div class="tt-tro">🏆</div><div class="tt-aar">📋 สรุปผล AAR · เทียบแบบประเมินความเปราะบาง</div>`}
+];
+let i=0,timer=null,cb=null,held=false,shown=false;
+const ov=document.createElement('div'); ov.className='overlay'; ov.id='ovTut'; ov.hidden=true;
+ov.innerHTML=`<div class="sheet tt-sheet" role="dialog" aria-modal="true" aria-label="วิธีเล่น">
+ <div class="tt-top"><b>HOW TO PLAY</b><button class="btn sm ghost" id="ttSkip" type="button">ข้าม ▶▶</button></div>
+ <div class="tt-stage" id="ttStage"></div>
+ <div class="tt-cap"><h3 id="ttT"></h3><p id="ttD"></p></div>
+ <div class="tt-dots" id="ttDots"></div>
+ <div class="tt-act"><label><input type="checkbox" id="ttNever"> ไม่ต้องแสดงอีกในเครื่องนี้</label>
+  <div class="tt-btns"><button class="btn sm ghost" id="ttPrev" type="button">◀ ย้อนกลับ</button><button class="btn sm go" id="ttNext" type="button"></button></div></div></div>`;
+document.body.appendChild(ov);
+function draw(){
+  $id('ttStage').innerHTML=SL[i].s(); $id('ttT').textContent=SL[i].t; $id('ttD').textContent=SL[i].d;
+  $id('ttDots').innerHTML=SL.map((_,k)=>`<i data-k="${k}" class="${k===i?'on':k<i?'done':''}"></i>`).join('');
+  $id('ttPrev').disabled=i===0; $id('ttPrev').style.opacity=i===0?.4:1;
+  $id('ttNext').textContent=i===SL.length-1?'เริ่มภารกิจ ▶':'ถัดไป ▶';
+}
+function restart(){ clearInterval(timer); if(i<SL.length-1) timer=setInterval(()=>go(i+1),6500); }
+function go(n){ i=Math.max(0,Math.min(SL.length-1,n)); draw(); restart(); }
+function open(fn){
+  cb=fn||null; i=0; held=false;
+  if(S.phase==='play'&&!S.hold){ S.hold=true; held=true; }
+  ov.hidden=false; draw(); restart(); setTimeout(()=>$id('ttNext').focus({preventScroll:true}),30);
+}
+function close(run){
+  clearInterval(timer); ov.hidden=true;
+  if($id('ttNever').checked){ try{localStorage.setItem(KEY,'1');}catch(e){} }
+  if(held){ S.hold=false; lastT=performance.now(); held=false; }
+  const f=cb; cb=null; if(run&&f) f();
+}
+$id('ttSkip').addEventListener('click',()=>close(true));
+$id('ttPrev').addEventListener('click',()=>go(i-1));
+$id('ttNext').addEventListener('click',()=>{ if(i===SL.length-1) close(true); else go(i+1); });
+$id('ttDots').addEventListener('click',e=>{ const d=e.target.closest('[data-k]'); if(d) go(+d.dataset.k); });
+document.addEventListener('keydown',e=>{
+  if(ov.hidden) return;
+  if(e.key==='Escape') close(true);
+  else if(e.key==='ArrowRight') $id('ttNext').click();
+  else if(e.key==='ArrowLeft') go(i-1);
+});
+/* เริ่มเกมใหม่ = แสดงสอนอีกครั้งที่ปุ่มเริ่มจับเวลาแรก */
+document.addEventListener('click',e=>{ if(e.target.closest('#btnStart')) shown=false; },true);
+/* ดักปุ่ม "เริ่มจับเวลา": แสดงสอนวิธีเล่นก่อน (ครั้งเดียวต่อเกม) แล้วค่อยเริ่มภารกิจ */
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#btnBegin')) return;
+  let never=false; try{ never=localStorage.getItem(KEY)==='1'; }catch(_){}
+  if(never||shown) return;
+  shown=true;
+  e.stopPropagation(); e.preventDefault();
+  open(()=>{ Sfx.init(); beginRound(); });
+},true);
+/* ปุ่ม ❓ ดูซ้ำได้ตลอด (เวลาหยุดให้เองถ้ากดระหว่างเล่น) */
+const home=$id('btnHome');
+if(home){ const b=document.createElement('button'); b.className='ib'; b.id='btnHelp'; b.type='button'; b.textContent='❓'; b.title='วิธีเล่น'; b.setAttribute('aria-label','ดูวิธีเล่น');
+  b.addEventListener('click',()=>open(null)); home.insertAdjacentElement('afterend',b); }
+window.Tutorial={open};
+})();
+</script>
+
 </body></html>
