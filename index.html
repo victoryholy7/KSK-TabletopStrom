@@ -4288,5 +4288,38 @@ button{line-height:1.35}
  .scene-wrap:has(.flash.go){transform:none!important}
 }
 </style>
-
+<script id="ksk-item-focus">
+(function(){
+ /* ปรับความยากที่นี่: 0 = เหลือแต่ตัวถูก, เพิ่มตัวเลข = มีตัวหลอกมากขึ้น */
+ const DISTRACT_SOLVE=3, DISTRACT_NORMAL=2;
+ const FREE=['proc','ics','comms','radio','press','sitrep','calltree'];
+ const _rc=renderConsole;
+ renderConsole=function(){
+  _rc();
+  const el=document.querySelector('#console'); if(!el||el.hidden) return;
+  const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open'); if(!inc) return;
+  const sq=bcpFor(inc.def), k=Math.min(inc.step||0,sq.length-1), st=sq[k], def=inc.def;
+  const cards=Array.from(el.querySelectorAll('.hand .cardb')); if(!cards.length) return;
+  const own=cards.map(b=>b.dataset.csKey);
+  let core,pool;
+  if(st.solve){
+   core=own.filter(x=>x!=='manual'&&(def.sol[x]==='best'||def.sol[x]==='ok'));
+   if(!core.length) return;
+   pool=own.filter(x=>!core.includes(x)&&x!=='manual'&&x!=='proc'&&!FREE.includes(x));
+  }else{
+   core=own.filter(x=>FREE.includes(x));
+   pool=own.filter(x=>!core.includes(x)&&x!=='manual'&&def.sol[x]!=='best');
+  }
+  const bad=seededShuffle(pool,inc.id+'-'+k).slice(0,st.solve?DISTRACT_SOLVE:DISTRACT_NORMAL);
+  const keep=seededShuffle([...core,...bad,'manual'],inc.id+'-o-'+k);
+  cards.forEach(b=>{
+   const i=keep.indexOf(b.dataset.csKey);
+   b.style.display=i<0?'none':'';
+   b.style.order=i;
+  });
+  const head=el.querySelector('.cs-item-head small');
+  if(head) head.textContent='แสดงเฉพาะ Item ที่เกี่ยวข้อง '+keep.length+' ใบ จากทั้งหมด '+own.length+' ใบ';
+ };
+})();
+</script>
 </body></html>
