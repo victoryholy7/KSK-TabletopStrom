@@ -4288,5 +4288,168 @@ button{line-height:1.35}
  .scene-wrap:has(.flash.go){transform:none!important}
 }
 </style>
+ <script id="ksk-item-system">
+(function(){
+'use strict';
+/* ===== ตั้งค่าความยาก ===== */
+const CFG={decoySolve:3, decoyGeneral:2, restockEachEvent:false};
+
+/* ===== ชื่อมาตรการ (ใช้อธิบายเหตุผลหลังตอบ) ===== */
+const LABEL={power:'ไฟฟ้าสำรอง',fuel:'เชื้อเพลิง',light:'แสงสว่างฉุกเฉิน',ups:'UPS/แบตสำรอง',elec:'ความปลอดภัยไฟฟ้า',pv:'ระบบ Solar PV',
+repair:'ซ่อม/ช่าง',struct:'โครงสร้างอาคาร',flood:'กั้น/สูบน้ำ',road:'เปิดเส้นทาง',transport:'ขนส่ง/รถพยาบาล',evac:'อพยพผู้ป่วย',surge:'รองรับผู้ป่วยล้น',
+triage:'คัดแยกผู้ป่วย',manpower:'กำลังคน',rest:'พักเวร',welfare:'ดูแลบุคลากร',callout:'เรียกกำลังคน/Call tree',ration:'อาหาร-น้ำบุคลากร',
+oxygen:'ออกซิเจน',drug:'ยา/เวชภัณฑ์',cold:'ห่วงโซ่ความเย็น',supply:'จัดหา/ขนส่งเวชภัณฑ์',fund:'งบฉุกเฉิน',watersupply:'น้ำสำรอง',waterq:'คุณภาพน้ำ',
+waste:'ขยะติดเชื้อ',sewage:'น้ำเสีย',vector:'ควบคุมยุง/โรค',decon:'ควบคุมการปนเปื้อน',ppe:'PPE',comms:'สื่อสาร',radio:'วิทยุสำรอง',net:'เครือข่ายสำรอง',
+it:'ระบบ IT/HOSxP',pr:'แถลงข่าว/ประชาสัมพันธ์',family:'ประสานญาติ',report:'รายงานสถานการณ์',command:'บัญชาการ ICS',warn:'เตือนภัยล่วงหน้า'};
+
+/* ===== Item -> มาตรการ (p = ตรงหลัก, s = ใช้แทน/สนับสนุนได้) ===== */
+const T=(p,s)=>({p:p,s:s||[]});
+const ITEM_TAGS={
+ ics:T(['command'],['report']), radio:T(['radio'],['comms']), comms:T(['comms'],['pr','family']), press:T(['pr'],['comms']),
+ sitrep:T(['report'],['comms','command']), calltree:T(['callout'],['comms','manpower']), weathercomms:T(['warn'],['comms','callout']),
+ net:T(['net'],['comms','it']), itkit:T(['it'],['net']), upsbackup:T(['ups'],['power','it']),
+ gen:T(['power'],['light']), fuel:T(['fuel'],['power']), light:T(['light'],['power']), elecsafe:T(['elec'],['power','pv']), pvexpert:T(['pv'],['elec']),
+ fix:T(['repair'],['elec','struct']), stormproof:T(['struct'],['repair','road']), sandbag:T(['flood'],['struct']), pump:T(['flood'],['sewage']),
+ roadclear:T(['road'],['repair','struct']), amb:T(['transport'],['road']), evac:T(['evac'],['transport']), tent:T(['surge'],['evac']),
+ triage:T(['triage'],['surge']), staff:T(['manpower'],['triage','surge']), oxy:T(['oxygen']),
+ stock:T(['drug'],['cold','supply']), coldchain:T(['cold'],['drug']), supplychain:T(['supply'],['drug','fuel']), budget:T(['fund'],['supply']),
+ water:T(['watersupply'],['waterq']), watertest:T(['waterq'],['watersupply']), washsafe:T(['waterq'],['watersupply','sewage']),
+ wasteops:T(['waste'],['sewage','vector']), env:T(['waste','vector'],['sewage','decon']), decon:T(['decon'],['waste','ppe']), ppe:T(['ppe'],['decon']),
+ hrplan:T(['manpower','rest'],['callout']), hrcare:T(['welfare'],['manpower','rest']), staffwelfare:T(['rest','welfare'],['ration']),
+ foodwater:T(['ration'],['welfare','watersupply']), familycare:T(['family'],['pr'])
+};
+
+/* ===== เหตุการณ์ -> มาตรการที่ต้องการ (หลัก / รอง) ===== */
+const N=(p,s)=>({p:p,s:s||[]});
+const NEED={
+ 'r1-power':N(['power'],['fuel','light','ups','elec','repair','manpower']),
+ 'r1-roof':N(['repair','struct'],['flood','evac','manpower']),
+ 'r1-comm':N(['comms','callout','radio'],['command','report','net','pr','manpower']),
+ 'r2-his':N(['it','net'],['ups','radio','report']),
+ 'r2-er':N(['triage','manpower'],['surge','transport','evac','drug']),
+ 'r3-road':N(['road','transport'],['evac','flood','repair']),
+ 'r3-pharm':N(['drug','flood','cold'],['supply','repair']),
+ 'r4-fuel':N(['fuel'],['power','supply','fund']),
+ 'r4-crowd':N(['pr','family','comms'],['report','command']),
+ 'r4-tired':N(['rest','manpower'],['welfare','callout','ration']),
+ 'x-water':N(['watersupply'],['waterq','flood','repair','ration']),
+ 'x-oxygen':N(['oxygen','repair'],['elec','ups','manpower']),
+ 'x-birth':N(['triage','manpower'],['light','evac','transport','power']),
+ 'x-injury':N(['triage','transport','manpower'],['ppe','decon','evac']),
+ 'x-supply':N(['drug','supply'],['cold','fund','transport']),
+ 'x-waste':N(['waste'],['decon','ppe','vector','transport']),
+ 'x-treatment':N(['sewage','power','waste','repair'],['flood','elec']),
+ 'x-solar':N(['pv','elec'],['repair','power','light','ups']),
+ 'x-treefall':N(['road','repair'],['transport','struct','ppe','elec']),
+ 'x-meddev':N(['ups','repair','power'],['elec','oxygen','light','manpower']),
+ 'x-aar':N(['report','comms'],['command','family','pr']),
+ 'x-hr':N(['manpower','rest','callout'],['welfare','ppe','ration']),
+ 'x-wash':N(['waterq','waste'],['watersupply','flood','sewage','ppe','decon']),
+ 'x-energy':N(['elec','pv','power'],['fuel','repair','light','ups']),
+ 'x-infra':N(['struct'],['repair','road','flood']),
+ 'x-warn':N(['warn','callout'],['comms','report','pr']),
+ 'x-cold':N(['cold'],['drug','ups']),
+ 'x-vector':N(['vector','waste'],['waterq','flood','sewage','decon','repair']),
+ 'x-evac':N(['evac','transport'],['surge','triage','manpower'])
+};
+
+const inter=(a,b)=>a.filter(x=>b.includes(x));
+function gradeOf(key,need){
+ const t=ITEM_TAGS[key]; if(!t||!need) return null;
+ if(inter(t.p,need.p).length) return 'best';
+ if(inter(t.p,need.s).length||inter(t.s,need.p).length) return 'ok';
+ return null;
+}
+function matched(key,need){
+ const t=ITEM_TAGS[key]; if(!t) return [];
+ return [...new Set([...inter(t.p,need.p),...inter(t.p,need.s),...inter(t.s,need.p)])];
+}
+const names=a=>a.map(x=>LABEL[x]||x).join(', ');
+
+/* ===== 1) สร้างเฉลยใหม่ทุกเหตุการณ์จากตารางมาตรการ ===== */
+const allInc=[];
+PICKABLE_ROUNDS.forEach(r=>r.inc.forEach(d=>{ if(allInc.indexOf(d)<0) allInc.push(d); }));
+allInc.forEach(d=>{
+ const need=NEED[d.id]; if(!need) return;
+ d._solLegacy=d.sol;
+ const sol={manual:'manual'};
+ Object.keys(ITEM_TAGS).forEach(k=>{ if(!CARD_DEF[k]) return; const g=gradeOf(k,need); if(g) sol[k]=g; });
+ d.sol=sol;
+});
+/* ขั้นทั่วไป: ยอมรับ SOP + ชุดสั่งการ/สื่อสาร/รายงาน/เตือนภัย */
+['sitrep','calltree','weathercomms'].forEach(k=>{ if(FREE_PROC.indexOf(k)<0) FREE_PROC.push(k); });
+
+/* ===== 2) ตรวจและเติม Item ที่ทีมรับผิดชอบยังไม่มี ===== */
+const fixes=[];
+function audit(){
+ fixes.length=0;
+ allInc.forEach(d=>{
+  if(!NEED[d.id]) return;
+  bcpFor(d).forEach((st,k)=>{
+   if(!st.solve) return;
+   const kind=TEAM_DEF[st.team].kind, need=Math.max(1,d.needs||1);
+   const cap=()=>{ const f=freshCards(kind); return (TEAM_CARDS[kind]||[]).filter(x=>d.sol[x]==='best'||d.sol[x]==='ok').reduce((a,x)=>a+(f[x]||0),0); };
+   if(cap()>=need) return;
+   const cands=Object.keys(d.sol).filter(x=>(d.sol[x]==='best'||d.sol[x]==='ok')&&CARD_DEF[x]&&TEAM_CARDS[kind].indexOf(x)<0)
+     .sort((a,b)=>(d.sol[a]==='best'?0:1)-(d.sol[b]==='best'?0:1));
+   while(cap()<need&&cands.length){
+    const x=cands.shift(); TEAM_CARDS[kind].push(x); if(CARD_ORDER.indexOf(x)<0) CARD_ORDER.push(x);
+    fixes.push({event:d.id,step:k+1,team:TEAM_DEF[st.team].name,added:CARD_DEF[x].n});
+   }
+  });
+ });
+ return fixes.slice();
+}
+audit();
+if(fixes.length){ console.info('[KSK Items] เติม Item ให้ทีมที่ไม่มีคำตอบ:'); console.table(fixes); }
+resetState(); buildMeters();
+
+/* ===== 3) เหตุผลหลังตอบ ===== */
+const _pb=placeBcpItem;
+placeBcpItem=function(tid,key){
+ const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open');
+ let st=null; if(inc){ const s=bcpFor(inc.def)[inc.step||0]; if(s&&s.solve&&tid===s.team&&key!=='manual'&&key!=='proc') st=s; }
+ const need=inc&&NEED[inc.id];
+ const out=_pb(tid,key);
+ if(st&&need&&inc.fb){
+  const g=inc.def.sol[key];
+  inc.fb.text+=(g?' · ตรงมาตรการ: '+names(matched(key,need)):' · ขั้นนี้ต้องการ: '+names(need.p));
+  renderPlanner();
+ }
+ return out;
+};
+
+/* ===== 4) แสดงเฉพาะ Item ที่เกี่ยวข้องกับขั้นนั้น ===== */
+const _rc=renderConsole;
+renderConsole=function(){
+ _rc();
+ const el=document.querySelector('#console'); if(!el||el.hidden) return;
+ const inc=S.incidents.find(i=>i.id===S.targetId&&i.state==='open'); if(!inc) return;
+ const sq=bcpFor(inc.def), k=Math.min(inc.step||0,sq.length-1), st=sq[k], d=inc.def;
+ const cards=Array.from(el.querySelectorAll('.hand .cardb')); if(!cards.length) return;
+ const own=cards.map(b=>b.dataset.csKey), ok=x=>d.sol[x]==='best'||d.sol[x]==='ok';
+ let core,pool;
+ if(st.solve){
+  core=own.filter(ok); if(!core.length) return;
+  pool=own.filter(x=>!ok(x)&&x!=='manual'&&x!=='proc'&&FREE_PROC.indexOf(x)<0);
+ }else{
+  core=own.filter(x=>FREE_PROC.indexOf(x)>=0&&x!=='manual');
+  pool=own.filter(x=>core.indexOf(x)<0&&x!=='manual'&&!ok(x));
+ }
+ const bad=seededShuffle(pool,inc.id+'-'+k).slice(0,st.solve?CFG.decoySolve:CFG.decoyGeneral);
+ const keep=seededShuffle([...core,...bad,'manual'],inc.id+'-o-'+k);
+ cards.forEach(b=>{ const i=keep.indexOf(b.dataset.csKey); b.style.display=i<0?'none':''; b.style.order=i; });
+ const h=el.querySelector('.cs-item-head small');
+ if(h) h.textContent='แสดง '+keep.length+' ใบ จากทั้งหมด '+own.length+' ใบ · ขั้นนี้ต้องการ: '+(st.solve?names((NEED[inc.id]||{p:[]}).p):'ปฏิบัติตาม SOP/ชุดสั่งการ');
+};
+
+/* ===== 5) (ตัวเลือก) เติมการ์ดใหม่ทุกครั้งที่เริ่มเหตุการณ์ ===== */
+const _br=beginRound;
+beginRound=function(){ if(CFG.restockEachEvent) S.teams.forEach(t=>{ t.cards=freshCards(t.kind); }); return _br(); };
+
+window.KSKItems={CFG:CFG,NEED:NEED,ITEM_TAGS:ITEM_TAGS,audit:audit,fixes:fixes,
+ report:function(){ const rows=[]; allInc.forEach(d=>{ if(!d.sol) return; rows.push({event:d.id,best:Object.keys(d.sol).filter(x=>d.sol[x]==='best').join(','),ok:Object.keys(d.sol).filter(x=>d.sol[x]==='ok').join(',')}); }); console.table(rows); return rows; }};
+})();
+</script>
 
 </body></html>
