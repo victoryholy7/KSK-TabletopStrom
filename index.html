@@ -866,11 +866,14 @@ button{font-family:inherit;color:inherit}
     </aside>
   </main>
 
-  <section class="howto" aria-label="วิธีเล่นแบบทีละขั้นตอน">
-    <div><b><span class="step-no">1</span>ตามจุดบนแผนที่</b>วงกลมเลขสีจะปรากฏทีละจุดตามขั้นตอนของเหตุการณ์ พร้อมตัวละครวิ่งไปยังจุดนั้น</div>
-    <div><b><span class="step-no">2</span>อ่านแผงด้านข้าง</b>แผงจะอธิบายว่าขั้นนี้คืออะไร ต้องทำอะไร และทีมใดรับผิดชอบ</div>
-    <div><b><span class="step-no">3</span>แตะ Item ให้ทัน</b>มีเวลาจำกัดต่อขั้น เลือกผิดหัก 2 คะแนน หมดเวลาหัก 2 คะแนน ขอคำใบ้ได้ในราคา 1 คะแนน</div>
-    <div><b><span class="step-no">4</span>ถูกก็ไปต่อ</b>เลือกถูกจะเดินไปขั้นถัดไป จบเหตุการณ์มีเฉลยและสรุป AAR ทุกขั้นตอน</div>
+  <section class="howto" aria-label="ลำดับการเล่นเกม">
+    <div class="flow-step"><b><span class="step-no">1</span>เลือกเหตุการณ์</b><span>แตะหมุดสีแดงบนแผนที่</span></div>
+    <div class="flow-arrow" aria-hidden="true">›</div>
+    <div class="flow-step"><b><span class="step-no">2</span>ดูขั้นตอน BCP</b><span>อ่านงานและทีมรับผิดชอบ</span></div>
+    <div class="flow-arrow" aria-hidden="true">›</div>
+    <div class="flow-step"><b><span class="step-no">3</span>เลือกการ์ด Item</b><span>ตัดสินใจภายในเวลาที่กำหนด</span></div>
+    <div class="flow-arrow" aria-hidden="true">›</div>
+    <div class="flow-step"><b><span class="step-no">4</span>ผ่านภารกิจ</b><span>ดูผลคะแนนและ AAR</span></div>
   </section>
   <div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker"></div></div>
 </div>
@@ -1978,6 +1981,7 @@ function renderConsole(){
   const avail=CARD_ORDER.filter(key=>(TEAM_CARDS[team.kind]||[]).includes(key));
   let h='<div class="cs" style="--sc:'+col+';--tc:'+team.color+'">';
   h+='<div class="cs-head"><div class="cs-num"><b>'+(k+1)+'</b><small>/ '+n+'</small></div><div class="cs-ttl"><small>🚨 '+esc(def.t)+'</small><b>'+esc(stepName(st,k))+'</b></div></div>';
+  h+='<div class="cs-guide"><b>วิธีเล่นขั้นนี้</b><span>① อ่านภารกิจ</span><i>›</i><span>② ดูทีมรับผิดชอบ</span><i>›</i><span>③ แตะ Item ให้ตรงปัญหา</span><i>›</i><span>④ ดูผลแล้วไปต่อ</span></div>';
   h+='<div class="cs-track">'+sq.map((x,j)=>'<i class="'+(j<k?'done':j===k?'cur':'')+'" style="--sc:'+STEP_COLORS[j%7]+'"></i>').join('')+'</div>';
   h+='<div class="cs-timer"><div class="cs-tbar"><i id="csBar" class="'+(inc.stepLeft<=8?'warn':'')+'" style="width:'+Math.max(0,inc.stepLeft/STEP_SECS*100)+'%"></i></div><span id="csSec">'+Math.ceil(Math.max(0,inc.stepLeft))+'</span></div>';
   h+='<div class="cs-cancel"><button type="button" class="pl-ghost" data-cs-cancel="1">✕ ยกเลิกจุด</button></div>';
@@ -1985,11 +1989,11 @@ function renderConsole(){
   /* การ์ดทีมที่รับผิดชอบขั้นนี้ ใช้รูปแบบเดียวกับการ์ดทีมด้านล่าง (ไม่มีช่อง Item ซ้ำซ้อนแล้ว) */
   h+='<article class="team cs-teamcard" style="--tc:'+team.color+'"><div class="team-h">'+avatar(team.kind,team.skin)+
     '<div class="nm"><small class="cs-resp">★ ทีมที่รับผิดชอบขั้นนี้</small><h3>'+esc(team.name)+'</h3><small>'+esc(team.role)+'</small></div><div class="score" aria-label="คะแนน">'+score(team)+'</div></div>'+
-    '<div class="cs-hintrow"><span>แตะ Item ของทีมนี้เพื่อทำขั้นที่ '+(k+1)+'</span><button type="button" class="pl-ghost" data-cs-hint="1" '+(inc.hintFor===k?'disabled':'')+'>💡 คำใบ้ −1</button></div>'+
-    '<div class="hand">'+avail.map(key=>{
+    '<div class="cs-hintrow"><span>เลือก Item ให้ตรงกับปัญหา · หากต้องใช้หลายชิ้น ระบบจะแจ้งจำนวนที่ต้องเลือก</span><button type="button" class="pl-ghost" data-cs-hint="1" '+(inc.hintFor===k?'disabled':'')+'>💡 คำใบ้ −1</button></div>'+
+    '<div class="cs-item-head"><b>🎒 คลัง Item ของทีมนี้</b><small>อ่านคำอธิบายใต้การ์ด แล้วแตะเลือก</small></div><div class="hand">'+avail.map(key=>{
       const c=CARD_DEF[key], cnt=(key==='manual'||key==='proc')?Infinity:team.cards[key];
       return '<button type="button" class="cardb'+(key==='manual'?' manual':'')+(cnt===0?' empty':'')+'" style="--cc:'+c.c+'" data-cs-team="'+st.team+'" data-cs-key="'+key+'" title="'+esc(c.d)+'" aria-label="'+esc(team.name+' การ์ด '+c.n+(cnt===Infinity?' ไม่จำกัด':' เหลือ '+cnt))+'">'+
-        '<span class="n">'+(cnt===Infinity?'∞':'×'+cnt)+'</span><span class="ico">'+ic(key,20)+'</span><span>'+esc(c.s)+'</span></button>';
+        '<span class="n">'+(cnt===Infinity?'∞':'×'+cnt)+'</span><span class="ico">'+ic(key,20)+'</span><span>'+esc(c.s)+'</span><small class="card-desc">'+esc(c.d)+'</small></button>';
     }).join('')+'</div></article>';
   if(inc.hintFor===k) h+='<div class="cs-hint">💡 '+esc(stepHintTxt(st,def))+'</div>';
   if(inc.fb) h+='<div class="cs-fb '+(inc.fb.ok?'ok':'bad')+'">'+esc(inc.fb.text)+'</div>';
@@ -3940,5 +3944,349 @@ if(home){ const b=document.createElement('button'); b.className='ib'; b.id='btnH
 window.Tutorial={open};
 })();
 </script>
+
+
+<style id="ksk-clarity-refresh">
+/* ===== KSK STORM COMMAND: clearer type, calmer motion, simpler play flow ===== */
+:root{
+  --clarity-text:#F7FAFF;
+  --clarity-sub:#D0DCF5;
+}
+body{font-size:17px;line-height:1.55}
+button{line-height:1.35}
+.brand b{font-size:22px;letter-spacing:.025em}
+.brand span{font-size:15px;color:var(--clarity-sub)}
+.roundchip{font-size:20px}
+.roundchip small{font-size:14px}
+.panel{padding:16px}
+.panel h2{font-size:17px;letter-spacing:.035em;color:#E3EBFF}
+.event-summary{padding:13px 15px}
+.event-summary small{font-size:14px}
+.event-summary b{font-size:20px;line-height:1.35}
+.event-summary p{font-size:15px;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.inc{grid-template-columns:50px minmax(0,1fr);gap:12px;padding:13px}
+.inc .bub{width:50px;height:50px;border-radius:15px}
+.inc h3{font-size:18px;line-height:1.35}
+.inc p{font-size:15px;line-height:1.45;color:#D4DFF5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.inc .meta{margin-top:9px}
+.tag{font-size:13px;padding:4px 10px}
+.flow-box{padding:13px;margin-top:10px}
+.flow-box p{font-size:15px;line-height:1.5}
+.flow-box b{font-size:16px}
+.flow-head{font-size:15px}
+.flow-box.tabletop .team-task b{font-size:16px}
+.flow-box.tabletop .team-task p{font-size:15px}
+.flow-box.tabletop textarea{font-size:16px;min-height:88px}
+.decision-option b{font-size:16px}
+.decision-option small{font-size:14px}
+.cs-head{gap:12px}
+.cs-num{min-width:48px;min-height:48px}
+.cs-num b{font-size:25px}
+.cs-ttl small{font-size:14px}
+.cs-ttl>b{font-size:19px;line-height:1.35}
+.cs-act>b{font-size:18px;line-height:1.5}
+.cs-chips span{font-size:14px}
+.cs-hintrow{font-size:14px}
+.cs-teamcard .team-h .av{width:72px;height:94px}
+.cs-teamcard .team-h h3{font-size:19px}
+.cs-teamcard .team-h small{font-size:14px}
+.cs-teamcard .cardb{min-height:94px}
+.cs-teamcard .cardb span{font-size:15px;line-height:1.25}
+.cs-teamcard .cardb .ico{width:40px;height:40px}
+.cs-teamcard .cardb .n{font-size:14px}
+.gauge .big{font-size:60px}
+.lvl{font-size:17px}
+.m{font-size:15px}
+.m .top b{font-size:16px}
+.m .bar{height:12px}
+
+/* Characters: a little taller and more visible, without enlarging their footprint too much */
+.team-h .av{width:66px;height:88px;object-fit:fill}
+.tcard .av{width:96px;height:132px}
+.msg .av{width:68px;height:84px}
+.pod .av{width:82px;height:106px}
+.hero-art .av{height:clamp(125px,19vw,205px)}
+.hero-art .av+.av{height:clamp(105px,15vw,155px)}
+
+/* The four-step flow is the single quick-start guide; remove visual noise */
+.howto{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr);
+  align-items:center;gap:8px;padding:14px 16px;
+  background:#10234D;border:1px solid #6F8DCE;border-radius:16px
+}
+.howto .flow-step{
+  min-width:0;min-height:84px;padding:10px 12px;
+  display:flex;flex-direction:column;justify-content:center;gap:5px;
+  background:#1B3268;border:1px solid #526FAE;border-radius:12px
+}
+.howto .flow-step b{font-size:16px;color:#FFE36B;line-height:1.35}
+.howto .flow-step span:not(.step-no){font-size:14px;color:#E4ECFF;line-height:1.4}
+.howto .step-no{width:27px;height:27px;font-size:15px;margin-right:6px}
+.howto .flow-arrow{font-size:30px;font-weight:900;color:#FFD93B;text-align:center}
+
+/* Keep the active task as the focus; secondary audit detail stays in its own review area */
+#console{border:2px solid #FFD93B;box-shadow:0 0 0 3px #FFD93B18}
+#console .cs{gap:12px}
+#console .cs-track{height:9px;gap:5px}
+#console .cs-track i{border-radius:8px}
+#console .cs-tiles{gap:8px}
+#console .cs-tiles .t{padding:10px}
+#console .cs-tiles .t b{font-size:15px}
+#console .cs-tiles .t small{font-size:13px}
+#console .sr-indicator{display:none!important}
+.ticker{display:none}
+
+/* Calm the scene: preserve feedback animations, reduce constant background movement */
+.cloud,.tree{animation-duration:12s!important}
+.tree{animation-name:none!important}
+/* Character idle motion: gentle breathing/bounce and a tiny side sway */
+@keyframes characterIdle{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  25%{transform:translateY(-3px) rotate(-1deg)}
+  50%{transform:translateY(-5px) rotate(0deg)}
+  75%{transform:translateY(-2px) rotate(1deg)}
+}
+.team-h .av,.tcard .av,.msg .av,.pod .av,.hero-art .av{
+  animation:characterIdle 3.8s ease-in-out infinite;
+  transform-origin:50% 90%;
+  will-change:transform;
+}
+/* Stagger the motion so the whole team does not bounce in sync */
+.team-h:nth-child(2n) .av,.tcard:nth-child(2n) .av,.pod:nth-child(2n) .av{animation-delay:.55s}
+.team-h:nth-child(3n) .av,.tcard:nth-child(3n) .av,.pod:nth-child(3n) .av{animation-delay:1.05s}
+.hero-art .av{animation-duration:3.2s}
+.msg .av{animation-duration:2.8s}
+.inc.open{animation:none;border-color:#FF9B9B}
+.pin .ring{animation-duration:2.2s}
+.stp-ring{animation-duration:2s}
+.say{animation-duration:.35s!important}
+#rain{opacity:.58}
+.toast{font-size:20px;padding:12px 22px}
+.boom{font-size:clamp(28px,5vw,62px);text-shadow:0 4px 0 #1a2250,0 0 14px #fff}
+
+/* Mobile: keep the flow readable and stack without squeezing labels */
+@media(max-width:700px){
+  body{font-size:16px}
+  .panel{padding:13px}
+  .panel h2{font-size:16px}
+  .inc{grid-template-columns:44px minmax(0,1fr);padding:11px}
+  .inc .bub{width:44px;height:44px}
+  .inc h3{font-size:17px}
+  .inc p{font-size:14px}
+  .cs-ttl>b{font-size:17px}
+  .cs-act>b{font-size:16px}
+  .cs-teamcard .team-h .av{width:62px;height:82px}
+  .cs-teamcard .cardb{min-height:88px}
+  .cs-teamcard .cardb span{font-size:14px}
+  .howto{grid-template-columns:1fr;gap:6px;padding:10px}
+  .howto .flow-step{min-height:0;padding:10px 12px}
+  .howto .flow-arrow{font-size:0;line-height:8px;height:8px}
+  .howto .flow-arrow:after{content:"↓";font-size:20px;display:block}
+  .team-h .av{width:60px;height:80px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}
+}
+</style>
+
+
+<style id="ksk-gameplay-upgrade">
+/* clearer item inventory */
+#console .cs-item-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px;margin:10px 0 7px;color:#fff}
+#console .cs-item-head b{font-size:16px;font-weight:900}
+#console .cs-item-head small{font-size:12px;color:#cbd9f8}
+#console .cs-guide{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:8px 0;padding:9px 10px;border:1px solid #ffffff2b;border-radius:12px;background:#0d1a38;color:#fff;font-size:12px;line-height:1.4}
+#console .cs-guide b{width:100%;font-size:13px;color:#ffd93b}
+#console .cs-guide span{font-weight:700}
+#console .cs-guide i{font-style:normal;color:#ffd93b;font-size:17px;font-weight:900}
+#console .hand{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;max-height:390px;overflow-y:auto;padding:4px 5px 9px;scrollbar-width:thin}
+#console .cardb{min-height:104px;padding:10px 7px 9px;align-content:start;gap:5px;border-radius:15px}
+#console .cardb .ico{width:36px;height:36px;margin-top:5px}
+#console .cardb>span:not(.n):last-of-type{font-size:15px;line-height:1.2}
+#console .cardb .card-desc{display:block;font-size:11px;line-height:1.35;text-align:center;font-weight:600;opacity:.82;overflow-wrap:anywhere}
+#console .cardb .n{font-size:12px;top:7px;right:7px}
+#console .cardb:focus-visible{outline:4px solid #fff;outline-offset:2px}
+#console .cs-hintrow{font-size:14px;line-height:1.45}
+#console .cs-fb{font-size:15px;line-height:1.5;padding:10px 12px;border-radius:12px}
+#console .cs-fb.ok{animation:kskFeedback .45s ease-out}
+#console .cs-fb.bad{animation:kskFeedback .45s ease-out}
+@keyframes kskFeedback{0%{transform:scale(.97);opacity:.5}70%{transform:scale(1.015)}100%{transform:scale(1);opacity:1}}
+@media(min-width:1100px){#console .hand{grid-template-columns:repeat(3,minmax(0,1fr));max-height:430px}}
+@media(max-width:700px){
+ #console .hand{grid-template-columns:repeat(2,minmax(0,1fr));max-height:340px}
+ #console .cardb{min-height:98px}
+ #console .cardb .card-desc{font-size:10px}
+}
+</style>
+<script id="ksk-gameplay-items">
+(function(){
+ if(window.__KSK_GAMEPLAY_ITEMS_V1) return;
+ window.__KSK_GAMEPLAY_ITEMS_V1=true;
+
+ /* เพิ่มทรัพยากรเชิงปฏิบัติการให้แต่ละทีมมีทางเลือกมากขึ้น */
+ Object.assign(CARD_DEF,{
+  calltree:{n:'ระบบ Call Tree เรียกกำลังคน',s:'Call Tree',max:2,d:'บัญชีรายชื่อ เบอร์โทร และลำดับการเรียกบุคลากรสำรอง',c:'#A78BFA'},
+  sitrep:{n:'ชุดรายงานสถานการณ์ (SitRep)',s:'SitRep',max:3,d:'แบบรายงานสถานการณ์เดียวกัน ลดข้อมูลซ้ำและสั่งการคลาดเคลื่อน',c:'#60A5FA'},
+  triage:{n:'ชุดคัดแยกผู้ป่วยฉุกเฉิน',s:'Triage Kit',max:2,d:'ป้ายคัดแยก อุปกรณ์ประเมินอาการ และจุดคัดกรองผู้บาดเจ็บ',c:'#FB7185'},
+  evac:{n:'ชุดเคลื่อนย้ายและอพยพผู้ป่วย',s:'อพยพผู้ป่วย',max:2,d:'เปลเคลื่อนย้าย อุปกรณ์เคลื่อนย้าย และเส้นทาง/จุดรวมพลสำรอง',c:'#F97316'},
+  coldchain:{n:'กล่องควบคุมอุณหภูมิยาและวัคซีน',s:'Cold Chain',max:2,d:'กล่องเก็บความเย็น เครื่องบันทึกอุณหภูมิ และแผนย้ายเวชภัณฑ์',c:'#38BDF8'},
+  watertest:{n:'ชุดตรวจคุณภาพน้ำและคลอรีน',s:'ตรวจคุณภาพน้ำ',max:2,d:'ชุดตรวจคลอรีนคงเหลือและคุณภาพน้ำ พร้อมบันทึกผลก่อนจ่ายใช้',c:'#22D3EE'},
+  roadclear:{n:'ทีมเปิดเส้นทางและตัดต้นไม้',s:'เปิดเส้นทาง',max:1,d:'เครื่องมือช่าง อุปกรณ์กั้นเขต และประสานหน่วยงานเปิดทางรถพยาบาล',c:'#D6A15E'},
+  upsbackup:{n:'UPS และแบตเตอรี่สำรองอุปกรณ์วิกฤต',s:'UPS สำรอง',max:2,d:'สำรองไฟชั่วคราวให้เครื่องมือแพทย์ ระบบสื่อสาร และอุปกรณ์เครือข่าย',c:'#FACC15'},
+  staffwelfare:{n:'ชุดดูแลสวัสดิภาพบุคลากร',s:'ดูแลทีม',max:2,d:'อาหาร น้ำดื่ม จุดพักเวร และระบบติดตามความปลอดภัยของเจ้าหน้าที่',c:'#34D399'},
+  familycare:{n:'ทีมประสานญาติและช่วยเหลือผู้ประสบเหตุ',s:'ประสานญาติ',max:2,d:'จุดข้อมูลญาติ ช่องทางแจ้งข่าว และผู้ประสานงานช่วยเหลือครอบครัว',c:'#F472B6'},
+  decon:{n:'ชุดควบคุมการปนเปื้อนและสุขาภิบาล',s:'ควบคุมปนเปื้อน',max:1,d:'กำหนดเขตสะอาด/ปนเปื้อน PPE และแนวทางทำความสะอาดพื้นที่เสี่ยง',c:'#84CC16'},
+  foodwater:{n:'เสบียงอาหารและน้ำดื่มฉุกเฉิน',s:'เสบียงฉุกเฉิน',max:2,d:'สำรองอาหารและน้ำดื่มสำหรับผู้ป่วยและบุคลากรในช่วงระบบขนส่งหยุดชะงัก',c:'#F59E0B'}
+ });
+ const add=(team,keys)=>keys.forEach(k=>{if(!TEAM_CARDS[team].includes(k))TEAM_CARDS[team].push(k);});
+ add('cmd',['calltree','sitrep']);
+ add('med',['triage','evac','coldchain','decon']);
+ add('sup',['watertest','roadclear','upsbackup','decon','foodwater']);
+ add('adm',['staffwelfare','familycare','sitrep','calltree','foodwater']);
+ ['calltree','sitrep','triage','evac','coldchain','watertest','roadclear','upsbackup','staffwelfare','familycare','decon','foodwater'].forEach(k=>{if(!CARD_ORDER.includes(k))CARD_ORDER.push(k);});
+
+ /* ผูก Item ใหม่กับเหตุการณ์ที่เกี่ยวข้องในคลังสถานการณ์ */
+ const answers={
+  'r1-comm':{calltree:'best',sitrep:'best',familycare:'ok'},
+  'r1-power':{upsbackup:'ok'},
+  'r2-er':{triage:'best',evac:'ok'},
+  'r3-road':{roadclear:'best',evac:'ok'},
+  'r3-pharm':{coldchain:'best'},
+  'r4-crowd':{familycare:'best',sitrep:'ok'},
+  'r4-tired':{staffwelfare:'best',calltree:'ok',foodwater:'ok'},
+  'x-water':{watertest:'best',foodwater:'ok'},
+  'x-oxygen':{upsbackup:'best'},
+  'x-birth':{triage:'best',evac:'ok',upsbackup:'ok'},
+  'x-injury':{triage:'best',decon:'ok'},
+  'x-supply':{foodwater:'ok'},
+  'x-waste':{decon:'best'},
+  'x-treatment':{decon:'ok'},
+  'x-solar':{upsbackup:'ok'},
+  'x-treefall':{roadclear:'best',evac:'ok'},
+  'x-meddev':{upsbackup:'best'},
+  'x-hr':{staffwelfare:'best',calltree:'ok',foodwater:'ok'},
+  'x-wash':{watertest:'best',decon:'ok'},
+  'x-warn':{calltree:'best',sitrep:'ok'},
+  'x-cold':{coldchain:'best',upsbackup:'ok'},
+  'x-evac':{evac:'best',triage:'ok'},
+  'x-infra':{roadclear:'best'},
+  'x-aar':{sitrep:'ok',familycare:'ok'},
+  'water':{watertest:'best'},
+  'oxygen':{upsbackup:'best'},
+  'birth':{triage:'best',evac:'ok'},
+  'injury':{triage:'best',decon:'ok'},
+  'supply':{foodwater:'ok'},
+  'waste':{decon:'best'},
+  'treefall':{roadclear:'best'},
+  'meddev':{upsbackup:'best'},
+  'hr-continuity':{staffwelfare:'best',calltree:'ok',foodwater:'ok'},
+  'wash-resilience':{watertest:'best',decon:'ok'},
+  'cold-chain':{coldchain:'best',upsbackup:'ok'},
+  'evacuation':{evac:'best',triage:'ok'},
+  'infrastructure-resilience':{roadclear:'best'},
+  'storm-warning':{calltree:'best',sitrep:'ok'}
+ };
+ const rounds=[...(PICKABLE_ROUNDS||[]),...(BASE_ROUNDS||[]),...(EXTRA_ROUNDS||[])];
+ const seen=new Set();
+ rounds.forEach(r=>(r.inc||[]).forEach(d=>{
+   if(seen.has(d))return; seen.add(d);
+   const extra=answers[d.id]; if(extra) Object.assign(d.sol||(d.sol={}),extra);
+ }));
+})();
+</script>
+
+
+<style id="ksk-lively-animation">
+/* A livelier storm-command scene: movement is focused and purposeful */
+.scene-wrap{isolation:isolate;box-shadow:0 0 0 3px #ffffff28,0 18px 42px #0008}
+.scene-wrap:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+ background:linear-gradient(115deg,transparent 35%,#ffffff0b 48%,transparent 60%);
+ background-size:220% 100%;animation:sceneSheen 8s ease-in-out infinite}
+@keyframes sceneSheen{0%,55%{background-position:150% 0}100%{background-position:-80% 0}}
+#scene .cloud{transform-box:fill-box;transform-origin:center;animation:cloudDrift 13s ease-in-out infinite alternate}
+#scene .cloud:nth-of-type(2n){animation-duration:17s;animation-delay:-5s}
+@keyframes cloudDrift{0%{transform:translateX(-7px)}100%{transform:translateX(13px)}}
+#scene .tree{transform-box:fill-box;transform-origin:50% 100%;animation:treeSway 4.5s ease-in-out infinite}
+@keyframes treeSway{0%,100%{transform:rotate(-1deg)}50%{transform:rotate(1.4deg)}}
+.fx-wind #scene .tree{animation:treeSway 0.55s ease-in-out infinite}
+.fx-wind #scene .cloud{animation-duration:3.5s}
+#rain{opacity:.78;filter:drop-shadow(0 0 2px #c9eaff66)}
+.fx-wind #rain{opacity:1}
+.scene-wrap:has(.flash.go){animation:sceneShake .42s ease-out}
+@keyframes sceneShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-3px)}45%{transform:translateX(3px)}70%{transform:translateX(-1px)}}
+.wx .chip{animation:chipFloat 3.5s ease-in-out infinite}
+.wx .chip:nth-child(2){animation-delay:.45s}
+.wx .chip:nth-child(3){animation-delay:.9s}
+@keyframes chipFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+/* Characters look alert and alive; motion is staggered by team */
+.team-h .av,.tcard .av,.msg .av,.pod .av,.hero-art .av{
+ animation:characterAction 2.9s ease-in-out infinite;
+ transform-origin:50% 92%;
+}
+.team-h:nth-child(2n) .av,.tcard:nth-child(2n) .av,.pod:nth-child(2n) .av{animation-delay:-.8s}
+.team-h:nth-child(3n) .av,.tcard:nth-child(3n) .av,.pod:nth-child(3n) .av{animation-delay:-1.5s}
+@keyframes characterAction{
+ 0%,100%{transform:translateY(0) rotate(0) scale(1)}
+ 18%{transform:translateY(-4px) rotate(-1.4deg) scale(1.015)}
+ 38%{transform:translateY(0) rotate(0) scale(1)}
+ 66%{transform:translateY(-2px) rotate(1.2deg) scale(1.01)}
+}
+.hero-art .av{animation-duration:2.3s}
+.msg .av{animation-duration:1.9s}
+
+/* Cards arrive with a small stagger; hover/focus gives immediate feedback */
+.inc-list .inc{animation:cardArrive .48s cubic-bezier(.2,.8,.2,1) both}
+.inc-list .inc:nth-child(2){animation-delay:.06s}
+.inc-list .inc:nth-child(3){animation-delay:.12s}
+.inc-list .inc:nth-child(4){animation-delay:.18s}
+.inc-list .inc:nth-child(5){animation-delay:.24s}
+@keyframes cardArrive{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+#console .cardb{transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;animation:itemArrive .42s ease both}
+#console .hand .cardb:nth-child(2){animation-delay:.04s}
+#console .hand .cardb:nth-child(3){animation-delay:.08s}
+#console .hand .cardb:nth-child(4){animation-delay:.12s}
+#console .hand .cardb:nth-child(5){animation-delay:.16s}
+#console .hand .cardb:nth-child(6){animation-delay:.20s}
+@keyframes itemArrive{from{opacity:0;transform:translateY(12px) scale(.94)}to{opacity:1;transform:translateY(0) scale(1)}}
+#console .cardb:hover:not(:disabled),#console .cardb:focus-visible{
+ transform:translateY(-5px) scale(1.025);filter:brightness(1.06);
+ box-shadow:0 8px 0 color-mix(in srgb,var(--cc) 70%,#000),0 0 0 3px #fff8,0 10px 22px #0005
+}
+#console .cardb:active:not(:disabled){transform:translateY(1px) scale(.97)}
+#console .cardb:disabled{filter:grayscale(.45);opacity:.58}
+#console .cs-guide{animation:guideGlow 3s ease-in-out infinite}
+@keyframes guideGlow{0%,100%{box-shadow:0 0 0 #ffd93b00}50%{box-shadow:0 0 16px #ffd93b25}}
+#console .cs-head{animation:headEnter .45s ease-out both}
+@keyframes headEnter{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+#console .cs-track i{transition:background .35s ease,transform .35s ease}
+#console .cs-track i.on{animation:trackPulse 1.3s ease-in-out infinite}
+@keyframes trackPulse{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.55)}}
+.pin.target .ring{animation:pinPing 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.pin.selected .ring{animation:pinSelected .85s ease-in-out infinite alternate}
+@keyframes pinPing{0%{opacity:.9;stroke-width:2}100%{opacity:0;stroke-width:8;transform:scale(1.55)}}
+@keyframes pinSelected{from{stroke-width:3;opacity:.7}to{stroke-width:6;opacity:1}}
+.boom{animation:boomImpact 1.1s cubic-bezier(.16,.84,.32,1) forwards}
+@keyframes boomImpact{
+ 0%{opacity:0;transform:translate(-50%,-50%) scale(.25) rotate(-12deg)}
+ 18%{opacity:1;transform:translate(-50%,-50%) scale(1.28) rotate(4deg)}
+ 32%{transform:translate(-50%,-50%) scale(.94) rotate(-3deg)}
+ 48%{transform:translate(-50%,-50%) scale(1.08) rotate(1deg)}
+ 75%{opacity:1}
+ 100%{opacity:0;transform:translate(-50%,-65%) scale(1.12) rotate(0)}
+}
+.toast.show{animation:toastPop .35s cubic-bezier(.2,.9,.25,1.2) both}
+@keyframes toastPop{0%{opacity:0;transform:translate(-50%,24px) scale(.85)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
+.flow-box.done{animation:completeFlash .65s ease-out}
+@keyframes completeFlash{0%{box-shadow:0 0 0 0 #2fd08c00}35%{box-shadow:0 0 0 5px #2fd08c66}100%{box-shadow:0 0 0 12px #2fd08c00}}
+@media(hover:none){#console .cardb:hover:not(:disabled){transform:none}}
+@media(prefers-reduced-motion:reduce){
+ .scene-wrap:after,#scene .cloud,#scene .tree,.wx .chip,.team-h .av,.tcard .av,.msg .av,.pod .av,.hero-art .av,
+ .inc-list .inc,#console .cardb,#console .cs-guide,#console .cs-head,#console .cs-track i.on,
+ .pin.target .ring,.pin.selected .ring,.boom,.toast.show,.flow-box.done{animation:none!important}
+ .scene-wrap:has(.flash.go){transform:none!important}
+}
+</style>
 
 </body></html>
